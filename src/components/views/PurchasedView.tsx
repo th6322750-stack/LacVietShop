@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  IconAlertTriangle,
   IconCircleCheck,
   IconClockExclamation,
   IconEye,
@@ -12,7 +11,7 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
-import { SectionCard, StatCard, SupportCard, InfoCard } from "@/components/blocks/Cards";
+import { SectionCard, StatCard, SupportCard } from "@/components/blocks/Cards";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { EmptyState } from "@/components/blocks/States";
 import { Badge } from "@/components/ui/Badge";
@@ -47,6 +46,7 @@ export function PurchasedView() {
   );
 
   const items = purchasedItems.filter((i) => (tab === "all" ? true : i.status === tab));
+  const activeIncludingRenewal = counts.active + counts.expiring;
 
   return (
     <div className="space-y-5">
@@ -61,18 +61,24 @@ export function PurchasedView() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Tổng sản phẩm" value={counts.all} suffix="mục" tone="navy" icon={<IconCircleCheck size={20} />} />
-        <StatCard label="Đang sử dụng" value={counts.active} suffix="mục" tone="success" icon={<IconCircleCheck size={20} />} />
-        <StatCard label="Sắp hết hạn" value={counts.expiring} suffix="mục" tone="gold" icon={<IconClockExclamation size={20} />} />
-        <StatCard label="Đã hết hạn" value={counts.expired} suffix="mục" tone="danger" icon={<IconAlertTriangle size={20} />} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard
+          label="Đang hoạt động"
+          value={activeIncludingRenewal}
+          suffix="mục"
+          tone="success"
+          icon={<IconCircleCheck size={20} />}
+          hint="Bao gồm sản phẩm đang dùng và sắp đến kỳ gia hạn"
+        />
+        <StatCard
+          label="Sắp gia hạn"
+          value={counts.expiring}
+          suffix="mục"
+          tone="gold"
+          icon={<IconClockExclamation size={20} />}
+          hint="Nên gia hạn trước ngày hết hạn để giữ nguyên tài khoản"
+        />
       </div>
-
-      {counts.expiring > 0 ? (
-        <InfoCard title="Có sản phẩm sắp hết hạn" tone="warning" icon={<IconClockExclamation size={16} />}>
-          Gia hạn trước ngày hết hạn để giữ nguyên tài khoản hiện tại, tránh phải kích hoạt lại từ đầu.
-        </InfoCard>
-      ) : null}
 
       <Tabs
         ariaLabel="Trạng thái sản phẩm"
@@ -94,29 +100,30 @@ export function PurchasedView() {
           {items.map((item) => (
             <PurchasedCard key={item.id} item={item} />
           ))}
+
+          {tab === "all" ? (
+            <SupportCard
+              title="Gặp vấn đề với tài khoản?"
+              description="Nếu gặp lỗi đăng nhập, rớt gói hoặc cần đối soát bảo hành, gửi yêu cầu ngay tại đây."
+              channels={demoBrand.supportChannels.map((c) => ({ label: c.label, value: c.value }))}
+              action={
+                <Button variant="secondary" block icon={<IconHeadset size={16} />}>
+                  Gửi yêu cầu hỗ trợ
+                </Button>
+              }
+            />
+          ) : null}
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <SupportCard
-          title="Bảo hành & đổi trả"
-          description="Gặp lỗi đăng nhập hoặc rớt gói, gửi yêu cầu để được xử lý trong giờ làm việc."
-          channels={demoBrand.supportChannels.map((c) => ({ label: c.label, value: c.value }))}
-          action={
-            <Button variant="secondary" block icon={<IconHeadset size={16} />}>
-              Gửi yêu cầu bảo hành
-            </Button>
-          }
-        />
-        <SectionCard title="Quy tắc sử dụng">
-          <ul className="space-y-2 text-small text-lv-navy-700">
-            <li>· Không chia sẻ thông tin đăng nhập cho bên thứ ba.</li>
-            <li>· Không tự ý đổi mật khẩu hoặc email khôi phục khi chưa được hướng dẫn.</li>
-            <li>· Giữ nguyên số thiết bị đăng nhập theo mô tả của gói.</li>
-            <li>· Báo lỗi ngay trong thời gian bảo hành để được xử lý miễn phí.</li>
-          </ul>
-        </SectionCard>
-      </div>
+      <SectionCard title="Quy tắc sử dụng">
+        <ul className="grid gap-2 text-small text-lv-navy-700 md:grid-cols-2">
+          <li>· Không chia sẻ thông tin đăng nhập cho bên thứ ba.</li>
+          <li>· Không tự ý đổi mật khẩu hoặc email khôi phục khi chưa được hướng dẫn.</li>
+          <li>· Giữ nguyên số thiết bị đăng nhập theo mô tả của gói.</li>
+          <li>· Báo lỗi ngay trong thời gian bảo hành để được xử lý miễn phí.</li>
+        </ul>
+      </SectionCard>
     </div>
   );
 }

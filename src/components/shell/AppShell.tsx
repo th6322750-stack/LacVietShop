@@ -9,6 +9,7 @@ import {
   IconMenu2,
   IconPlus,
   IconSearch,
+  IconUsers,
   IconWallet,
 } from "@tabler/icons-react";
 import { cn, formatMoney } from "@/lib/utils";
@@ -137,17 +138,32 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
       </nav>
 
       <div className={cn("shrink-0 border-t border-lv-border p-3", compact ? "hidden xl:block" : "block")}>
-        <div className="rounded-card border border-lv-border-gold bg-lv-surface-soft p-3">
-          <p className="flex items-center gap-1.5 text-small-strong text-lv-gold-700">
-            <IconHeadset size={15} />
-            Hỗ trợ {demoBrand.supportHours}
-          </p>
-          <p className="mt-1 text-small text-lv-muted">
-            Kênh liên hệ chính thức chưa được cấu hình trong bản dựng này.
-          </p>
-          <LinkButton href="/api-docs" variant="secondary" size="sm" block className="mt-2">
-            Xem tài liệu API
-          </LinkButton>
+        <div className="space-y-3">
+          <div className="rounded-card border border-lv-border-gold bg-lv-surface-soft p-3">
+            <p className="flex items-center gap-1.5 text-small-strong text-lv-text">
+              <IconUsers size={15} className="text-lv-gold-700" />
+              Trở thành đại lý / cộng tác viên
+            </p>
+            <p className="mt-1 text-small text-lv-muted">
+              Theo dõi hoa hồng, giới thiệu khách hàng và quyền lợi đại lý trong cùng hệ thống.
+            </p>
+            <LinkButton href="/affiliate" variant="secondary" size="sm" block className="mt-2">
+              Đăng ký ngay
+            </LinkButton>
+          </div>
+
+          <div className="rounded-card border border-lv-border-gold bg-lv-surface-soft p-3">
+            <p className="flex items-center gap-1.5 text-small-strong text-lv-gold-700">
+              <IconHeadset size={15} />
+              Hỗ trợ {demoBrand.supportHours}
+            </p>
+            <p className="mt-1 text-small text-lv-muted">
+              Kênh liên hệ chính thức chưa được cấu hình trong bản dựng này.
+            </p>
+            <LinkButton href="/api-docs" variant="secondary" size="sm" block className="mt-2">
+              Xem tài liệu API
+            </LinkButton>
+          </div>
         </div>
       </div>
     </div>

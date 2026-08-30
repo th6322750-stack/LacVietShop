@@ -5,6 +5,7 @@ import {
   IconAlertTriangle,
   IconCheck,
   IconChevronDown,
+  IconHeadset,
   IconShieldCheck,
   IconShoppingCartPlus,
   IconStarFilled,
@@ -29,17 +30,58 @@ import type { ProductVariant } from "@/types";
  */
 export function ProductDetail({ product }: { product: ProductVariant }) {
   const toast = useToast();
-  const firstAvailable = product.packages.find((p) => p.inStock) ?? product.packages[0];
+  const isCanva = product.slug === "canva";
+  const displayPackages = isCanva
+    ? product.packages.map((p, index) => {
+        if (index === 0) {
+          return {
+            ...p,
+            name: "Gói cá nhân - 1 tháng",
+            duration: "1 tháng",
+            price: 89_000,
+            originalPrice: undefined,
+            highlight: false,
+            badge: undefined,
+            bullets: ["1 tài khoản cá nhân", "Toàn bộ tính năng Pro", "Kho template premium"],
+          };
+        }
+        if (index === 1) {
+          return {
+            ...p,
+            name: "Gói nhóm nhỏ",
+            duration: "1 tháng",
+            price: 159_000,
+            originalPrice: 199_000,
+            highlight: true,
+            badge: "Phổ biến nhất",
+            bullets: ["Từ 2–5 thành viên", "Chia sẻ template & thương hiệu", "Quản lý đội nhóm dễ dàng"],
+          };
+        }
+        return {
+          ...p,
+          name: "Gói Studio Creator",
+          duration: "1 tháng",
+          price: 279_000,
+          originalPrice: undefined,
+          highlight: false,
+          badge: undefined,
+          bullets: ["Không giới hạn thành viên", "Bộ thương hiệu nâng cao", "Quyền kiểm soát & phân quyền"],
+        };
+      })
+    : product.packages;
+
+  const firstAvailable = displayPackages.find((p) => p.inStock) ?? displayPackages[0];
   const [packageId, setPackageId] = React.useState(
-    (product.packages.find((p) => p.highlight && p.inStock) ?? firstAvailable).id,
+    (displayPackages.find((p) => p.highlight && p.inStock) ?? firstAvailable).id,
   );
   const [tab, setTab] = React.useState("benefits");
   const [submitting, setSubmitting] = React.useState(false);
   const [openFaq, setOpenFaq] = React.useState<string | null>(product.faqs[0]?.question ?? null);
 
-  const pkg = product.packages.find((p) => p.id === packageId) ?? firstAvailable;
+  const pkg = displayPackages.find((p) => p.id === packageId) ?? firstAvailable;
   const notEnoughBalance = pkg.price > account.balance;
   const darkHero = product.heroTone === "dark";
+  const displayFromPrice = isCanva ? 89_000 : product.fromPrice;
 
   async function buy() {
     if (!pkg.inStock) return;
@@ -98,7 +140,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent !object-cover opacity-10"
                 />
               ) : null}
-              <div className="min-w-0 relative lg:col-span-8">
+              <div className="relative min-w-0 lg:col-span-8">
                 <div className="flex items-center gap-3">
                   <AssetImage assetKey={product.assetKey} className="h-14 w-14 shrink-0" rounded="card" />
                   <div className="min-w-0">
@@ -126,7 +168,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   ))}
                 </div>
               </div>
-              <div className="min-w-0 relative lg:col-span-4">
+              <div className="relative min-w-0 lg:col-span-4">
                 <div
                   className={cn(
                     "rounded-card border p-4",
@@ -134,7 +176,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   )}
                 >
                   <p className={cn("text-small", darkHero ? "text-white/60" : "text-lv-muted")}>Chỉ từ</p>
-                  <p className="lv-price text-h2 text-lv-gold-500">{formatMoney(product.fromPrice)}</p>
+                  <p className="lv-price text-h2 text-lv-gold-500">{formatMoney(displayFromPrice)}</p>
                   <p
                     className={cn(
                       "mt-2 flex items-center gap-2 text-small",
@@ -153,14 +195,14 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
           </section>
 
           {/* Gói sản phẩm */}
-          <SectionCard title="Chọn gói phù hợp" description="Giá đã bao gồm bảo hành theo thời hạn gói.">
+          <SectionCard title="Chọn gói phù hợp" description="Giá đang là dữ liệu DEMO, chờ bảng giá production được chốt.">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Chọn gói">
-              {product.packages.map((p) => (
+              {displayPackages.map((p) => (
                 <PackageCard key={p.id} pkg={p} selected={p.id === pkg.id} onSelect={() => setPackageId(p.id)} />
               ))}
             </div>
 
-            {product.packages.some((p) => !p.inStock) ? (
+            {displayPackages.some((p) => !p.inStock) ? (
               <p className="mt-3 flex items-center gap-1.5 text-small text-lv-warning">
                 <IconAlertTriangle size={15} />
                 Một số gói đang tạm hết hàng, sẽ mở bán lại khi có nguồn.
@@ -168,89 +210,172 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
             ) : null}
           </SectionCard>
 
-          {/* Tabs nội dung */}
-          <SectionCard title="Thông tin chi tiết" padded={false}>
-            <div className="px-5">
-              <Tabs
-                ariaLabel="Thông tin sản phẩm"
-                value={tab}
-                onChange={setTab}
-                items={[
-                  { id: "benefits", label: "Quyền lợi" },
-                  { id: "requirements", label: "Yêu cầu khi mua" },
-                  { id: "warranty", label: "Chính sách bảo hành" },
-                ]}
-              />
-            </div>
-            <div className="p-5">
-              <TabPanel id="benefits" active={tab === "benefits"}>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {product.benefits.map((b) => (
-                    <div key={b.title} className="rounded-card border border-lv-border p-4">
-                      <p className="flex items-center gap-2 text-body-strong text-lv-text">
-                        <IconCheck size={16} className="text-lv-success" />
-                        {b.title}
+          {isCanva ? (
+            <>
+              <div className="grid gap-4 lg:grid-cols-12">
+                <SectionCard title="Tính năng chính" className="lg:col-span-5">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      "AI Magic Studio",
+                      "Kho template premium",
+                      "Brand Kit",
+                      "Xóa nền & Magic Edit",
+                      "Lịch nội dung",
+                      "Cộng tác thời gian thực",
+                    ].map((item) => (
+                      <p key={item} className="flex items-center gap-2 text-small text-lv-navy-700">
+                        <IconCheck size={15} className="shrink-0 text-lv-success" />
+                        {item}
                       </p>
-                      <p className="mt-1 text-small text-lv-muted">{b.detail}</p>
-                    </div>
-                  ))}
-                </div>
-              </TabPanel>
-
-              <TabPanel id="requirements" active={tab === "requirements"}>
-                <ul className="space-y-2">
-                  {product.requirements.map((r) => (
-                    <li key={r} className="flex gap-2 text-body text-lv-navy-700">
-                      <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-lv-gold-500" />
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              </TabPanel>
-
-              <TabPanel id="warranty" active={tab === "warranty"}>
-                <ul className="space-y-2">
-                  {product.warranty.map((w) => (
-                    <li key={w} className="flex gap-2 text-body text-lv-navy-700">
-                      <IconShieldCheck size={16} className="mt-0.5 shrink-0 text-lv-gold-600" />
-                      {w}
-                    </li>
-                  ))}
-                </ul>
-              </TabPanel>
-            </div>
-          </SectionCard>
-
-          {/* FAQ */}
-          <SectionCard title="Câu hỏi thường gặp">
-            <div className="grid gap-3 lg:grid-cols-2">
-              {product.faqs.map((f) => {
-                const open = openFaq === f.question;
-                return (
-                  <div key={f.question} className="rounded-card border border-lv-border">
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(open ? null : f.question)}
-                      aria-expanded={open}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                    >
-                      <span className="text-body-strong text-lv-text">{f.question}</span>
-                      <IconChevronDown
-                        size={17}
-                        className={cn("shrink-0 text-lv-muted transition-transform duration-button", open && "rotate-180")}
-                      />
-                    </button>
-                    {open ? <p className="px-4 pb-3 text-small text-lv-muted">{f.answer}</p> : null}
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          </SectionCard>
+                </SectionCard>
+
+                <SectionCard title="Mẫu quyền lợi" className="lg:col-span-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-[#CFE7F0]" />
+                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-lv-navy-900" />
+                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-[#F3D8C7]" />
+                  </div>
+                  <p className="mt-3 text-center text-small-strong text-lv-gold-700">Bộ mẫu thiết kế & tài nguyên Pro</p>
+                </SectionCard>
+
+                <SectionCard title="Lưu ý khi nhận tài khoản" className="lg:col-span-3">
+                  <ul className="space-y-2 text-small text-lv-muted">
+                    <li>· Tài khoản/gói được kích hoạt theo thông tin đơn.</li>
+                    <li>· Không tự thay đổi thông tin khi đang trong thời gian bảo hành.</li>
+                    <li>· Không sử dụng cho mục đích vi phạm chính sách nền tảng.</li>
+                  </ul>
+                </SectionCard>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-12">
+                <SectionCard title="Đánh giá khách hàng" className="lg:col-span-4">
+                  <div className="flex items-end gap-2">
+                    <span className="text-[34px] font-bold leading-none text-lv-gold-700">4.9</span>
+                    <span className="pb-1 text-body text-lv-muted">/5</span>
+                  </div>
+                  <div className="mt-3 flex gap-1 text-lv-warning" aria-label="5 trên 5 sao">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <IconStarFilled key={index} size={18} />
+                    ))}
+                  </div>
+                  <p className="mt-3 text-small text-lv-muted">Tổng hợp từ đánh giá DEMO để đối chiếu bố cục; dữ liệu production sẽ được thay sau.</p>
+                </SectionCard>
+
+                <SectionCard title="Câu hỏi thường gặp" className="lg:col-span-8">
+                  <div className="space-y-3">
+                    {product.faqs.map((f) => {
+                      const open = openFaq === f.question;
+                      return (
+                        <div key={f.question} className="rounded-card border border-lv-border">
+                          <button
+                            type="button"
+                            onClick={() => setOpenFaq(open ? null : f.question)}
+                            aria-expanded={open}
+                            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                          >
+                            <span className="text-body-strong text-lv-text">{f.question}</span>
+                            <IconChevronDown
+                              size={17}
+                              className={cn("shrink-0 text-lv-muted transition-transform duration-button", open && "rotate-180")}
+                            />
+                          </button>
+                          {open ? <p className="px-4 pb-3 text-small text-lv-muted">{f.answer}</p> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </SectionCard>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Tabs nội dung */}
+              <SectionCard title="Thông tin chi tiết" padded={false}>
+                <div className="px-5">
+                  <Tabs
+                    ariaLabel="Thông tin sản phẩm"
+                    value={tab}
+                    onChange={setTab}
+                    items={[
+                      { id: "benefits", label: "Quyền lợi" },
+                      { id: "requirements", label: "Yêu cầu khi mua" },
+                      { id: "warranty", label: "Chính sách bảo hành" },
+                    ]}
+                  />
+                </div>
+                <div className="p-5">
+                  <TabPanel id="benefits" active={tab === "benefits"}>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {product.benefits.map((b) => (
+                        <div key={b.title} className="rounded-card border border-lv-border p-4">
+                          <p className="flex items-center gap-2 text-body-strong text-lv-text">
+                            <IconCheck size={16} className="text-lv-success" />
+                            {b.title}
+                          </p>
+                          <p className="mt-1 text-small text-lv-muted">{b.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </TabPanel>
+
+                  <TabPanel id="requirements" active={tab === "requirements"}>
+                    <ul className="space-y-2">
+                      {product.requirements.map((r) => (
+                        <li key={r} className="flex gap-2 text-body text-lv-navy-700">
+                          <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-lv-gold-500" />
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </TabPanel>
+
+                  <TabPanel id="warranty" active={tab === "warranty"}>
+                    <ul className="space-y-2">
+                      {product.warranty.map((w) => (
+                        <li key={w} className="flex gap-2 text-body text-lv-navy-700">
+                          <IconShieldCheck size={16} className="mt-0.5 shrink-0 text-lv-gold-600" />
+                          {w}
+                        </li>
+                      ))}
+                    </ul>
+                  </TabPanel>
+                </div>
+              </SectionCard>
+
+              {/* FAQ */}
+              <SectionCard title="Câu hỏi thường gặp">
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {product.faqs.map((f) => {
+                    const open = openFaq === f.question;
+                    return (
+                      <div key={f.question} className="rounded-card border border-lv-border">
+                        <button
+                          type="button"
+                          onClick={() => setOpenFaq(open ? null : f.question)}
+                          aria-expanded={open}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                        >
+                          <span className="text-body-strong text-lv-text">{f.question}</span>
+                          <IconChevronDown
+                            size={17}
+                            className={cn("shrink-0 text-lv-muted transition-transform duration-button", open && "rotate-180")}
+                          />
+                        </button>
+                        {open ? <p className="px-4 pb-3 text-small text-lv-muted">{f.answer}</p> : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+            </>
+          )}
         </div>
 
         {/* Aside đặt hàng, dính khi cuộn */}
         <aside className="min-w-0 xl:col-span-4">
-          <div className="xl:sticky xl:top-[88px] space-y-4">
+          <div className="space-y-4 xl:sticky xl:top-[88px]">
             <SectionCard title="Thông tin đơn hàng">
               <div className="flex items-center gap-3 rounded-card border border-lv-border bg-lv-bg p-3">
                 <AssetImage assetKey={product.assetKey} className="h-10 w-10" rounded="control" />
@@ -298,6 +423,24 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
               >
                 {pkg.inStock ? "Mua ngay" : "Tạm hết hàng"}
               </Button>
+
+              {isCanva ? (
+                <Button
+                  block
+                  variant="secondary"
+                  className="mt-2"
+                  icon={<IconHeadset size={17} />}
+                  onClick={() =>
+                    toast.push({
+                      tone: "success",
+                      title: "Đã ghi nhận yêu cầu tư vấn",
+                      description: "Yêu cầu đang ở chế độ DEMO, chưa gửi tới kênh hỗ trợ production.",
+                    })
+                  }
+                >
+                  Nhận tư vấn
+                </Button>
+              ) : null}
 
               <p className="mt-2 text-center text-small text-lv-muted">
                 Đơn hàng mô phỏng bằng dữ liệu DEMO.
