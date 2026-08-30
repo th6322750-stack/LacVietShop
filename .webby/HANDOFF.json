@@ -6,25 +6,41 @@
   "referencePolicy": "REFERENCE_ONLY",
   "designProtocol": "webbyLucifer v3.3",
   "brand": "Lac Viet Media Agency",
-  "approvalState": "VISUAL_DIRECTION_APPROVED",
-  "implementationReadyUI": false,
+  "approvalState": "BUILD_APPROVED_WITH_PLACEHOLDERS",
+  "implementationExecutionReady": true,
+  "finalVisualAssetReady": false,
+  "userOverride": "BUILD_ALL_20_FIRST_THEN_REPORT_MISSING_ASSETS_THEN_CHATGPT_RENDER_THEN_PATCH",
   "architectureDecision": {
     "mode": "NEW_WEB_APP_REBUILD",
     "cloneIsProductionSource": false,
-    "frameworkRuntime": "BLOCKED_SPEC"
+    "framework": "Next.js App Router",
+    "language": "TypeScript",
+    "styling": "Tailwind CSS",
+    "packageManager": "pnpm",
+    "genericIcons": "@tabler/icons-react"
   },
   "authorities": {
     "user": "FINAL_ACCEPTANCE",
     "chatgpt": ["DESIGN", "UI", "ASSET", "STATE", "MOTION_FEEL"],
     "claude": ["IMPLEMENTATION", "TECHNICAL_MECHANISM"]
   },
-  "mandatoryAssetRule": {
-    "onMissing": "NEED_ASSET",
+  "missingAssetPolicy": {
+    "blocksFullBuild": false,
+    "placeholderAllowed": true,
+    "placeholderMustPreserveLayout": true,
+    "placeholderMarker": "TODO_ASSET:<stable-key>",
+    "collectReportPath": ".webby/MISSING_ASSET_REPORT.md",
     "claudeMaySearch": false,
     "claudeMayGenerate": false,
     "claudeMayRedraw": false,
-    "claudeMaySubstitute": false,
-    "chatgptAction": "Inspect original reference, create/prepare/render missing asset, productionize, update manifest"
+    "claudeMaySubstituteBrandAssets": false,
+    "chatgptActionAfterBuild": "Inspect original reference, render/prepare missing asset, update manifest, then Claude patches exact slot"
+  },
+  "missingProductionConfigPolicy": {
+    "blocksVisualBuild": false,
+    "typedDemoDataAllowed": true,
+    "realFinancialSideEffectsWithDemoDataAllowed": false,
+    "collectReportPath": ".webby/FINAL_GAPS_REPORT.md"
   },
   "security": {
     "copyCapturedThatimSecrets": false,
@@ -37,7 +53,9 @@
     "P1_COMMERCIAL_JOURNEY",
     "P2_ORDER_MONEY",
     "P3_ACCOUNT_GROWTH_API",
-    "P4_RESPONSIVE_STATE_A11Y_QA"
+    "P4_RESPONSIVE_STATE_A11Y_QA",
+    "P5_CONSOLIDATE_MISSING_ASSETS",
+    "P6_PATCH_CHATGPT_ASSETS"
   ],
   "screens": [
     "home",
@@ -65,22 +83,5 @@
     "sharedTemplate": true,
     "component": "ProductDetail",
     "variants": ["youtube", "capcut", "canva", "veo3", "gemini", "chatgpt", "netflix", "vpn"]
-  },
-  "blockedSpec": [
-    "framework/runtime stack",
-    "business/contact config",
-    "payment config",
-    "commercial service/product data",
-    "backend/auth/API contracts"
-  ],
-  "needAsset": [
-    "compact Lạc Việt mark",
-    "favicon/app icon",
-    "home hero Lạc Việt brand visual",
-    "Dong Son watermark/pattern",
-    "VIP banner visual",
-    "VPN security hero visual",
-    "default avatar/placeholder if needed",
-    "real payment QR after payment config"
-  ]
+  }
 }
