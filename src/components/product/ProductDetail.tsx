@@ -95,7 +95,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   assetKey={product.heroAssetKey}
                   decorative
                   rounded="none"
-                  className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent opacity-10"
+                  className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent !object-cover opacity-10"
                 />
               ) : null}
               <div className="min-w-0 relative lg:col-span-8">

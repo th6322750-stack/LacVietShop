@@ -37,7 +37,7 @@
     1200,
     1440
   ],
-  "status": "FIRST_PASS_BUILD_COMPLETE",
+  "status": "FIRST_PASS_BUILD_COMPLETE_ASSETS_PATCHED",
   "versionRule": "Claude records actual installed package versions after initialization. Do not switch framework without TECHNICAL_CONSTRAINT evidence. Do not auto-merge.",
   "installedVersions": {
     "node": "v24.18.0",
@@ -61,14 +61,24 @@
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
     "build": "pnpm build — PASS (23 route, 20 route mục tiêu)",
-    "routeSmoke": "20/20 route HTTP 200, không lỗi console, không lỗi request",
+    "routeSmoke": "20/20 route HTTP 200, không lỗi console — chạy lại sau khi vá asset",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
-    "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu"
+    "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
+    "assets": "0 ảnh vỡ trên /, /services, /products, /products/netflix, /deposit; 8 TODO_ASSET còn lại đúng như kế hoạch",
+    "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico"
   },
   "routesImplemented": 20,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
-  "missingAssetKeys": 34,
+  "missingAssetKeys": 8,
   "openProductionGaps": 10,
-  "autoMerge": false
+  "autoMerge": false,
+  "assetPatch": {
+    "source": ".webby/ASSET_PATCH.md",
+    "lacVietAssetsIntegrated": 8,
+    "cloneMarksCopied": 18,
+    "remainingTodoAssets": 8,
+    "remainingReason": "7 payment marks + deposit.realQr — cố ý hoãn tới khi duyệt payment.gateway / payment.receivingAccount",
+    "referenceRepair": "RESOLVED (3 SVG mới); còn lỗi XML ở 15-product-canva-fixed.svg do 3 dấu & chưa escape"
+  }
 }

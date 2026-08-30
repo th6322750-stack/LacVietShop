@@ -55,7 +55,7 @@ export default function HomePage() {
           assetKey="decor.dongSonPattern"
           decorative
           rounded="none"
-          className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent opacity-[0.06]"
+          className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent !object-cover opacity-[0.06]"
         />
         <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-12 lg:items-center xl:p-10">
           <div className="lg:col-span-7">

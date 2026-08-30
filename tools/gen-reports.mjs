@@ -38,10 +38,10 @@ function parseExplicit() {
 /** Đọc các nhóm sinh theo vòng lặp (nền tảng / sản phẩm / thanh toán). */
 function parseGroup(name, extra) {
   const block = src.split(`const ${name}`)[1]?.split("];")[0] ?? "";
-  const items = [...block.matchAll(/\{\s*key:\s*"([^"]+)",\s*label:\s*"([^"]+)"(?:,\s*route:\s*"([^"]+)")?\s*\}/g)];
+  const items = [...block.matchAll(/\{\s*key:\s*"([^"]+)",\s*label:\s*"([^"]+)"(?:,\s*route:\s*"([^"]+)")?,\s*src:\s*(null|"[^"]*")\s*\}/g)];
   return items.map((m) => ({
     key: m[1],
-    missing: true,
+    missing: m[4] === "null",
     label: m[2],
     route: m[3],
     ...extra(m[2], m[3]),
@@ -142,12 +142,19 @@ ${list.map(entry).join("\n\n")}
   .join("\n")}
 ## Ghi chú thêm
 
-- \`brand.favicon\` chưa có nên trình duyệt trả 404 cho \`/favicon.ico\`. Đây là hệ quả trực tiếp
-  của asset thiếu, không phải lỗi ứng dụng; sẽ hết ngay khi có icon thật.
-- Ba ảnh tham chiếu trong repo bị hỏng file, không mở được bằng trình giải mã WebP:
-  \`references/ui-approved/12-product-purchased.webp\`, \`15-product-canva.webp\`,
-  \`17-product-gemini.webp\`. Ba route tương ứng được dựng theo quy tắc trong
-  \`PROJECT_HANDOFF.md §8\` và mẫu chung của các route cùng loại. Đề nghị ChatGPT xuất lại 3 ảnh này.
+- Lượt vá asset (\`.webby/ASSET_PATCH.md\`) đã áp dụng: 8 asset Lạc Việt do ChatGPT chuẩn bị +
+  18 mark nền tảng/sản phẩm lấy đúng file nguồn đã khoá trong \`clone-thatim-vn\`.
+  Số khoá thiếu giảm từ 34 xuống ${all.length}.
+- 8 khoá còn lại đều thuộc nhóm thanh toán và **cố ý để trống** cho tới khi duyệt
+  \`payment.gateway\` / \`payment.receivingAccount\` (\`.webby/ASSET_PATCH.md §D\`).
+  Không dựng QR giả.
+- \`brand.favicon\` đã dùng lại \`/assets/brand/lac-viet-mark.svg\`; \`/favicon.ico\` không còn 404.
+- Sửa reference: ba file SVG mới đã thay ba WebP hỏng và đọc được bình thường.
+  **Còn một lỗi cần ChatGPT xử lý:** \`references/ui-approved/15-product-canva-fixed.svg\`
+  chứa 3 dấu \`&\` chưa escape trong nội dung text (\`template & thương hiệu\`,
+  \`kiểm soát & phân quyền\`, \`Xóa nền & Magic Edit\`) nên không phải XML hợp lệ và trình duyệt
+  từ chối render. Claude không sửa file authority của ChatGPT; đã đọc nội dung qua bản vá tạm
+  ngoài repo để đối chiếu route \`/products/canva\`. Chỉ cần đổi 3 dấu đó thành \`&amp;\`.
 `;
 
 fs.writeFileSync(path.join(root, ".webby/MISSING_ASSET_REPORT.md"), md, "utf8");

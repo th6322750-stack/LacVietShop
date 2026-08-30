@@ -32,7 +32,7 @@ export interface AssetEntry {
 const registry: AssetEntry[] = [
   {
     key: "brand.logoHorizontal",
-    src: null,
+    src: "/assets/brand/lac-viet-logo-horizontal.webp",
     label: "Lạc Việt Media Agency",
     classification: "BRAND",
     routes: ["*"],
@@ -44,7 +44,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "brand.markCompact",
-    src: null,
+    src: "/assets/brand/lac-viet-mark.svg",
     label: "LV",
     classification: "BRAND",
     routes: ["*"],
@@ -56,7 +56,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "brand.favicon",
-    src: null,
+    src: "/assets/brand/lac-viet-mark.svg",
     label: "LV",
     classification: "BRAND",
     routes: ["*"],
@@ -68,7 +68,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "home.hero.brandVisual",
-    src: null,
+    src: "/assets/decor/home-hero.svg",
     label: "Hero Lạc Việt",
     classification: "DECORATIVE",
     routes: ["/"],
@@ -80,7 +80,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "decor.dongSonPattern",
-    src: null,
+    src: "/assets/decor/dong-son-pattern.svg",
     label: "Hoa văn Đông Sơn",
     classification: "DECORATIVE",
     routes: ["/", "/products"],
@@ -92,7 +92,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "products.vipBanner",
-    src: null,
+    src: "/assets/decor/vip-banner.svg",
     label: "Banner VIP",
     classification: "DECORATIVE",
     routes: ["/products"],
@@ -104,7 +104,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "product.vpn.hero",
-    src: null,
+    src: "/assets/decor/vpn-hero.svg",
     label: "VPN Quốc Tế",
     classification: "DECORATIVE",
     routes: ["/products/vpn"],
@@ -128,7 +128,7 @@ const registry: AssetEntry[] = [
   },
   {
     key: "account.defaultAvatar",
-    src: null,
+    src: "/assets/placeholders/default-avatar.svg",
     label: "Ảnh đại diện",
     classification: "PLACEHOLDER",
     routes: ["/account", "*"],
@@ -140,24 +140,24 @@ const registry: AssetEntry[] = [
   },
 ];
 
-/** Nền tảng dịch vụ — 10 mark, chưa có mapping xác thực nào được duyệt. */
-const platformKeys: { key: string; label: string }[] = [
-  { key: "platform.facebook", label: "Facebook" },
-  { key: "platform.tiktok", label: "TikTok" },
-  { key: "platform.instagram", label: "Instagram" },
-  { key: "platform.youtube", label: "YouTube" },
-  { key: "platform.shopee", label: "Shopee" },
-  { key: "platform.zalo", label: "Zalo" },
-  { key: "platform.threads", label: "Threads" },
-  { key: "platform.spotify", label: "Spotify" },
-  { key: "platform.telegram", label: "Telegram" },
-  { key: "platform.google", label: "Google Map" },
+/** Nền tảng dịch vụ — 10 mark, lấy đúng file nguồn đã khoá trong .webby/ASSET_PATCH.md §B. */
+const platformKeys: { key: string; label: string; src: string | null }[] = [
+  { key: "platform.facebook", label: "Facebook", src: "/assets/platforms/facebook.webp" },
+  { key: "platform.tiktok", label: "TikTok", src: "/assets/platforms/tiktok.webp" },
+  { key: "platform.instagram", label: "Instagram", src: "/assets/platforms/instagram.webp" },
+  { key: "platform.youtube", label: "YouTube", src: "/assets/platforms/youtube.webp" },
+  { key: "platform.shopee", label: "Shopee", src: "/assets/platforms/shopee.webp" },
+  { key: "platform.zalo", label: "Zalo", src: "/assets/platforms/zalo.webp" },
+  { key: "platform.threads", label: "Threads", src: "/assets/platforms/threads.webp" },
+  { key: "platform.spotify", label: "Spotify", src: "/assets/platforms/spotify.webp" },
+  { key: "platform.telegram", label: "Telegram", src: "/assets/platforms/telegram.webp" },
+  { key: "platform.google", label: "Google Map", src: "/assets/platforms/google-maps.webp" },
 ];
 
 for (const p of platformKeys) {
   registry.push({
     key: p.key,
-    src: null,
+    src: p.src,
     label: p.label,
     classification: "AUTHENTIC",
     routes: ["/", "/services"],
@@ -170,22 +170,22 @@ for (const p of platformKeys) {
   });
 }
 
-/** Ảnh sản phẩm premium — 8 mark. */
-const productKeys: { key: string; label: string; route: string }[] = [
-  { key: "product.youtube", label: "YouTube Premium", route: "/products/youtube" },
-  { key: "product.capcut", label: "CapCut Pro", route: "/products/capcut" },
-  { key: "product.canva", label: "Canva Pro", route: "/products/canva" },
-  { key: "product.veo3", label: "Google Veo 3 AI", route: "/products/veo3" },
-  { key: "product.gemini", label: "Google Gemini Pro", route: "/products/gemini" },
-  { key: "product.chatgpt", label: "ChatGPT Plus", route: "/products/chatgpt" },
-  { key: "product.netflix", label: "Netflix Ultra 4K", route: "/products/netflix" },
-  { key: "product.vpn", label: "Combo VPN Quốc Tế", route: "/products/vpn" },
+/** Ảnh sản phẩm premium — 8 mark, nguồn khoá trong .webby/ASSET_PATCH.md §C. */
+const productKeys: { key: string; label: string; route: string; src: string | null }[] = [
+  { key: "product.youtube", label: "YouTube Premium", route: "/products/youtube", src: "/assets/products/youtube.webp" },
+  { key: "product.capcut", label: "CapCut Pro", route: "/products/capcut", src: "/assets/products/capcut.webp" },
+  { key: "product.canva", label: "Canva Pro", route: "/products/canva", src: "/assets/products/canva.webp" },
+  { key: "product.veo3", label: "Google Veo 3 AI", route: "/products/veo3", src: "/assets/products/veo3.webp" },
+  { key: "product.gemini", label: "Google Gemini Pro", route: "/products/gemini", src: "/assets/products/gemini.webp" },
+  { key: "product.chatgpt", label: "ChatGPT Plus", route: "/products/chatgpt", src: "/assets/products/chatgpt.webp" },
+  { key: "product.netflix", label: "Netflix Ultra 4K", route: "/products/netflix", src: "/assets/products/netflix.webp" },
+  { key: "product.vpn", label: "Combo VPN Quốc Tế", route: "/products/vpn", src: "/assets/products/vpn.webp" },
 ];
 
 for (const p of productKeys) {
   registry.push({
     key: p.key,
-    src: null,
+    src: p.src,
     label: p.label,
     classification: "AUTHENTIC",
     routes: ["/products", p.route, "/purchased"],
@@ -198,21 +198,21 @@ for (const p of productKeys) {
   });
 }
 
-/** Cổng thanh toán — 7 mark. */
-const paymentKeys: { key: string; label: string }[] = [
-  { key: "payment.vietcombank", label: "Vietcombank" },
-  { key: "payment.techcombank", label: "Techcombank" },
-  { key: "payment.mbbank", label: "MB Bank" },
-  { key: "payment.momo", label: "MoMo" },
-  { key: "payment.zalopay", label: "ZaloPay" },
-  { key: "payment.viettelmoney", label: "Viettel Money" },
-  { key: "payment.usdt", label: "USDT (TRC20)" },
+/** Cổng thanh toán — 7 mark, CỐ Ý để trống tới khi duyệt cấu hình thanh toán thật (§D). */
+const paymentKeys: { key: string; label: string; src: string | null }[] = [
+  { key: "payment.vietcombank", label: "Vietcombank", src: null },
+  { key: "payment.techcombank", label: "Techcombank", src: null },
+  { key: "payment.mbbank", label: "MB Bank", src: null },
+  { key: "payment.momo", label: "MoMo", src: null },
+  { key: "payment.zalopay", label: "ZaloPay", src: null },
+  { key: "payment.viettelmoney", label: "Viettel Money", src: null },
+  { key: "payment.usdt", label: "USDT (TRC20)", src: null },
 ];
 
 for (const p of paymentKeys) {
   registry.push({
     key: p.key,
-    src: null,
+    src: p.src,
     label: p.label,
     classification: "AUTHENTIC",
     routes: ["/deposit", "/cashflows"],
