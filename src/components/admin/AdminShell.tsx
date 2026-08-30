@@ -24,6 +24,7 @@ import { Tooltip } from "@/components/ui/Popover";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminSession, useRequireAdmin } from "@/lib/admin/session";
 import { useAdminStore } from "@/lib/admin/store";
+import { InfoCard } from "@/components/blocks/Cards";
 
 interface AdminNavItem {
   href: string;
@@ -92,9 +93,23 @@ function AdminFrame({ pathname, children }: { pathname: string; children: React.
       <div className="lg:pl-rail xl:pl-sidebar">
         <AdminTopbar onOpenMenu={() => setDrawerOpen(true)} />
         <main id="admin-content" className="mx-auto w-full max-w-shell px-gutter-m py-5 sm:py-6 xl:px-gutter">
+          <StorageWarning />
           {children}
         </main>
       </div>
+    </div>
+  );
+}
+
+/** Trình duyệt từ chối lưu (thường do hết dung lượng) — phải báo, không im lặng. */
+function StorageWarning() {
+  const { storageError } = useAdminStore();
+  if (!storageError) return null;
+  return (
+    <div className="mb-4">
+      <InfoCard title="Không lưu được thay đổi" tone="danger">
+        {storageError}
+      </InfoCard>
     </div>
   );
 }

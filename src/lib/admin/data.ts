@@ -250,6 +250,8 @@ export interface AdminProduct {
   active: boolean;
   /** Có trang /products/<slug> trong app khách hàng hay không. */
   hasPage: boolean;
+  /** Ảnh do quản trị viên tải lên (data URL) hoặc đường dẫn trong public/. */
+  imageSrc?: string;
 }
 
 export const adminProducts: AdminProduct[] = products.map((p) => ({

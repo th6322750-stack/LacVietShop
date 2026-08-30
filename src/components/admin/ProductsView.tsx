@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { IconCoins, IconEdit, IconFileExport, IconPackage, IconPlus, IconShoppingCart, IconTrash } from "@tabler/icons-react";
+import { IconCoins, IconEdit, IconFileExport, IconPackage, IconPhoto, IconPlus, IconShoppingCart, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { Column, DataTable, FilterBar } from "@/components/blocks/DataTable";
@@ -16,6 +16,7 @@ import type { AdminProduct } from "@/lib/admin/data";
 import { useAdminStore } from "@/lib/admin/store";
 import { useAdminSession } from "@/lib/admin/session";
 import { downloadCsv } from "@/lib/admin/csv";
+import { formatBytes, readProductImage } from "@/lib/admin/image";
 import { formatMoney, formatNumber } from "@/lib/utils";
 
 export function AdminProductsView() {
@@ -28,7 +29,9 @@ export function AdminProductsView() {
   const [editing, setEditing] = React.useState<AdminProduct | null>(null);
   const [creating, setCreating] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<AdminProduct | null>(null);
-  const [draft, setDraft] = React.useState({ name: "", category: "AI", price: "0", stock: "0" });
+  const [draft, setDraft] = React.useState({ name: "", category: "AI", price: "0", stock: "0", imageSrc: "" });
+  const [imageNote, setImageNote] = React.useState<string | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
   const categories = React.useMemo(() => [...new Set(products.map((p) => p.category))].sort(), [products]);
 
   const filtered = React.useMemo(() => {
@@ -55,13 +58,21 @@ export function AdminProductsView() {
   function openEdit(product: AdminProduct) {
     setCreating(false);
     setEditing(product);
-    setDraft({ name: product.name, category: product.category, price: String(product.price), stock: String(product.stock) });
+    setDraft({
+      name: product.name,
+      category: product.category,
+      price: String(product.price),
+      stock: String(product.stock),
+      imageSrc: product.imageSrc ?? "",
+    });
+    setImageNote(null);
   }
 
   function openCreate() {
     setEditing(null);
     setCreating(true);
-    setDraft({ name: "", category: categories[0] ?? "AI", price: "0", stock: "0" });
+    setDraft({ name: "", category: categories[0] ?? "AI", price: "0", stock: "0", imageSrc: "" });
+    setImageNote(null);
   }
 
   function closeModal() {
@@ -78,20 +89,47 @@ export function AdminProductsView() {
         toast.push({ tone: "warning", title: "Chưa nhập tên sản phẩm" });
         return;
       }
-      addProduct({ name: draft.name.trim(), category: draft.category, price, stock });
+      addProduct({
+        name: draft.name.trim(),
+        category: draft.category,
+        price,
+        stock,
+        imageSrc: draft.imageSrc.trim() || undefined,
+      });
       toast.push({
         tone: "success",
         title: `Đã thêm ${draft.name.trim()}`,
-        description: "Sản phẩm mới chưa có trang chi tiết và chưa có ảnh riêng.",
+        description: draft.imageSrc.trim()
+          ? "Sản phẩm mới chưa có trang chi tiết bên khách hàng."
+          : "Sản phẩm mới chưa có trang chi tiết và chưa có ảnh.",
       });
       closeModal();
       return;
     }
 
     if (!editing) return;
-    updateProduct(editing.slug, { name: draft.name.trim() || editing.name, category: draft.category, price, stock });
+    updateProduct(editing.slug, {
+      name: draft.name.trim() || editing.name,
+      category: draft.category,
+      price,
+      stock,
+      imageSrc: draft.imageSrc.trim() || undefined,
+    });
     toast.push({ tone: "success", title: `Đã lưu ${editing.name}` });
     closeModal();
+  }
+
+  async function pickImage(file: File | undefined) {
+    if (!file) return;
+    setImageNote("Đang xử lý ảnh…");
+    const result = await readProductImage(file);
+    if (!result.ok) {
+      setImageNote(null);
+      toast.push({ tone: "error", title: "Không dùng được ảnh này", description: result.error });
+      return;
+    }
+    setDraft((d) => ({ ...d, imageSrc: result.dataUrl }));
+    setImageNote(`Đã thu nhỏ về tối đa 256px · ${formatBytes(result.bytes)}`);
   }
 
   function exportCsv() {
@@ -109,7 +147,12 @@ export function AdminProductsView() {
       header: "Sản phẩm",
       cell: (p) => (
         <div className="flex min-w-0 items-center gap-3">
-          <AssetImage assetKey={p.assetKey} label={p.name} className="h-10 w-10 shrink-0" rounded="control" />
+          {p.imageSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.imageSrc} alt={p.name} className="h-10 w-10 shrink-0 rounded-control object-cover" />
+          ) : (
+            <AssetImage assetKey={p.assetKey} label={p.name} className="h-10 w-10 shrink-0" rounded="control" />
+          )}
           <div className="min-w-0">
             <p className="flex items-center gap-2 truncate text-body-strong text-lv-text">
               {p.name}
@@ -275,6 +318,62 @@ export function AdminProductsView() {
               ))}
             </Select>
           </div>
+          <div>
+            <Label htmlFor="prd-image-file">Ảnh sản phẩm</Label>
+            <div className="flex items-start gap-3">
+              {draft.imageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={draft.imageSrc} alt="Xem trước ảnh sản phẩm" className="h-16 w-16 shrink-0 rounded-card border border-lv-border object-cover" />
+              ) : (
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-card border border-dashed border-lv-border-gold bg-lv-gold-50 text-lv-gold-700">
+                  <IconPhoto size={20} />
+                </span>
+              )}
+              <div className="min-w-0 flex-1 space-y-2">
+                <input
+                  ref={fileRef}
+                  id="prd-image-file"
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => pickImage(e.target.files?.[0])}
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="secondary" size="sm" icon={<IconUpload size={15} />} onClick={() => fileRef.current?.click()}>
+                    Chọn ảnh từ máy
+                  </Button>
+                  {draft.imageSrc ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      icon={<IconX size={15} />}
+                      onClick={() => {
+                        setDraft((d) => ({ ...d, imageSrc: "" }));
+                        setImageNote(null);
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                    >
+                      Bỏ ảnh
+                    </Button>
+                  ) : null}
+                </div>
+                <Input
+                  aria-label="Đường dẫn ảnh"
+                  placeholder="hoặc dán đường dẫn: /assets/products/ten.webp"
+                  value={draft.imageSrc.startsWith("data:") ? "" : draft.imageSrc}
+                  onChange={(e) => {
+                    setDraft((d) => ({ ...d, imageSrc: e.target.value }));
+                    setImageNote(null);
+                  }}
+                />
+                <p className="text-small text-lv-muted">
+                  {imageNote ?? "Ảnh được thu nhỏ về tối đa 256px và lưu trong trình duyệt."}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="prd-price">Giá bán (₫)</Label>
             <Input id="prd-price" type="number" step={1000} value={draft.price} onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))} />

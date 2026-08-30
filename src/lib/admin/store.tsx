@@ -47,13 +47,15 @@ function seed(): AdminDb {
 
 interface StoreContextValue extends AdminDb {
   hydrated: boolean;
+  /** Có nội dung khi trình duyệt từ chối lưu (thường do hết dung lượng). */
+  storageError: string | null;
   setOrderStatus: (id: number, status: OrderStatus) => void;
   deleteOrder: (id: number) => void;
   updateService: (id: string, patch: Partial<AdminService>) => void;
   deleteService: (id: string) => void;
   updateProduct: (slug: string, patch: Partial<AdminProduct>) => void;
   deleteProduct: (slug: string) => void;
-  addProduct: (input: { name: string; category: string; price: number; stock: number }) => void;
+  addProduct: (input: { name: string; category: string; price: number; stock: number; imageSrc?: string }) => void;
   addService: (input: {
     platformId: string;
     platformName: string;
@@ -75,6 +77,7 @@ const StoreContext = React.createContext<StoreContextValue | null>(null);
 export function AdminStoreProvider({ children }: { children: React.ReactNode }) {
   const [db, setDb] = React.useState<AdminDb>(seed);
   const [hydrated, setHydrated] = React.useState(false);
+  const [storageError, setStorageError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     try {
@@ -90,8 +93,10 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
     setDb(next);
     try {
       window.localStorage.setItem(KEY, JSON.stringify(next));
+      setStorageError(null);
     } catch {
-      /* bỏ qua */
+      // Không nuốt lỗi: người dùng phải biết thay đổi sẽ mất khi tải lại trang.
+      setStorageError("Trình duyệt không lưu được thay đổi (hết dung lượng lưu trữ). Thay đổi chỉ còn trong phiên này.");
     }
   }, []);
 
@@ -101,6 +106,7 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
     () => ({
       ...db,
       hydrated,
+      storageError,
 
       setOrderStatus(id, status) {
         const order = db.orders.find((o) => o.id === id);
@@ -168,6 +174,7 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
           sold: 0,
           active: true,
           hasPage: false,
+          imageSrc: input.imageSrc,
         };
         persist({ ...db, products: [product, ...db.products] });
       },
@@ -224,7 +231,7 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
         persist(seed());
       },
     }),
-    [db, hydrated, persist],
+    [db, hydrated, storageError, persist],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
