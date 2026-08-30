@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "imageLikeRoleTotal": 34,
+  "confirmedExistingConceptually": 19,
+  "verifyExactPathAndChecksum": 7,
+  "newProductionAssetsNeeded": 7,
+  "realDataAssetsNeeded": 1,
+  "roles": [
+    {"role":"brand_logo_horizontal","count":1,"status":"EXISTS_USER_SUPPLIED","classification":"BRAND","quality":"transparent PNG usable; vector preferred"},
+    {"role":"brand_mark_compact","count":1,"status":"NEED_ASSET","classification":"BRAND","quality":"vector preferred"},
+    {"role":"favicon_app_icon","count":1,"status":"NEED_ASSET","classification":"BRAND","quality":"vector/source from compact mark"},
+    {"role":"platform_service_marks","count":10,"status":"VERIFY_ASSET_PATH","classification":"AUTHENTIC","quality":"use native/highest-quality files from reference clone"},
+    {"role":"product_marks_covers","count":8,"status":"VERIFY_ASSET_PATH","classification":"AUTHENTIC","quality":"use native/highest-quality files from reference clone"},
+    {"role":"payment_bank_marks","count":7,"status":"VERIFY_ASSET_PATH","classification":"AUTHENTIC","quality":"exact official marks only"},
+    {"role":"home_hero_brand_visual","count":1,"status":"NEED_ASSET","classification":"DECORATIVE","quality":"4K-class preferred"},
+    {"role":"dong_son_brand_pattern","count":1,"status":"NEED_ASSET","classification":"DECORATIVE","quality":"vector preferred"},
+    {"role":"vip_banner_visual","count":1,"status":"NEED_ASSET","classification":"DECORATIVE","quality":"FHD minimum"},
+    {"role":"vpn_security_hero","count":1,"status":"NEED_ASSET","classification":"DECORATIVE","quality":"FHD minimum, 4K preferred"},
+    {"role":"payment_qr","count":1,"status":"BLOCKED_SPEC_NEED_ASSET","classification":"DATA_VISUAL","quality":"must derive from approved real receiving account"},
+    {"role":"default_avatar_placeholder","count":1,"status":"NEED_ASSET_IF_REQUIRED","classification":"PLACEHOLDER","quality":"vector preferred"}
+  ],
+  "runtimeDestinationProposal": {
+    "brand":"public/assets/brand/",
+    "decor":"public/assets/decor/",
+    "platforms":"public/assets/platforms/",
+    "products":"public/assets/products/",
+    "payments":"public/assets/payments/",
+    "placeholders":"public/assets/placeholders/"
+  },
+  "claudeMissingAssetPolicy":"Return NEED_ASSET. Never search, generate, redraw, substitute or fabricate a missing visual. ChatGPT prepares the asset after inspecting the original reference."
+}
