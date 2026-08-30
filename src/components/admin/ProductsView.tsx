@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { IconCoins, IconEdit, IconFileExport, IconPackage, IconShoppingCart, IconTrash } from "@tabler/icons-react";
+import { IconCoins, IconEdit, IconFileExport, IconPackage, IconPlus, IconShoppingCart, IconTrash } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { Column, DataTable, FilterBar } from "@/components/blocks/DataTable";
@@ -21,13 +21,15 @@ import { formatMoney, formatNumber } from "@/lib/utils";
 export function AdminProductsView() {
   const toast = useToast();
   const { can } = useAdminSession();
-  const { products, updateProduct, deleteProduct } = useAdminStore();
+  const { products, updateProduct, deleteProduct, addProduct } = useAdminStore();
 
   const [search, setSearch] = React.useState("");
   const [state, setState] = React.useState("");
   const [editing, setEditing] = React.useState<AdminProduct | null>(null);
+  const [creating, setCreating] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<AdminProduct | null>(null);
-  const [draft, setDraft] = React.useState({ price: "0", stock: "0" });
+  const [draft, setDraft] = React.useState({ name: "", category: "AI", price: "0", stock: "0" });
+  const categories = React.useMemo(() => [...new Set(products.map((p) => p.category))].sort(), [products]);
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -51,15 +53,45 @@ export function AdminProductsView() {
   );
 
   function openEdit(product: AdminProduct) {
+    setCreating(false);
     setEditing(product);
-    setDraft({ price: String(product.price), stock: String(product.stock) });
+    setDraft({ name: product.name, category: product.category, price: String(product.price), stock: String(product.stock) });
   }
 
-  function saveEdit() {
-    if (!editing) return;
-    updateProduct(editing.slug, { price: Number(draft.price) || 0, stock: Number(draft.stock) || 0 });
-    toast.push({ tone: "success", title: `Đã lưu ${editing.name}` });
+  function openCreate() {
     setEditing(null);
+    setCreating(true);
+    setDraft({ name: "", category: categories[0] ?? "AI", price: "0", stock: "0" });
+  }
+
+  function closeModal() {
+    setEditing(null);
+    setCreating(false);
+  }
+
+  function save() {
+    const price = Number(draft.price) || 0;
+    const stock = Number(draft.stock) || 0;
+
+    if (creating) {
+      if (!draft.name.trim()) {
+        toast.push({ tone: "warning", title: "Chưa nhập tên sản phẩm" });
+        return;
+      }
+      addProduct({ name: draft.name.trim(), category: draft.category, price, stock });
+      toast.push({
+        tone: "success",
+        title: `Đã thêm ${draft.name.trim()}`,
+        description: "Sản phẩm mới chưa có trang chi tiết và chưa có ảnh riêng.",
+      });
+      closeModal();
+      return;
+    }
+
+    if (!editing) return;
+    updateProduct(editing.slug, { name: draft.name.trim() || editing.name, category: draft.category, price, stock });
+    toast.push({ tone: "success", title: `Đã lưu ${editing.name}` });
+    closeModal();
   }
 
   function exportCsv() {
@@ -77,17 +109,24 @@ export function AdminProductsView() {
       header: "Sản phẩm",
       cell: (p) => (
         <div className="flex min-w-0 items-center gap-3">
-          <AssetImage assetKey={p.assetKey} className="h-10 w-10 shrink-0" rounded="control" />
+          <AssetImage assetKey={p.assetKey} label={p.name} className="h-10 w-10 shrink-0" rounded="control" />
           <div className="min-w-0">
             <p className="flex items-center gap-2 truncate text-body-strong text-lv-text">
               {p.name}
               {p.stock === 0 ? <Badge tone="danger">hết hàng</Badge> : null}
             </p>
             <p className="truncate text-small text-lv-muted">
-              {p.category} ·{" "}
-              <Link href={`/products/${p.slug}`} target="_blank" className="hover:text-lv-gold-700">
-                xem trang
-              </Link>
+              {p.category}
+              {p.hasPage ? (
+                <>
+                  {" · "}
+                  <Link href={`/products/${p.slug}`} target="_blank" className="hover:text-lv-gold-700">
+                    xem trang
+                  </Link>
+                </>
+              ) : (
+                " · chưa có trang"
+              )}
             </p>
           </div>
         </div>
@@ -164,11 +203,18 @@ export function AdminProductsView() {
         title="Danh sách sản phẩm"
         description={`${filtered.length} sản phẩm`}
         action={
-          can("export.csv") ? (
-            <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
-              Xuất CSV
-            </Button>
-          ) : null
+          <div className="flex flex-wrap items-center gap-2">
+            {can("export.csv") ? (
+              <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
+                Xuất CSV
+              </Button>
+            ) : null}
+            {can("products.edit") ? (
+              <Button size="sm" icon={<IconPlus size={16} />} onClick={openCreate}>
+                Thêm sản phẩm
+              </Button>
+            ) : null}
+          </div>
         }
         padded={false}
       >
@@ -192,22 +238,43 @@ export function AdminProductsView() {
       </SectionCard>
 
       <Modal
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        title={editing ? `Sửa ${editing.name}` : ""}
+        open={!!editing || creating}
+        onClose={closeModal}
+        title={creating ? "Thêm sản phẩm" : editing ? `Sửa ${editing.name}` : ""}
         size="sm"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setEditing(null)}>
+            <Button variant="secondary" onClick={closeModal}>
               Huỷ
             </Button>
-            <Button onClick={saveEdit} data-autofocus>
-              Lưu
+            <Button onClick={save} data-autofocus>
+              {creating ? "Thêm" : "Lưu"}
             </Button>
           </>
         }
       >
         <div className="space-y-4">
+          <div>
+            <Label htmlFor="prd-name" required>
+              Tên sản phẩm
+            </Label>
+            <Input
+              id="prd-name"
+              placeholder="Ví dụ: Spotify Premium"
+              value={draft.name}
+              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Label htmlFor="prd-category">Danh mục</Label>
+            <Select id="prd-category" value={draft.category} onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          </div>
           <div>
             <Label htmlFor="prd-price">Giá bán (₫)</Label>
             <Input id="prd-price" type="number" step={1000} value={draft.price} onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))} />

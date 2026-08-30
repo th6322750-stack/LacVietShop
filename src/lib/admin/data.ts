@@ -1,5 +1,5 @@
 import { platforms, products } from "@/lib/demo/catalog";
-import type { OrderStatus, ProductSlug } from "@/types";
+import type { OrderStatus } from "@/types";
 
 /**
  * DỮ LIỆU DEMO CHO TRANG QUẢN TRỊ.
@@ -239,7 +239,8 @@ export const adminOrders: AdminOrder[] = Array.from({ length: 260 }, (_, i) => {
 // Sản phẩm premium
 // ---------------------------------------------------------------------------
 export interface AdminProduct {
-  slug: ProductSlug;
+  /** Sản phẩm thêm tay không nằm trong catalog nên slug để kiểu tự do. */
+  slug: string;
   name: string;
   assetKey: string;
   category: string;
@@ -247,6 +248,8 @@ export interface AdminProduct {
   stock: number;
   sold: number;
   active: boolean;
+  /** Có trang /products/<slug> trong app khách hàng hay không. */
+  hasPage: boolean;
 }
 
 export const adminProducts: AdminProduct[] = products.map((p) => ({
@@ -258,6 +261,7 @@ export const adminProducts: AdminProduct[] = products.map((p) => ({
   stock: pick([0, 5, 12, 28, 45, 90]),
   sold: p.sold,
   active: true,
+  hasPage: true,
 }));
 
 // ---------------------------------------------------------------------------

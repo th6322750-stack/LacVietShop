@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconCheck, IconCoins, IconEdit, IconFileExport, IconLayoutGrid, IconTrash, IconX } from "@tabler/icons-react";
+import { IconCheck, IconCoins, IconEdit, IconFileExport, IconLayoutGrid, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/components/blocks/DataTable";
@@ -11,6 +11,7 @@ import { Input, Label, Select, Switch } from "@/components/ui/Field";
 import { ConfirmDialog, Modal } from "@/components/ui/Overlay";
 import { useToast } from "@/components/ui/Toast";
 import { memberLevels, type AdminService } from "@/lib/admin/data";
+import { platforms } from "@/lib/demo/catalog";
 import { useAdminStore } from "@/lib/admin/store";
 import { useAdminSession } from "@/lib/admin/session";
 import { downloadCsv } from "@/lib/admin/csv";
@@ -19,16 +20,20 @@ import { formatNumber, formatUnitPrice } from "@/lib/utils";
 export function AdminServicesView() {
   const toast = useToast();
   const { can } = useAdminSession();
-  const { services, updateService, deleteService } = useAdminStore();
+  const { services, updateService, deleteService, addService } = useAdminStore();
 
   const [search, setSearch] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [editing, setEditing] = React.useState<AdminService | null>(null);
+  const [creating, setCreating] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<AdminService | null>(null);
-  const [draft, setDraft] = React.useState<{ prices: string[]; min: string; max: string }>({
+  const [draft, setDraft] = React.useState({
+    platformId: platforms[0].id,
+    serviceName: "",
+    serverName: "",
     prices: ["0", "0", "0", "0"],
-    min: "0",
-    max: "0",
+    min: "100",
+    max: "100000",
   });
 
   const platformNames = React.useMemo(() => [...new Set(services.map((s) => s.platformName))].sort(), [services]);
@@ -51,23 +56,72 @@ export function AdminServicesView() {
   }, [filtered]);
 
   function openEdit(service: AdminService) {
+    setCreating(false);
     setEditing(service);
     setDraft({
+      platformId: service.platformId,
+      serviceName: service.serviceName,
+      serverName: service.serverName,
       prices: service.prices.map((p) => String(p)),
       min: String(service.min),
       max: String(service.max),
     });
   }
 
-  function saveEdit() {
+  function openCreate() {
+    setEditing(null);
+    setCreating(true);
+    setDraft({
+      platformId: platforms[0].id,
+      serviceName: "",
+      serverName: "",
+      prices: ["1", "0.97", "0.94", "0.9"],
+      min: "100",
+      max: "100000",
+    });
+  }
+
+  function closeModal() {
+    setEditing(null);
+    setCreating(false);
+  }
+
+  function save() {
+    const prices = draft.prices.map((p) => Number(p) || 0) as [number, number, number, number];
+    const min = Number(draft.min) || 1;
+    const max = Number(draft.max) || 1;
+
+    if (creating) {
+      if (!draft.serviceName.trim()) {
+        toast.push({ tone: "warning", title: "Chưa nhập tên dịch vụ" });
+        return;
+      }
+      const platform = platforms.find((p) => p.id === draft.platformId) ?? platforms[0];
+      addService({
+        platformId: platform.id,
+        platformName: platform.name,
+        platformAssetKey: platform.assetKey,
+        serviceName: draft.serviceName.trim(),
+        serverName: draft.serverName.trim() || "Máy chủ 1",
+        prices,
+        min,
+        max,
+      });
+      toast.push({ tone: "success", title: `Đã thêm dịch vụ ${draft.serviceName.trim()}` });
+      closeModal();
+      return;
+    }
+
     if (!editing) return;
     updateService(editing.id, {
-      prices: draft.prices.map((p) => Number(p) || 0) as [number, number, number, number],
-      min: Number(draft.min) || 1,
-      max: Number(draft.max) || 1,
+      serviceName: draft.serviceName.trim() || editing.serviceName,
+      serverName: draft.serverName.trim() || editing.serverName,
+      prices,
+      min,
+      max,
     });
     toast.push({ tone: "success", title: `Đã lưu dịch vụ ${editing.code}` });
-    setEditing(null);
+    closeModal();
   }
 
   function exportCsv() {
@@ -182,11 +236,18 @@ export function AdminServicesView() {
         title="Bảng giá"
         description={`${formatNumber(filtered.length)} dịch vụ`}
         action={
-          can("export.csv") ? (
-            <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
-              Xuất CSV
-            </Button>
-          ) : null
+          <div className="flex flex-wrap items-center gap-2">
+            {can("export.csv") ? (
+              <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
+                Xuất CSV
+              </Button>
+            ) : null}
+            {can("services.edit") ? (
+              <Button size="sm" icon={<IconPlus size={16} />} onClick={openCreate}>
+                Thêm dịch vụ
+              </Button>
+            ) : null}
+          </div>
         }
         padded={false}
       >
@@ -215,22 +276,59 @@ export function AdminServicesView() {
       </SectionCard>
 
       <Modal
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        title={editing ? `Sửa dịch vụ ${editing.code}` : ""}
-        description={editing ? `${editing.platformName} · ${editing.serviceName}` : undefined}
+        open={!!editing || creating}
+        onClose={closeModal}
+        title={creating ? "Thêm dịch vụ" : editing ? `Sửa dịch vụ ${editing.code}` : ""}
+        description={!creating && editing ? `${editing.platformName} · ${editing.serviceName}` : undefined}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setEditing(null)}>
+            <Button variant="secondary" onClick={closeModal}>
               Huỷ
             </Button>
-            <Button onClick={saveEdit} data-autofocus>
-              Lưu
+            <Button onClick={save} data-autofocus>
+              {creating ? "Thêm" : "Lưu"}
             </Button>
           </>
         }
       >
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label htmlFor="svc-platform" required>
+              Nền tảng
+            </Label>
+            <Select
+              id="svc-platform"
+              value={draft.platformId}
+              disabled={!creating}
+              onChange={(e) => setDraft((d) => ({ ...d, platformId: e.target.value }))}
+            >
+              {platforms.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="svc-name" required>
+              Tên dịch vụ
+            </Label>
+            <Input
+              id="svc-name"
+              placeholder="Ví dụ: Tăng lượt xem video"
+              value={draft.serviceName}
+              onChange={(e) => setDraft((d) => ({ ...d, serviceName: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Label htmlFor="svc-server">Tên máy chủ</Label>
+            <Input
+              id="svc-server"
+              placeholder="Máy chủ 1 — Nguồn Việt"
+              value={draft.serverName}
+              onChange={(e) => setDraft((d) => ({ ...d, serverName: e.target.value }))}
+            />
+          </div>
           {memberLevels.map((level, index) => (
             <div key={level}>
               <Label htmlFor={`price-${index}`}>{level}</Label>

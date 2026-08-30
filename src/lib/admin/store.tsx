@@ -14,6 +14,7 @@ import {
   type AdminUser,
   type MemberLevel,
 } from "./data";
+import { slugify } from "@/lib/utils";
 import type { OrderStatus } from "@/types";
 
 /**
@@ -52,6 +53,17 @@ interface StoreContextValue extends AdminDb {
   deleteService: (id: string) => void;
   updateProduct: (slug: string, patch: Partial<AdminProduct>) => void;
   deleteProduct: (slug: string) => void;
+  addProduct: (input: { name: string; category: string; price: number; stock: number }) => void;
+  addService: (input: {
+    platformId: string;
+    platformName: string;
+    platformAssetKey: string;
+    serviceName: string;
+    serverName: string;
+    prices: [number, number, number, number];
+    min: number;
+    max: number;
+  }) => void;
   adjustBalance: (userId: number, amount: number, note: string) => void;
   setUserLevel: (userId: number, level: MemberLevel) => void;
   toggleUserLock: (userId: number) => void;
@@ -138,6 +150,45 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
 
       deleteProduct(slug) {
         persist({ ...db, products: db.products.filter((p) => p.slug !== slug) });
+      },
+
+      addProduct(input) {
+        const base = slugify(input.name) || "san-pham";
+        let slug = base;
+        let n = 2;
+        while (db.products.some((p) => p.slug === slug)) slug = `${base}-${n++}`;
+        const product: AdminProduct = {
+          slug,
+          name: input.name,
+          // Chưa có ảnh riêng -> AssetImage sẽ hiện ô trung tính theo tên sản phẩm.
+          assetKey: `product.${slug}`,
+          category: input.category,
+          price: input.price,
+          stock: input.stock,
+          sold: 0,
+          active: true,
+          hasPage: false,
+        };
+        persist({ ...db, products: [product, ...db.products] });
+      },
+
+      addService(input) {
+        const codes = db.services.map((s) => Number(s.code)).filter((n) => Number.isFinite(n));
+        const code = String((codes.length ? Math.max(...codes) : 60_000) + 1);
+        const service: AdminService = {
+          id: `svc-${code}`,
+          platformId: input.platformId,
+          platformName: input.platformName,
+          platformAssetKey: input.platformAssetKey,
+          serviceName: input.serviceName,
+          serverName: input.serverName,
+          code,
+          prices: input.prices,
+          min: input.min,
+          max: input.max,
+          active: true,
+        };
+        persist({ ...db, services: [service, ...db.services] });
       },
 
       adjustBalance(userId, amount, note) {
