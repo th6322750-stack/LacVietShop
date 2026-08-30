@@ -38,8 +38,8 @@ const commitments = [
     icon: IconBolt,
   },
   {
-    title: "Giá theo cấp bậc",
-    detail: "Cộng tác viên, đại lý và nhà phân phối có bảng giá riêng, càng hợp tác lâu càng tối ưu.",
+    title: "Giá minh bạch",
+    detail: "Đơn giá và giới hạn hiển thị rõ trước khi đặt, không phát sinh phí ẩn.",
     icon: IconCoins,
   },
 ];
@@ -65,7 +65,7 @@ export default function HomePage() {
             <h1 className="mt-3 text-h1-m text-lv-text xl:text-h1">{demoBrand.tagline}</h1>
             <p className="mt-3 max-w-xl text-body text-lv-muted">
               Nền tảng tăng trưởng số cho thương hiệu Việt: dịch vụ tăng tương tác đa nền tảng, kho tài
-              khoản premium chính hãng và hệ thống đại lý minh bạch trong cùng một bảng điều khiển.
+              khoản premium chính hãng và theo dõi tiến độ đơn trong cùng một bảng điều khiển.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <LinkButton href="/services" size="lg" icon={<IconArrowRight size={18} />}>
@@ -162,8 +162,8 @@ export default function HomePage() {
         >
           <p className="text-body text-lv-navy-700">
             Lạc Việt Media Agency cung cấp giải pháp tăng trưởng cho doanh nghiệp và nhà sáng tạo nội dung:
-            từ tăng tương tác mạng xã hội, quản lý đơn hàng theo thời gian thực, tới hệ thống đại lý và
-            panel con cho đối tác phân phối.
+            từ tăng tương tác mạng xã hội, kho tài khoản premium chính hãng, tới theo dõi đơn hàng và
+            dòng tiền theo thời gian thực.
           </p>
           <ul className="mt-4 space-y-3">
             {commitments.map((c) => (

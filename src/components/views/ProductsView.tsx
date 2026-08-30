@@ -51,18 +51,17 @@ export function ProductsView() {
         breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm Premium" }]}
       />
 
-      {/* Banner hạng VIP */}
+      {/* Banner ưu đãi */}
       <section className="relative overflow-hidden rounded-panel border border-lv-border-gold bg-lv-surface-soft">
         <div className="grid gap-4 p-5 sm:p-6 lg:grid-cols-12 lg:items-center">
           <div className="min-w-0 lg:col-span-8">
             <Badge tone="gold" icon={<IconCrown size={14} />}>
-              Ưu đãi hạng {" "}
-              <span className="font-bold">Đại lý</span>
+              Tài khoản chính hãng
             </Badge>
-            <h2 className="mt-2 text-h2 text-lv-text">Giá tốt hơn khi bạn lên hạng</h2>
+            <h2 className="mt-2 text-h2 text-lv-text">Kích hoạt nhanh, bảo hành trọn thời hạn</h2>
             <p className="mt-1.5 max-w-2xl text-body text-lv-muted">
-              Mỗi cấp bậc có bảng giá riêng cho toàn bộ tài khoản premium. Nạp thêm để lên hạng và giữ mức
-              giá tốt cho các đơn tiếp theo.
+              Toàn bộ tài khoản premium đều có bảo hành theo đúng thời hạn gói. Gặp lỗi trong thời gian
+              bảo hành được đổi mới miễn phí.
             </p>
           </div>
           <div className="min-w-0 lg:col-span-4">
@@ -165,8 +164,8 @@ export function ProductsView() {
       </section>
 
       <p className="text-small text-lv-muted">
-        Giá hiển thị là giá trình diễn theo cấp bậc hiện tại. Giá bán thật sẽ được cập nhật khi có bảng giá
-        chính thức. Sản phẩm rẻ nhất hiện tại: {formatMoney(Math.min(...products.map((p) => p.fromPrice)))}.
+        Giá hiển thị là dữ liệu DEMO, sẽ được cập nhật khi có bảng giá chính thức. Sản phẩm rẻ nhất hiện
+        tại: {formatMoney(Math.min(...products.map((p) => p.fromPrice)))}.
       </p>
     </div>
   );

@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  IconCrown,
   IconDeviceFloppy,
   IconKey,
   IconLock,
@@ -15,9 +14,7 @@ import {
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, InfoCard } from "@/components/blocks/Cards";
 import { AssetImage } from "@/components/blocks/AssetImage";
-import { ProgressBar } from "@/components/blocks/Commerce";
 import { CopyButton } from "@/components/blocks/Media";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label, Select, Switch } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
@@ -67,8 +64,6 @@ export function AccountView() {
     mode: "onBlur",
   });
 
-  const tierProgress = { current: account.totalSpent, target: 50_000_000 };
-
   return (
     <div className="space-y-5">
       <PageHeader
@@ -85,9 +80,6 @@ export function AccountView() {
               <AssetImage assetKey="account.defaultAvatar" className="h-20 w-20" rounded="full" label={account.displayName} />
               <p className="mt-3 text-h3 text-lv-text">{account.displayName}</p>
               <p className="text-small text-lv-muted">@{account.username}</p>
-              <Badge tone="gold" className="mt-2" icon={<IconCrown size={14} />}>
-                {account.tierLabel}
-              </Badge>
 
               <div className="mt-4 w-full rounded-card border border-lv-border-gold bg-lv-gold-50 p-3 text-left">
                 <p className="text-small text-lv-gold-700">Số dư khả dụng</p>
@@ -101,24 +93,6 @@ export function AccountView() {
                 <Row label="Tổng đã chi" value={formatMoney(account.totalSpent)} />
               </dl>
             </div>
-          </SectionCard>
-
-          <SectionCard title="Hạng thành viên" description={`Đang ở hạng ${account.tierLabel}.`}>
-            <ProgressBar
-              label="Tiến độ lên Nhà phân phối"
-              value={tierProgress.current}
-              max={tierProgress.target}
-              showValue={false}
-            />
-            <p className="mt-2 text-small text-lv-muted">
-              Còn {formatMoney(Math.max(0, tierProgress.target - tierProgress.current))} doanh số để lên hạng
-              tiếp theo.
-            </p>
-            <ul className="mt-3 space-y-1.5 text-small text-lv-navy-700">
-              <li>· Chiết khấu dịch vụ theo bảng giá đại lý</li>
-              <li>· Ưu tiên xử lý đơn trong giờ cao điểm</li>
-              <li>· Mở khoá tính năng panel con</li>
-            </ul>
           </SectionCard>
 
           <SectionCard title="Hoạt động gần đây" padded={false}>

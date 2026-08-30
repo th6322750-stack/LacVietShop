@@ -149,9 +149,8 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
     <div className="space-y-5">
       <PageHeader
         title="Đặt dịch vụ"
-        description="Chọn nền tảng, dịch vụ và máy chủ phù hợp rồi tạo đơn. Giá hiển thị theo cấp bậc của bạn."
+        description="Chọn nền tảng, dịch vụ và máy chủ phù hợp rồi tạo đơn."
         breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Dịch vụ / Tạo đơn" }]}
-        action={<Badge tone="gold">Cấp bậc: {account.tierLabel}</Badge>}
       />
 
       <Tabs

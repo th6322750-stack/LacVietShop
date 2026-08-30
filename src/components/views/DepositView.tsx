@@ -108,7 +108,7 @@ export function DepositView() {
         <StatCard label="Số dư hiện tại" value={formatMoney(account.balance)} tone="gold" icon={<IconWallet size={20} />} />
         <StatCard label="Tổng đã nạp" value={formatMoney(account.totalDeposited)} tone="navy" icon={<IconArrowDownRight size={20} />} />
         <StatCard label="Tổng đã chi" value={formatMoney(account.totalSpent)} tone="info" icon={<IconReceipt size={20} />} />
-        <StatCard label="Cấp bậc" value={account.tierLabel} tone="success" icon={<IconCheck size={20} />} hint="Giá dịch vụ theo cấp bậc" />
+        <StatCard label="Số dư sau chi tiêu" value={formatMoney(account.totalDeposited - account.totalSpent)} tone="success" icon={<IconCheck size={20} />} hint="Tổng nạp trừ tổng chi" />
       </div>
 
       <DemoNotice title={demoPaymentNotice.headline}>{demoPaymentNotice.detail}</DemoNotice>

@@ -2,12 +2,10 @@ import type {
   AccountProfile,
   ActivityItem,
   ApiEndpoint,
-  ChildPanel,
   Notice,
   Order,
   PaymentMethod,
   PurchasedItem,
-  ReferredUser,
   Transaction,
 } from "@/types";
 
@@ -282,7 +280,7 @@ export const notices: Notice[] = [
   {
     id: "N-2",
     title: "Ưu đãi nạp tiền tháng 9",
-    body: "Nạp từ 5.000.000 ₫ nhận thêm 3% số dư khuyến mãi, áp dụng cho đại lý và nhà phân phối.",
+    body: "Nạp từ 5.000.000 ₫ nhận thêm 3% số dư khuyến mãi, áp dụng cho mọi khách hàng.",
     publishedAt: "2026-08-29T09:00:00.000Z",
     tone: "info",
   },
@@ -352,52 +350,11 @@ export const purchasedItems: PurchasedItem[] = [
   },
 ];
 
-export const affiliateStats = {
-  totalCommission: 2_410_000,
-  pendingCommission: 380_000,
-  referrals: 128,
-  conversionRate: 12.4,
-  tier: "Đại lý bạc",
-  nextTier: "Đại lý vàng",
-  nextTierAt: 5_000_000,
-  referralPath: "/r/demo-lv-128",
-};
 
-export const commissionTiers = [
-  { name: "Cộng tác viên", requirement: "Từ 0 ₫ doanh số", rate: "5%", current: false },
-  { name: "Đại lý bạc", requirement: "Từ 20.000.000 ₫", rate: "8%", current: true },
-  { name: "Đại lý vàng", requirement: "Từ 50.000.000 ₫", rate: "11%", current: false },
-  { name: "Nhà phân phối", requirement: "Từ 150.000.000 ₫", rate: "15%", current: false },
-];
 
-export const commissionSeries = Array.from({ length: 12 }, (_, i) => ({
-  month: `T${i + 1}`,
-  commission: 90_000 + Math.round(Math.abs(Math.sin(i / 1.7)) * 320_000),
-}));
 
-export const referredUsers: ReferredUser[] = [
-  { id: "RU-1", name: "Trần Minh Khoa", joinedAt: "2026-08-28T00:00:00.000Z", level: "collaborator", totalSpent: 3_200_000, commission: 256_000, status: "active" },
-  { id: "RU-2", name: "Lê Thu Hà", joinedAt: "2026-08-22T00:00:00.000Z", level: "member", totalSpent: 850_000, commission: 42_500, status: "active" },
-  { id: "RU-3", name: "Phạm Quốc Duy", joinedAt: "2026-08-14T00:00:00.000Z", level: "agency", totalSpent: 12_400_000, commission: 992_000, status: "active" },
-  { id: "RU-4", name: "Vũ Ngọc Lan", joinedAt: "2026-07-30T00:00:00.000Z", level: "member", totalSpent: 240_000, commission: 12_000, status: "inactive" },
-  { id: "RU-5", name: "Đặng Hoàng Nam", joinedAt: "2026-07-11T00:00:00.000Z", level: "collaborator", totalSpent: 5_600_000, commission: 448_000, status: "active" },
-];
 
-export const childPanels: ChildPanel[] = [
-  { id: "CP-1", subdomain: "khoa-media", ownerName: "Trần Minh Khoa", plan: "Gói chuyên nghiệp", status: "active", members: 42, revenue: 18_600_000, createdAt: "2026-05-12T00:00:00.000Z" },
-  { id: "CP-2", subdomain: "hagiang-shop", ownerName: "Lê Thu Hà", plan: "Gói cơ bản", status: "active", members: 11, revenue: 4_250_000, createdAt: "2026-06-28T00:00:00.000Z" },
-  { id: "CP-3", subdomain: "duy-agency", ownerName: "Phạm Quốc Duy", plan: "Gói doanh nghiệp", status: "pending", members: 0, revenue: 0, createdAt: "2026-08-26T00:00:00.000Z" },
-  { id: "CP-4", subdomain: "lan-social", ownerName: "Vũ Ngọc Lan", plan: "Gói cơ bản", status: "suspended", members: 6, revenue: 980_000, createdAt: "2026-03-04T00:00:00.000Z" },
-];
 
-export const resellerPrices = [
-  { service: "Facebook · Tăng like", retail: 2.3, reseller: 1.95, margin: "15%" },
-  { service: "TikTok · Lượt xem", retail: 0.37, reseller: 0.31, margin: "16%" },
-  { service: "Instagram · Follow", retail: 16.9, reseller: 14.2, margin: "16%" },
-  { service: "YouTube · Lượt xem", retail: 21, reseller: 17.5, margin: "17%" },
-  { service: "Zalo · Thành viên nhóm", retail: 96, reseller: 82, margin: "15%" },
-  { service: "Google Map · Đánh giá", retail: 7_500, reseller: 6_400, margin: "15%" },
-];
 
 export const apiEndpoints: ApiEndpoint[] = [
   {
