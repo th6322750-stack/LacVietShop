@@ -1,0 +1,86 @@
+{
+  "project": "LacVietShop",
+  "taskMode": "NEW_REDESIGN",
+  "productionRepo": "th6322750-stack/LacVietShop",
+  "referenceRepo": "th6322750-stack/clone-thatim-vn",
+  "referencePolicy": "REFERENCE_ONLY",
+  "designProtocol": "webbyLucifer v3.3",
+  "brand": "Lac Viet Media Agency",
+  "approvalState": "VISUAL_DIRECTION_APPROVED",
+  "implementationReadyUI": false,
+  "architectureDecision": {
+    "mode": "NEW_WEB_APP_REBUILD",
+    "cloneIsProductionSource": false,
+    "frameworkRuntime": "BLOCKED_SPEC"
+  },
+  "authorities": {
+    "user": "FINAL_ACCEPTANCE",
+    "chatgpt": ["DESIGN", "UI", "ASSET", "STATE", "MOTION_FEEL"],
+    "claude": ["IMPLEMENTATION", "TECHNICAL_MECHANISM"]
+  },
+  "mandatoryAssetRule": {
+    "onMissing": "NEED_ASSET",
+    "claudeMaySearch": false,
+    "claudeMayGenerate": false,
+    "claudeMayRedraw": false,
+    "claudeMaySubstitute": false,
+    "chatgptAction": "Inspect original reference, create/prepare/render missing asset, productionize, update manifest"
+  },
+  "security": {
+    "copyCapturedThatimSecrets": false,
+    "copyCapturedThatimUserState": false,
+    "publicClientSecretsAllowed": false,
+    "apiTokensMaskedByDefault": true
+  },
+  "codingPriority": [
+    "P0_FOUNDATION",
+    "P1_COMMERCIAL_JOURNEY",
+    "P2_ORDER_MONEY",
+    "P3_ACCOUNT_GROWTH_API",
+    "P4_RESPONSIVE_STATE_A11Y_QA"
+  ],
+  "screens": [
+    "home",
+    "services",
+    "products",
+    "progress",
+    "account",
+    "history",
+    "cashflows",
+    "deposit",
+    "affiliate",
+    "child_panel",
+    "api_docs",
+    "product_purchased",
+    "product_youtube",
+    "product_capcut",
+    "product_canva",
+    "product_veo3",
+    "product_gemini",
+    "product_chatgpt",
+    "product_netflix",
+    "product_vpn"
+  ],
+  "productArchitecture": {
+    "sharedTemplate": true,
+    "component": "ProductDetail",
+    "variants": ["youtube", "capcut", "canva", "veo3", "gemini", "chatgpt", "netflix", "vpn"]
+  },
+  "blockedSpec": [
+    "framework/runtime stack",
+    "business/contact config",
+    "payment config",
+    "commercial service/product data",
+    "backend/auth/API contracts"
+  ],
+  "needAsset": [
+    "compact Lạc Việt mark",
+    "favicon/app icon",
+    "home hero Lạc Việt brand visual",
+    "Dong Son watermark/pattern",
+    "VIP banner visual",
+    "VPN security hero visual",
+    "default avatar/placeholder if needed",
+    "real payment QR after payment config"
+  ]
+}
