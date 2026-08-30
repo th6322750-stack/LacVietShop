@@ -3,22 +3,37 @@
 Lạc Việt Media Agency customer web app rebuild.
 
 ## Project authority
-
-- **Production target:** this repository (`th6322750-stack/LacVietShop`).
-- **Reference only:** `th6322750-stack/clone-thatim-vn` — use its 20 full-page screenshots / static HTML only to understand feature scope, information architecture and interaction flow. **Do not copy captured credentials, session state, user data or Thatim branding.**
+- **Production target:** `th6322750-stack/LacVietShop`.
+- **Reference only:** `th6322750-stack/clone-thatim-vn` — use its 20 full-page screenshots/static HTML only to understand feature scope, information architecture and interaction flow. Do not copy Thatim branding, captured credentials, session state or user data.
 - **Design process:** `th6322750-stack/webbyLucifer` v3.3.
 - **User:** final acceptance authority.
 - **ChatGPT:** design/UI/asset/state/motion-feel authority.
 - **Claude:** implementation/technical-mechanism authority.
 
-## Current state
+## Current execution state
+`BUILD_APPROVED_WITH_PLACEHOLDERS`
 
-`VISUAL_DIRECTION_APPROVED`
+The whole 20-screen app may be built now. Missing visual assets do **not** block implementation.
 
-`IMPLEMENTATION_READY_UI = false` until the asset/spec blockers in `PROJECT_HANDOFF.md` and `.webby/` are resolved.
+## Build-first workflow
+1. Build all 20 screens/routes and shared components.
+2. If an exact visual asset is missing, use a neutral layout-preserving `TODO_ASSET:<key>` placeholder.
+3. Do not search/generate/redraw/substitute missing brand visuals.
+4. Log every gap in `.webby/MISSING_ASSET_REPORT.md`.
+5. Finish the entire app first.
+6. ChatGPT reviews the original clone UI/screenshots and renders/prepares the missing production assets.
+7. Claude patches the exact asset slots without redesigning the surrounding UI.
 
-## Critical asset rule for Claude
+Missing real production config is handled similarly: use isolated typed DEMO data for the visual build, never execute real financial/account side effects with invented values, and log live-integration gaps in `.webby/FINAL_GAPS_REPORT.md`.
 
-When a required image/brand/decorative asset is absent or unmapped, **STOP that visual subtask and return `NEED_ASSET`** with route, section, role, desired ratio/size and intended usage. **Do not search, generate, fabricate, redraw, replace, approximate or substitute any missing visual asset.** ChatGPT will inspect the original reference and prepare/render the required production asset, then update the manifest.
+## Locked stack
+Next.js App Router + TypeScript + Tailwind CSS + pnpm. Generic UI icons use `@tabler/icons-react`.
 
-Start with `CLAUDE.md`, then `PROJECT_HANDOFF.md` and `.webby/HANDOFF.json`.
+## Start here
+Claude reads in this order:
+1. `CLAUDE.md`
+2. `PROJECT_HANDOFF.md`
+3. `.webby/CLAUDE_TASK.md`
+4. `.webby/HANDOFF.json`
+5. `.webby/PROJECT_ENV.json`
+6. `.webby/asset-manifest.json`
