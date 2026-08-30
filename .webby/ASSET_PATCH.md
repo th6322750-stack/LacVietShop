@@ -62,17 +62,17 @@ Do not present unsupported payment methods as production truth. Keep these TODO 
 
 The UI may retain DEMO labels/placeholders. Do not create a fake real QR.
 
-## E. Reference-file repair
+## E. Reference-file repair — RESOLVED
 
-Three approved visual-reference WebP files are corrupt and must be replaced before final visual parity review:
-- `references/ui-approved/12-product-purchased.webp`
-- `references/ui-approved/15-product-canva.webp`
-- `references/ui-approved/17-product-gemini.webp`
+The three previously corrupt visual-reference WebP files now have valid repaired SVG replacements:
+- `/purchased` → `references/ui-approved/12-product-purchased-fixed.svg`
+- `/products/canva` → `references/ui-approved/15-product-canva-fixed.svg`
+- `/products/gemini` → `references/ui-approved/17-product-gemini-fixed.svg`
 
-Until replacements land, do not treat those three current files as visual authority. Their current implementations may remain based on `PROJECT_HANDOFF.md` + the shared approved design system.
+Use the repaired SVGs above together with `references/REFERENCE_MAP.md`. Ignore the old corrupt WebP files for those three routes. Reference integrity is no longer a blocker for final visual comparison.
 
 ## Expected result after this patch
 
-If the exact 18 clone marks are accessible, remaining `TODO_ASSET` count should drop from 34 to **8**: seven payment marks + `deposit.realQr`.
+After applying 8 Lạc Việt/design-owned assets plus the exact 18 clone platform/product marks, remaining `TODO_ASSET` count should drop from 34 to **8**: seven payment marks + `deposit.realQr`.
 
-The 8 remaining items are tied to unapproved production payment configuration, not missing design work.
+The 8 remaining items are intentionally tied to unapproved production payment configuration, not missing design work.
