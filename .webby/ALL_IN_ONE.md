@@ -12,7 +12,7 @@ Read before implementation:
 1. `/CLAUDE.md`
 2. `/PROJECT_HANDOFF.md`
 3. `/references/REFERENCE_MAP.md`
-4. `/references/ui-approved/01-home.webp` through `/references/ui-approved/20-product-vpn.webp`
+4. The exact per-route approved target listed in `/references/REFERENCE_MAP.md` (17 lightweight WebP targets + 3 repaired SVG targets)
 5. `/references/brand/lac-viet-logo-horizontal.webp`
 6. `/.webby/HANDOFF.json`
 7. `/.webby/ASSET_COUNT_PLAN.json`
@@ -22,10 +22,10 @@ Read before implementation:
 11. `/.webby/FINAL_GAPS_REPORT.md`
 12. `/.webby/ASSET_PATCH.md` when it exists
 
-Before implementing each route, inspect its matching approved target image from `references/REFERENCE_MAP.md`.
+Before implementing or visually checking each route, inspect its matching approved target from `references/REFERENCE_MAP.md`.
 
 ## Visual authority
-- Approved Lạc Việt images in `references/ui-approved/` = target hierarchy, composition, route identity, brand direction and relative emphasis.
+- Approved Lạc Việt files in `references/ui-approved/` = target hierarchy, composition, route identity, brand direction and relative emphasis.
 - `PROJECT_HANDOFF.md` + `.webby/*` = geometry, tokens, responsive rules, states and behavior.
 - Never measure screenshot pixels to invent CSS values.
 - `clone-thatim-vn` = reference only for original page scope/flow; never copy Thatim branding, captured credentials, user/session data or secret values.
@@ -115,13 +115,13 @@ If the 20-route first pass is already complete and `.webby/ASSET_PATCH.md` exist
 
 `ASSET_PATCH.md` is data for this same all-in-one execution, not Task 002.
 
-## Reference integrity
-Three current reference files are known corrupt until replaced:
-- `references/ui-approved/12-product-purchased.webp`
-- `references/ui-approved/15-product-canva.webp`
-- `references/ui-approved/17-product-gemini.webp`
+## Reference integrity — repaired
+The three previously corrupt lightweight WebP references have valid repaired visual-authority replacements:
+- `/purchased` → `references/ui-approved/12-product-purchased-fixed.svg`
+- `/products/canva` → `references/ui-approved/15-product-canva-fixed.svg`
+- `/products/gemini` → `references/ui-approved/17-product-gemini-fixed.svg`
 
-Do not use those corrupt files as pixel/visual authority. Preserve the current route implementations based on `PROJECT_HANDOFF.md` and the shared approved design system until valid replacements are committed.
+Use the repaired SVG files above and the mapping in `references/REFERENCE_MAP.md`. Ignore the old corrupt `12-product-purchased.webp`, `15-product-canva.webp`, and `17-product-gemini.webp` files. These reference blockers are RESOLVED.
 
 ## Completion criteria before final user review
 The continuous execution is ready for final visual review only when:
