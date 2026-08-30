@@ -149,12 +149,10 @@ ${list.map(entry).join("\n\n")}
   \`payment.gateway\` / \`payment.receivingAccount\` (\`.webby/ASSET_PATCH.md §D\`).
   Không dựng QR giả.
 - \`brand.favicon\` đã dùng lại \`/assets/brand/lac-viet-mark.svg\`; \`/favicon.ico\` không còn 404.
-- Sửa reference: ba file SVG mới đã thay ba WebP hỏng và đọc được bình thường.
-  **Còn một lỗi cần ChatGPT xử lý:** \`references/ui-approved/15-product-canva-fixed.svg\`
-  chứa 3 dấu \`&\` chưa escape trong nội dung text (\`template & thương hiệu\`,
-  \`kiểm soát & phân quyền\`, \`Xóa nền & Magic Edit\`) nên không phải XML hợp lệ và trình duyệt
-  từ chối render. Claude không sửa file authority của ChatGPT; đã đọc nội dung qua bản vá tạm
-  ngoài repo để đối chiếu route \`/products/canva\`. Chỉ cần đổi 3 dấu đó thành \`&amp;\`.
+- Sửa reference: ba file SVG mới đã thay ba WebP hỏng. Lỗi XML ở
+  \`15-product-canva-fixed.svg\` (3 dấu \`&\` chưa escape) đã được ChatGPT xử lý ở commit
+  \`66dfa3d\`; Claude kiểm lại: cả ba file parse hợp lệ, 0 dấu \`&\` chưa escape.
+  Không còn vướng mắc nào về tính toàn vẹn của tài liệu tham chiếu.
 `;
 
 fs.writeFileSync(path.join(root, ".webby/MISSING_ASSET_REPORT.md"), md, "utf8");
