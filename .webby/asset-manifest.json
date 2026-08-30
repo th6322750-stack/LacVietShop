@@ -1,10 +1,17 @@
 {
-  "version": 1,
-  "status": "INCOMPLETE_BLOCKS_IMPLEMENTATION_READY_UI",
+  "version": 2,
+  "status": "FIRST_PASS_BUILD_ALLOWED_WITH_TODO_ASSETS",
   "assetStore": {
-    "transportMode": "GIT_PROPOSED_FOR_WEB_DELIVERY",
+    "transportMode": "GIT_FOR_WEB_DELIVERY",
     "runtimeSource": "PROJECT_PATHS",
     "driveUsed": false
+  },
+  "placeholderPolicy": {
+    "allowedDuringFirstPass": true,
+    "marker": "TODO_ASSET:<stable-key>",
+    "reportPath": ".webby/MISSING_ASSET_REPORT.md",
+    "mustPreserveLayout": true,
+    "mustNotImpersonateFinalAsset": true
   },
   "assets": [
     {
@@ -15,7 +22,8 @@
       "sourceStatus": "USER_SUPPLIED_IN_CHAT_NOT_YET_COMMITTED",
       "destinationPath": "public/assets/brand/lac-viet-logo-horizontal.png",
       "allowedUsage": ["sidebar-desktop", "footer", "brand-header"],
-      "status": "NEED_DELIVERY_TO_REPO"
+      "status": "TODO_ASSET_DELIVERY",
+      "placeholderKey": "brand.logoHorizontal"
     },
     {
       "id": "brand:mark-compact",
@@ -24,7 +32,8 @@
       "classification": "BRAND",
       "destinationPath": "public/assets/brand/lac-viet-mark.svg",
       "allowedUsage": ["collapsed-sidebar", "mobile", "avatar-brand"],
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "brand.markCompact"
     },
     {
       "id": "brand:favicon",
@@ -33,7 +42,8 @@
       "classification": "BRAND",
       "destinationPath": "public/assets/brand/favicon.svg",
       "allowedUsage": ["favicon", "pwa-icon"],
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "brand.favicon"
     },
     {
       "id": "decor:home-hero",
@@ -42,7 +52,8 @@
       "classification": "DECORATIVE",
       "destinationPath": "public/assets/decor/home-hero.webp",
       "usage": {"desktop":{"ratio":"~2.8:1","objectPosition":"right center"},"mobile":{"ratio":"16:9","objectPosition":"center"}},
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "home.hero.brandVisual"
     },
     {
       "id": "decor:dong-son-pattern",
@@ -50,7 +61,8 @@
       "role": "BACKGROUND",
       "classification": "DECORATIVE",
       "destinationPath": "public/assets/decor/dong-son-pattern.svg",
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "decor.dongSonPattern"
     },
     {
       "id": "decor:vip-banner",
@@ -58,7 +70,8 @@
       "role": "BACKGROUND",
       "classification": "DECORATIVE",
       "destinationPath": "public/assets/decor/vip-banner.webp",
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "products.vipBanner"
     },
     {
       "id": "decor:vpn-hero",
@@ -66,7 +79,8 @@
       "role": "HERO",
       "classification": "DECORATIVE",
       "destinationPath": "public/assets/decor/vpn-hero.webp",
-      "status": "NEED_ASSET"
+      "status": "TODO_ASSET",
+      "placeholderKey": "product.vpn.hero"
     },
     {
       "id": "data:payment-qr",
@@ -74,25 +88,26 @@
       "role": "DATA_VISUAL",
       "classification": "DATA_VISUAL",
       "destinationPath": "GENERATED_FROM_PAYMENT_CONFIG",
-      "status": "BLOCKED_SPEC_NEED_ASSET"
+      "status": "WAIT_REAL_PAYMENT_CONFIG",
+      "placeholderKey": "deposit.realQr"
     }
   ],
   "pendingReferenceMappings": {
     "platformMarks": {
       "count": 10,
       "source": "th6322750-stack/clone-thatim-vn uploads/images",
-      "status": "VERIFY_EXACT_PATH_CHECKSUM_AND_USAGE"
+      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
     },
     "productMarksAndCovers": {
       "count": 8,
       "source": "th6322750-stack/clone-thatim-vn uploads/images/original",
-      "status": "VERIFY_EXACT_PATH_CHECKSUM_AND_USAGE"
+      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
     },
     "paymentBankMarks": {
       "count": 7,
       "source": "reference clone",
-      "status": "VERIFY_EXACT_PATH_CHECKSUM_AND_USAGE"
+      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
     }
   },
-  "hardRule": "If an implementation-visible asset is not mapped here as READY, Claude returns NEED_ASSET and does not search/generate/redraw/substitute it. ChatGPT owns preparation/rendering and manifest update."
+  "hardRule":"Missing assets do not stop the first-pass build. Claude uses neutral TODO_ASSET placeholders, logs every gap, completes all 20 screens, then ChatGPT prepares missing production assets and Claude patches exact mapped slots. Claude never web-searches, generates, redraws or substitutes missing brand visuals."
 }
