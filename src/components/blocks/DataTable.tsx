@@ -19,7 +19,7 @@ export interface Column<T> {
  * Bảng dữ liệu dùng chung: có trạng thái loading/empty/error, cuộn ngang trong
  * thẻ ở màn hẹp (<768) và hàng chọn được (PROJECT_HANDOFF §9).
  */
-export function DataTable<T extends { id: string }>({
+export function DataTable<T>({
   columns,
   rows,
   state = "ready",
@@ -42,8 +42,10 @@ export function DataTable<T extends { id: string }>({
   selectedId?: string | null;
   onSelect?: (row: T) => void;
   caption: string;
+  /** Định danh hàng. Bỏ trống thì dùng thuộc tính `id` của hàng. */
   rowKey?: (row: T) => string;
 }) {
+  const keyOf = (row: T) => (rowKey ? rowKey(row) : String((row as { id?: unknown }).id));
   if (state === "error") {
     return <ErrorState onRetry={onRetry} />;
   }
@@ -79,10 +81,11 @@ export function DataTable<T extends { id: string }>({
             <SkeletonRows rows={6} cols={columns.length} />
           ) : (
             rows.map((row) => {
-              const selected = selectedId === row.id;
+              const key = keyOf(row);
+              const selected = selectedId === key;
               return (
                 <tr
-                  key={rowKey ? rowKey(row) : row.id}
+                  key={key}
                   onClick={onSelect ? () => onSelect(row) : undefined}
                   tabIndex={onSelect ? 0 : undefined}
                   onKeyDown={

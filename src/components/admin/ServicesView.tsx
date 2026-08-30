@@ -1,0 +1,275 @@
+"use client";
+
+import * as React from "react";
+import { IconCheck, IconCoins, IconEdit, IconFileExport, IconLayoutGrid, IconTrash, IconX } from "@tabler/icons-react";
+import { PageHeader } from "@/components/blocks/PageHeader";
+import { SectionCard, StatCard } from "@/components/blocks/Cards";
+import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/components/blocks/DataTable";
+import { AssetImage } from "@/components/blocks/AssetImage";
+import { Button } from "@/components/ui/Button";
+import { Input, Label, Select, Switch } from "@/components/ui/Field";
+import { ConfirmDialog, Modal } from "@/components/ui/Overlay";
+import { useToast } from "@/components/ui/Toast";
+import { memberLevels, type AdminService } from "@/lib/admin/data";
+import { useAdminStore } from "@/lib/admin/store";
+import { useAdminSession } from "@/lib/admin/session";
+import { downloadCsv } from "@/lib/admin/csv";
+import { formatNumber, formatUnitPrice } from "@/lib/utils";
+
+export function AdminServicesView() {
+  const toast = useToast();
+  const { can } = useAdminSession();
+  const { services, updateService, deleteService } = useAdminStore();
+
+  const [search, setSearch] = React.useState("");
+  const [platform, setPlatform] = React.useState("");
+  const [editing, setEditing] = React.useState<AdminService | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<AdminService | null>(null);
+  const [draft, setDraft] = React.useState<{ prices: string[]; min: string; max: string }>({
+    prices: ["0", "0", "0", "0"],
+    min: "0",
+    max: "0",
+  });
+
+  const platformNames = React.useMemo(() => [...new Set(services.map((s) => s.platformName))].sort(), [services]);
+
+  const filtered = React.useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return services.filter((s) => {
+      if (platform && s.platformName !== platform) return false;
+      if (q && !`${s.serviceName} ${s.serverName} ${s.platformName} ${s.code}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [services, search, platform]);
+
+  const { page, pageCount, slice, setPage, total, pageSize } = usePagination(filtered, 15);
+
+  const medianPrice = React.useMemo(() => {
+    if (filtered.length === 0) return 0;
+    const sorted = [...filtered].map((s) => s.prices[0]).sort((a, b) => a - b);
+    return sorted[Math.floor(sorted.length / 2)];
+  }, [filtered]);
+
+  function openEdit(service: AdminService) {
+    setEditing(service);
+    setDraft({
+      prices: service.prices.map((p) => String(p)),
+      min: String(service.min),
+      max: String(service.max),
+    });
+  }
+
+  function saveEdit() {
+    if (!editing) return;
+    updateService(editing.id, {
+      prices: draft.prices.map((p) => Number(p) || 0) as [number, number, number, number],
+      min: Number(draft.min) || 1,
+      max: Number(draft.max) || 1,
+    });
+    toast.push({ tone: "success", title: `Đã lưu dịch vụ ${editing.code}` });
+    setEditing(null);
+  }
+
+  function exportCsv() {
+    const rows: unknown[][] = [["Mã", "Nền tảng", "Dịch vụ", "Máy chủ", ...memberLevels, "MIN", "MAX", "Đang bật"]];
+    for (const s of filtered) {
+      rows.push([s.code, s.platformName, s.serviceName, s.serverName, ...s.prices, s.min, s.max, s.active ? "có" : "không"]);
+    }
+    const file = downloadCsv("bang-gia-dich-vu", rows);
+    toast.push({ tone: "success", title: `Đã xuất ${filtered.length} dòng`, description: file });
+  }
+
+  const columns: Column<AdminService>[] = [
+    {
+      key: "service",
+      header: "Dịch vụ",
+      cell: (s) => (
+        <div className="flex min-w-0 items-center gap-2">
+          <AssetImage assetKey={s.platformAssetKey} className="h-8 w-8 shrink-0" rounded="control" />
+          <div className="min-w-0 max-w-[280px]">
+            <p className="truncate text-body-strong text-lv-text">{s.serviceName}</p>
+            <p className="truncate text-small text-lv-muted">
+              {s.platformName} · {s.code}
+            </p>
+            <p className="truncate text-small text-lv-muted">{s.serverName}</p>
+          </div>
+        </div>
+      ),
+    },
+    ...memberLevels.map((level, index) => ({
+      key: `price-${index}`,
+      header: level,
+      align: "right" as const,
+      cell: (s: AdminService) => (
+        <span className={`lv-price ${index === 0 ? "text-body-strong text-lv-success" : "text-lv-navy-700"}`}>
+          {formatUnitPrice(s.prices[index])}
+        </span>
+      ),
+    })),
+    {
+      key: "limits",
+      header: "MIN / MAX",
+      align: "right",
+      cell: (s) => (
+        <span className="text-small text-lv-muted">
+          {formatNumber(s.min)}
+          <br />
+          {formatNumber(s.max)}
+        </span>
+      ),
+    },
+    {
+      key: "active",
+      header: "Bật",
+      align: "center",
+      cell: (s) =>
+        can("services.edit") ? (
+          <div className="flex justify-center">
+            <Switch
+              id={`svc-${s.id}`}
+              checked={s.active}
+              onCheckedChange={(next) => {
+                updateService(s.id, { active: next });
+                toast.push({ tone: next ? "success" : "warning", title: next ? `Đã bật ${s.code}` : `Đã tắt ${s.code}` });
+              }}
+            />
+          </div>
+        ) : s.active ? (
+          <IconCheck size={16} className="mx-auto text-lv-success" />
+        ) : (
+          <IconX size={16} className="mx-auto text-lv-muted" />
+        ),
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
+      align: "right",
+      cell: (s) => (
+        <div className="flex items-center justify-end gap-1">
+          {can("services.edit") ? (
+            <Button variant="secondary" size="sm" aria-label={`Sửa ${s.code}`} onClick={() => openEdit(s)}>
+              <IconEdit size={15} />
+            </Button>
+          ) : null}
+          {can("services.delete") ? (
+            <Button variant="danger" size="sm" aria-label={`Xoá ${s.code}`} onClick={() => setConfirmDelete(s)}>
+              <IconTrash size={15} />
+            </Button>
+          ) : null}
+          {!can("services.edit") && !can("services.delete") ? (
+            <span className="text-small text-lv-muted">chỉ xem</span>
+          ) : null}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <PageHeader
+        title="Dịch vụ & bảng giá"
+        description="Giá tính trên một tương tác, theo bốn cấp bậc thành viên."
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Dịch vụ khớp lọc" value={formatNumber(filtered.length)} suffix={`/ ${services.length}`} tone="gold" icon={<IconLayoutGrid size={20} />} />
+        <StatCard label="Nền tảng" value={platformNames.length} suffix="nền tảng" tone="navy" icon={<IconLayoutGrid size={20} />} />
+        <StatCard label="Giá trung vị (Thành viên)" value={formatUnitPrice(medianPrice)} tone="info" icon={<IconCoins size={20} />} />
+        <StatCard label="Đang tắt" value={formatNumber(services.filter((s) => !s.active).length)} suffix="dịch vụ" tone="danger" icon={<IconX size={20} />} />
+      </div>
+
+      <SectionCard
+        title="Bảng giá"
+        description={`${formatNumber(filtered.length)} dịch vụ`}
+        action={
+          can("export.csv") ? (
+            <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
+              Xuất CSV
+            </Button>
+          ) : null
+        }
+        padded={false}
+      >
+        <div className="px-5 py-4">
+          <FilterBar search={search} onSearch={setSearch} placeholder="Tên dịch vụ, máy chủ, mã…">
+            <Select aria-label="Nền tảng" value={platform} onChange={(e) => setPlatform(e.target.value)}>
+              <option value="">Tất cả nền tảng</option>
+              {platformNames.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </Select>
+          </FilterBar>
+        </div>
+        <DataTable
+          caption="Bảng giá dịch vụ theo cấp bậc"
+          columns={columns}
+          rows={slice}
+          rowKey={(s) => s.id}
+          emptyTitle="Không có dịch vụ nào khớp bộ lọc"
+        />
+        <div className="border-t border-lv-border px-5 py-3">
+          <Pagination page={page} pageCount={pageCount} onChange={setPage} total={total} pageSize={pageSize} />
+        </div>
+      </SectionCard>
+
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title={editing ? `Sửa dịch vụ ${editing.code}` : ""}
+        description={editing ? `${editing.platformName} · ${editing.serviceName}` : undefined}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditing(null)}>
+              Huỷ
+            </Button>
+            <Button onClick={saveEdit} data-autofocus>
+              Lưu
+            </Button>
+          </>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          {memberLevels.map((level, index) => (
+            <div key={level}>
+              <Label htmlFor={`price-${index}`}>{level}</Label>
+              <Input
+                id={`price-${index}`}
+                type="number"
+                step="0.001"
+                value={draft.prices[index]}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, prices: d.prices.map((p, i) => (i === index ? e.target.value : p)) }))
+                }
+              />
+            </div>
+          ))}
+          <div>
+            <Label htmlFor="svc-min">Số lượng tối thiểu</Label>
+            <Input id="svc-min" type="number" value={draft.min} onChange={(e) => setDraft((d) => ({ ...d, min: e.target.value }))} />
+          </div>
+          <div>
+            <Label htmlFor="svc-max">Số lượng tối đa</Label>
+            <Input id="svc-max" type="number" value={draft.max} onChange={(e) => setDraft((d) => ({ ...d, max: e.target.value }))} />
+          </div>
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (!confirmDelete) return;
+          deleteService(confirmDelete.id);
+          toast.push({ tone: "success", title: `Đã xoá dịch vụ ${confirmDelete.code}` });
+          setConfirmDelete(null);
+        }}
+        title={confirmDelete ? `Xoá dịch vụ ${confirmDelete.code}?` : ""}
+        message="Dịch vụ sẽ biến mất khỏi bảng giá. Nạp lại dữ liệu gốc mới khôi phục được."
+        confirmLabel="Xoá"
+        tone="danger"
+      />
+    </div>
+  );
+}

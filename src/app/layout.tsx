@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AppShell } from "@/components/shell/AppShell";
 import { ToastProvider } from "@/components/ui/Toast";
 import { demoBrand } from "@/lib/demo/config";
 
@@ -29,13 +28,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/**
+ * Layout gốc chỉ lo font, token và toast.
+ * Khung điều hướng nằm ở từng nhóm route:
+ *   (panel)/layout.tsx  -> AppShell cho khách hàng
+ *   admin/layout.tsx    -> AdminShell cho quản trị
+ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className={inter.variable}>
       <body className={inter.className}>
-        <ToastProvider>
-          <AppShell>{children}</AppShell>
-        </ToastProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
