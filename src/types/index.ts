@@ -89,6 +89,12 @@ export interface ProductVariant {
   fromPrice: number;
   sold: number;
   rating: number;
+  /** Khối trưng bày mở rộng — chỉ render khi biến thể có dữ liệu (không gắn cứng theo slug). */
+  keyFeatures?: string[];
+  sampleSwatches?: { colors: string[]; caption: string };
+  receiveNotes?: string[];
+  reviewSummary?: { rating: number; note: string };
+  showConsultCta?: boolean;
 }
 
 export type ProductSlug =

@@ -300,7 +300,7 @@ export const purchasedItems: PurchasedItem[] = [
     id: "PR-901",
     productSlug: "canva",
     productName: "Canva Pro",
-    packageName: "Gói 12 tháng",
+    packageName: "Gói nhóm nhỏ",
     purchasedAt: "2026-08-29T14:30:00.000Z",
     expiresAt: "2027-08-29T14:30:00.000Z",
     status: "active",

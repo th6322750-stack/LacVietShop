@@ -30,58 +30,19 @@ import type { ProductVariant } from "@/types";
  */
 export function ProductDetail({ product }: { product: ProductVariant }) {
   const toast = useToast();
-  const isCanva = product.slug === "canva";
-  const displayPackages = isCanva
-    ? product.packages.map((p, index) => {
-        if (index === 0) {
-          return {
-            ...p,
-            name: "Gói cá nhân - 1 tháng",
-            duration: "1 tháng",
-            price: 89_000,
-            originalPrice: undefined,
-            highlight: false,
-            badge: undefined,
-            bullets: ["1 tài khoản cá nhân", "Toàn bộ tính năng Pro", "Kho template premium"],
-          };
-        }
-        if (index === 1) {
-          return {
-            ...p,
-            name: "Gói nhóm nhỏ",
-            duration: "1 tháng",
-            price: 159_000,
-            originalPrice: 199_000,
-            highlight: true,
-            badge: "Phổ biến nhất",
-            bullets: ["Từ 2–5 thành viên", "Chia sẻ template & thương hiệu", "Quản lý đội nhóm dễ dàng"],
-          };
-        }
-        return {
-          ...p,
-          name: "Gói Studio Creator",
-          duration: "1 tháng",
-          price: 279_000,
-          originalPrice: undefined,
-          highlight: false,
-          badge: undefined,
-          bullets: ["Không giới hạn thành viên", "Bộ thương hiệu nâng cao", "Quyền kiểm soát & phân quyền"],
-        };
-      })
-    : product.packages;
-
-  const firstAvailable = displayPackages.find((p) => p.inStock) ?? displayPackages[0];
+  // Khối trưng bày mở rộng bật theo DỮ LIỆU của biến thể, không theo slug.
+  const hasShowcase = Boolean(product.keyFeatures?.length);
+  const firstAvailable = product.packages.find((p) => p.inStock) ?? product.packages[0];
   const [packageId, setPackageId] = React.useState(
-    (displayPackages.find((p) => p.highlight && p.inStock) ?? firstAvailable).id,
+    (product.packages.find((p) => p.highlight && p.inStock) ?? firstAvailable).id,
   );
   const [tab, setTab] = React.useState("benefits");
   const [submitting, setSubmitting] = React.useState(false);
   const [openFaq, setOpenFaq] = React.useState<string | null>(product.faqs[0]?.question ?? null);
 
-  const pkg = displayPackages.find((p) => p.id === packageId) ?? firstAvailable;
+  const pkg = product.packages.find((p) => p.id === packageId) ?? firstAvailable;
   const notEnoughBalance = pkg.price > account.balance;
   const darkHero = product.heroTone === "dark";
-  const displayFromPrice = isCanva ? 89_000 : product.fromPrice;
 
   async function buy() {
     if (!pkg.inStock) return;
@@ -176,7 +137,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   )}
                 >
                   <p className={cn("text-small", darkHero ? "text-white/60" : "text-lv-muted")}>Chỉ từ</p>
-                  <p className="lv-price text-h2 text-lv-gold-500">{formatMoney(displayFromPrice)}</p>
+                  <p className="lv-price text-h2 text-lv-gold-500">{formatMoney(product.fromPrice)}</p>
                   <p
                     className={cn(
                       "mt-2 flex items-center gap-2 text-small",
@@ -197,12 +158,12 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
           {/* Gói sản phẩm */}
           <SectionCard title="Chọn gói phù hợp" description="Giá đang là dữ liệu DEMO, chờ bảng giá production được chốt.">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Chọn gói">
-              {displayPackages.map((p) => (
+              {product.packages.map((p) => (
                 <PackageCard key={p.id} pkg={p} selected={p.id === pkg.id} onSelect={() => setPackageId(p.id)} />
               ))}
             </div>
 
-            {displayPackages.some((p) => !p.inStock) ? (
+            {product.packages.some((p) => !p.inStock) ? (
               <p className="mt-3 flex items-center gap-1.5 text-small text-lv-warning">
                 <IconAlertTriangle size={15} />
                 Một số gói đang tạm hết hàng, sẽ mở bán lại khi có nguồn.
@@ -210,19 +171,12 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
             ) : null}
           </SectionCard>
 
-          {isCanva ? (
+          {hasShowcase ? (
             <>
               <div className="grid gap-4 lg:grid-cols-12">
                 <SectionCard title="Tính năng chính" className="lg:col-span-5">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      "AI Magic Studio",
-                      "Kho template premium",
-                      "Brand Kit",
-                      "Xóa nền & Magic Edit",
-                      "Lịch nội dung",
-                      "Cộng tác thời gian thực",
-                    ].map((item) => (
+                    {(product.keyFeatures ?? []).map((item) => (
                       <p key={item} className="flex items-center gap-2 text-small text-lv-navy-700">
                         <IconCheck size={15} className="shrink-0 text-lv-success" />
                         {item}
@@ -233,18 +187,24 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
 
                 <SectionCard title="Mẫu quyền lợi" className="lg:col-span-4">
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-[#CFE7F0]" />
-                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-lv-navy-900" />
-                    <div className="aspect-[1.1/1] rounded-control border border-lv-border bg-[#F3D8C7]" />
+                    {(product.sampleSwatches?.colors ?? []).map((color) => (
+                      <div
+                        key={color}
+                        className="aspect-[1.1/1] rounded-control border border-lv-border"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
                   </div>
-                  <p className="mt-3 text-center text-small-strong text-lv-gold-700">Bộ mẫu thiết kế & tài nguyên Pro</p>
+                  <p className="mt-3 text-center text-small-strong text-lv-gold-700">
+                    {product.sampleSwatches?.caption}
+                  </p>
                 </SectionCard>
 
                 <SectionCard title="Lưu ý khi nhận tài khoản" className="lg:col-span-3">
                   <ul className="space-y-2 text-small text-lv-muted">
-                    <li>· Tài khoản/gói được kích hoạt theo thông tin đơn.</li>
-                    <li>· Không tự thay đổi thông tin khi đang trong thời gian bảo hành.</li>
-                    <li>· Không sử dụng cho mục đích vi phạm chính sách nền tảng.</li>
+                    {(product.receiveNotes ?? []).map((note) => (
+                      <li key={note}>· {note}</li>
+                    ))}
                   </ul>
                 </SectionCard>
               </div>
@@ -252,7 +212,9 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
               <div className="grid gap-4 lg:grid-cols-12">
                 <SectionCard title="Đánh giá khách hàng" className="lg:col-span-4">
                   <div className="flex items-end gap-2">
-                    <span className="text-[34px] font-bold leading-none text-lv-gold-700">4.9</span>
+                    <span className="text-[34px] font-bold leading-none text-lv-gold-700">
+                      {(product.reviewSummary?.rating ?? product.rating).toFixed(1).replace(".", ",")}
+                    </span>
                     <span className="pb-1 text-body text-lv-muted">/5</span>
                   </div>
                   <div className="mt-3 flex gap-1 text-lv-warning" aria-label="5 trên 5 sao">
@@ -260,7 +222,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                       <IconStarFilled key={index} size={18} />
                     ))}
                   </div>
-                  <p className="mt-3 text-small text-lv-muted">Tổng hợp từ đánh giá DEMO để đối chiếu bố cục; dữ liệu production sẽ được thay sau.</p>
+                  <p className="mt-3 text-small text-lv-muted">{product.reviewSummary?.note}</p>
                 </SectionCard>
 
                 <SectionCard title="Câu hỏi thường gặp" className="lg:col-span-8">
@@ -424,7 +386,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 {pkg.inStock ? "Mua ngay" : "Tạm hết hàng"}
               </Button>
 
-              {isCanva ? (
+              {product.showConsultCta ? (
                 <Button
                   block
                   variant="secondary"
