@@ -1,113 +1,120 @@
 {
-  "version": 2,
-  "status": "FIRST_PASS_BUILD_ALLOWED_WITH_TODO_ASSETS",
+  "version": 3,
+  "status": "CHATGPT_ASSET_PATCH_READY",
   "assetStore": {
     "transportMode": "GIT_FOR_WEB_DELIVERY",
     "runtimeSource": "PROJECT_PATHS",
     "driveUsed": false
   },
+  "patchAuthority": ".webby/ASSET_PATCH.md",
   "placeholderPolicy": {
-    "allowedDuringFirstPass": true,
+    "allowedForUnresolvedProductionConfig": true,
     "marker": "TODO_ASSET:<stable-key>",
     "reportPath": ".webby/MISSING_ASSET_REPORT.md",
-    "mustPreserveLayout": true,
-    "mustNotImpersonateFinalAsset": true
+    "mustPreserveLayout": true
   },
-  "assets": [
+  "lacVietAssets": [
     {
-      "id": "brand:logo-horizontal",
-      "item": "Lac Viet Media Agency",
-      "role": "LOGO",
+      "key": "brand.logoHorizontal",
       "classification": "BRAND",
-      "sourceStatus": "USER_SUPPLIED_IN_CHAT_NOT_YET_COMMITTED",
-      "destinationPath": "public/assets/brand/lac-viet-logo-horizontal.png",
-      "allowedUsage": ["sidebar-desktop", "footer", "brand-header"],
-      "status": "TODO_ASSET_DELIVERY",
-      "placeholderKey": "brand.logoHorizontal"
+      "source": "references/brand/lac-viet-logo-horizontal.webp",
+      "destinationPath": "public/assets/brand/lac-viet-logo-horizontal.webp",
+      "runtimeSrc": "/assets/brand/lac-viet-logo-horizontal.webp",
+      "status": "READY_TO_COPY"
     },
     {
-      "id": "brand:mark-compact",
-      "item": "Lac Viet Media Agency compact mark",
-      "role": "LOGO",
+      "key": "brand.markCompact",
       "classification": "BRAND",
       "destinationPath": "public/assets/brand/lac-viet-mark.svg",
-      "allowedUsage": ["collapsed-sidebar", "mobile", "avatar-brand"],
-      "status": "TODO_ASSET",
-      "placeholderKey": "brand.markCompact"
+      "runtimeSrc": "/assets/brand/lac-viet-mark.svg",
+      "status": "READY"
     },
     {
-      "id": "brand:favicon",
-      "item": "Lac Viet app icon",
-      "role": "ICON",
+      "key": "brand.favicon",
       "classification": "BRAND",
-      "destinationPath": "public/assets/brand/favicon.svg",
-      "allowedUsage": ["favicon", "pwa-icon"],
-      "status": "TODO_ASSET",
-      "placeholderKey": "brand.favicon"
+      "destinationPath": "public/assets/brand/lac-viet-mark.svg",
+      "runtimeSrc": "/assets/brand/lac-viet-mark.svg",
+      "status": "READY_REUSE_COMPACT_MARK"
     },
     {
-      "id": "decor:home-hero",
-      "item": "Lac Viet home hero decorative art",
-      "role": "HERO",
+      "key": "home.hero.brandVisual",
       "classification": "DECORATIVE",
-      "destinationPath": "public/assets/decor/home-hero.webp",
-      "usage": {"desktop":{"ratio":"~2.8:1","objectPosition":"right center"},"mobile":{"ratio":"16:9","objectPosition":"center"}},
-      "status": "TODO_ASSET",
-      "placeholderKey": "home.hero.brandVisual"
+      "destinationPath": "public/assets/decor/home-hero.svg",
+      "runtimeSrc": "/assets/decor/home-hero.svg",
+      "status": "READY"
     },
     {
-      "id": "decor:dong-son-pattern",
-      "item": "Dong Son subtle watermark pattern",
-      "role": "BACKGROUND",
+      "key": "decor.dongSonPattern",
       "classification": "DECORATIVE",
       "destinationPath": "public/assets/decor/dong-son-pattern.svg",
-      "status": "TODO_ASSET",
-      "placeholderKey": "decor.dongSonPattern"
+      "runtimeSrc": "/assets/decor/dong-son-pattern.svg",
+      "status": "READY"
     },
     {
-      "id": "decor:vip-banner",
-      "item": "VIP membership banner art",
-      "role": "BACKGROUND",
+      "key": "products.vipBanner",
       "classification": "DECORATIVE",
-      "destinationPath": "public/assets/decor/vip-banner.webp",
-      "status": "TODO_ASSET",
-      "placeholderKey": "products.vipBanner"
+      "destinationPath": "public/assets/decor/vip-banner.svg",
+      "runtimeSrc": "/assets/decor/vip-banner.svg",
+      "status": "READY"
     },
     {
-      "id": "decor:vpn-hero",
-      "item": "VPN security hero artwork",
-      "role": "HERO",
+      "key": "product.vpn.hero",
       "classification": "DECORATIVE",
-      "destinationPath": "public/assets/decor/vpn-hero.webp",
-      "status": "TODO_ASSET",
-      "placeholderKey": "product.vpn.hero"
+      "destinationPath": "public/assets/decor/vpn-hero.svg",
+      "runtimeSrc": "/assets/decor/vpn-hero.svg",
+      "status": "READY"
     },
     {
-      "id": "data:payment-qr",
-      "item": "Approved receiving account QR",
-      "role": "DATA_VISUAL",
-      "classification": "DATA_VISUAL",
-      "destinationPath": "GENERATED_FROM_PAYMENT_CONFIG",
-      "status": "WAIT_REAL_PAYMENT_CONFIG",
-      "placeholderKey": "deposit.realQr"
+      "key": "account.defaultAvatar",
+      "classification": "PLACEHOLDER",
+      "destinationPath": "public/assets/placeholders/default-avatar.svg",
+      "runtimeSrc": "/assets/placeholders/default-avatar.svg",
+      "status": "READY"
     }
   ],
-  "pendingReferenceMappings": {
-    "platformMarks": {
-      "count": 10,
-      "source": "th6322750-stack/clone-thatim-vn uploads/images",
-      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
-    },
-    "productMarksAndCovers": {
-      "count": 8,
-      "source": "th6322750-stack/clone-thatim-vn uploads/images/original",
-      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
-    },
-    "paymentBankMarks": {
-      "count": 7,
-      "source": "reference clone",
-      "status": "VERIFY_WHILE_BUILDING_OR_USE_TODO_ASSET"
-    }
+  "authenticReferenceAssets": {
+    "sourceRepo": "th6322750-stack/clone-thatim-vn",
+    "policy": "COPY_EXACT_SOURCE_ONLY",
+    "platforms": [
+      {"key":"platform.facebook","source":"uploads/images/X9A-HhS-6Da-s5w-11-06-2025-12.webp","destinationPath":"public/assets/platforms/facebook.webp","runtimeSrc":"/assets/platforms/facebook.webp"},
+      {"key":"platform.tiktok","source":"uploads/images/usm-CZl-fq4-SAD-03-07-2025-13.webp","destinationPath":"public/assets/platforms/tiktok.webp","runtimeSrc":"/assets/platforms/tiktok.webp"},
+      {"key":"platform.instagram","source":"uploads/images/rkH-942-NLU-sXJ-03-07-2025-12.webp","destinationPath":"public/assets/platforms/instagram.webp","runtimeSrc":"/assets/platforms/instagram.webp"},
+      {"key":"platform.youtube","source":"uploads/images/GJu-TUq-e61-niZ-11-06-2025-12.webp","destinationPath":"public/assets/platforms/youtube.webp","runtimeSrc":"/assets/platforms/youtube.webp"},
+      {"key":"platform.shopee","source":"uploads/images/hJy-qsg-E7Z-j25-01-07-2025-20.webp","destinationPath":"public/assets/platforms/shopee.webp","runtimeSrc":"/assets/platforms/shopee.webp"},
+      {"key":"platform.zalo","source":"uploads/images/original/r9r-tEQ-ESC-rSk-07-09-2025-13.webp","destinationPath":"public/assets/platforms/zalo.webp","runtimeSrc":"/assets/platforms/zalo.webp"},
+      {"key":"platform.threads","source":"uploads/images/WT3-npC-12u-E5j-11-06-2025-12.webp","destinationPath":"public/assets/platforms/threads.webp","runtimeSrc":"/assets/platforms/threads.webp"},
+      {"key":"platform.spotify","source":"uploads/images/AB6-nRC-XXs-SI0-11-06-2025-12.webp","destinationPath":"public/assets/platforms/spotify.webp","runtimeSrc":"/assets/platforms/spotify.webp"},
+      {"key":"platform.telegram","source":"uploads/images/6rZ-KpG-ogn-1uW-03-07-2025-12.webp","destinationPath":"public/assets/platforms/telegram.webp","runtimeSrc":"/assets/platforms/telegram.webp"},
+      {"key":"platform.google","source":"uploads/images/original/yAE-u4F-Dzk-xXW-19-07-2025-21.webp","destinationPath":"public/assets/platforms/google-maps.webp","runtimeSrc":"/assets/platforms/google-maps.webp"}
+    ],
+    "products": [
+      {"key":"product.youtube","source":"uploads/images/original/Z9Q-7Po-hGI-cyx-15-03-2026-01.webp","destinationPath":"public/assets/products/youtube.webp","runtimeSrc":"/assets/products/youtube.webp"},
+      {"key":"product.capcut","source":"uploads/images/original/PS8-eTH-ciW-Dam-15-03-2026-00.webp","destinationPath":"public/assets/products/capcut.webp","runtimeSrc":"/assets/products/capcut.webp"},
+      {"key":"product.canva","source":"uploads/images/original/HiE-KkV-cgG-R8I-15-03-2026-00.webp","destinationPath":"public/assets/products/canva.webp","runtimeSrc":"/assets/products/canva.webp"},
+      {"key":"product.veo3","source":"uploads/images/original/LEo-VEH-INo-swd-15-03-2026-00.webp","destinationPath":"public/assets/products/veo3.webp","runtimeSrc":"/assets/products/veo3.webp"},
+      {"key":"product.gemini","source":"uploads/images/original/yPF-LCK-j1g-bLD-15-03-2026-00.webp","destinationPath":"public/assets/products/gemini.webp","runtimeSrc":"/assets/products/gemini.webp"},
+      {"key":"product.chatgpt","source":"uploads/images/original/0jz-aQL-BEL-Czx-15-03-2026-00.webp","destinationPath":"public/assets/products/chatgpt.webp","runtimeSrc":"/assets/products/chatgpt.webp"},
+      {"key":"product.netflix","source":"uploads/images/original/v2I-WSz-zgY-Dc9-15-03-2026-00.webp","destinationPath":"public/assets/products/netflix.webp","runtimeSrc":"/assets/products/netflix.webp"},
+      {"key":"product.vpn","source":"uploads/images/original/yn1-4MX-tDl-ZlQ-18-06-2026-12.webp","destinationPath":"public/assets/products/vpn.webp","runtimeSrc":"/assets/products/vpn.webp"}
+    ]
   },
-  "hardRule":"Missing assets do not stop the first-pass build. Claude uses neutral TODO_ASSET placeholders, logs every gap, completes all 20 screens, then ChatGPT prepares missing production assets and Claude patches exact mapped slots. Claude never web-searches, generates, redraws or substitutes missing brand visuals."
+  "deferredPaymentAssets": {
+    "reason": "WAIT_APPROVED_PAYMENT_GATEWAY_AND_RECEIVING_ACCOUNT",
+    "keys": [
+      "payment.vietcombank",
+      "payment.techcombank",
+      "payment.mbbank",
+      "payment.momo",
+      "payment.zalopay",
+      "payment.viettelmoney",
+      "payment.usdt",
+      "deposit.realQr"
+    ],
+    "rule": "Do not fabricate payment support or a real QR before production payment configuration is approved."
+  },
+  "corruptVisualReferences": [
+    "references/ui-approved/12-product-purchased.webp",
+    "references/ui-approved/15-product-canva.webp",
+    "references/ui-approved/17-product-gemini.webp"
+  ]
 }
