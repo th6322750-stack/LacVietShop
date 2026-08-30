@@ -5,15 +5,25 @@
 ## Goal
 Build the complete Lạc Việt Media Agency web app in `th6322750-stack/LacVietShop` now. Do not wait for final visual assets or real production integrations before completing the 20-screen UI/interaction system.
 
-## Read first
+## Read first — mandatory
 1. `/CLAUDE.md`
 2. `/PROJECT_HANDOFF.md`
-3. `/.webby/HANDOFF.json`
-4. `/.webby/ASSET_COUNT_PLAN.json`
-5. `/.webby/asset-manifest.json`
-6. `/.webby/PROJECT_ENV.json`
-7. `/.webby/MISSING_ASSET_REPORT.md`
-8. `/.webby/FINAL_GAPS_REPORT.md`
+3. `/references/REFERENCE_MAP.md`
+4. The matching image in `/references/ui-approved/` **before implementing each route**
+5. `/references/brand/lac-viet-logo-horizontal.webp` for brand identity reference
+6. `/.webby/HANDOFF.json`
+7. `/.webby/ASSET_COUNT_PLAN.json`
+8. `/.webby/asset-manifest.json`
+9. `/.webby/PROJECT_ENV.json`
+10. `/.webby/MISSING_ASSET_REPORT.md`
+11. `/.webby/FINAL_GAPS_REPORT.md`
+
+## Visual-reference authority
+- `/references/ui-approved/01-home.webp` through `20-product-vpn.webp` are the **approved Lạc Việt visual targets** created and approved in ChatGPT.
+- They are reference copies for hierarchy, page identity, composition, brand direction and relative emphasis.
+- **Do not measure pixel geometry from these images.** Exact implementation values come from `PROJECT_HANDOFF.md` and `.webby/*`.
+- `th6322750-stack/clone-thatim-vn` remains the original feature/flow reference. Use it only when you need to understand the source page/interaction that corresponds to the target image according to `references/REFERENCE_MAP.md`.
+- Do not copy Thatim branding, captured credentials, user state or session data.
 
 ## Locked stack
 Initialize a new app with:
@@ -59,17 +69,14 @@ If an exact asset is missing:
 - use a neutral layout-preserving placeholder with a stable `TODO_ASSET:<key>` marker;
 - append the item to `.webby/MISSING_ASSET_REPORT.md`;
 - continue all routes and components;
-- do not search, generate, redraw, or substitute another brand visual.
+- do not search, generate, redraw, approximate, or substitute another brand visual.
 
-Only after all 20 screens are complete, return the consolidated missing-asset report. ChatGPT will inspect the original clone screenshots/UI and render/prepare the missing assets. Then patch them into their exact mapped slots.
+Only after all 20 screens are complete, return the consolidated missing-asset report. ChatGPT will inspect the corresponding approved target image plus the original clone screenshot/UI and render/prepare the missing asset. Then patch it into the exact mapped slot without redesigning the route.
 
 ## Missing production data — DO NOT STOP VISUAL BUILD
 Use typed DEMO config/data for unavailable domain/contact/payment/catalog/auth/backend values. Keep it clearly separated from production adapters and list every unresolved live integration in `.webby/FINAL_GAPS_REPORT.md`.
 
 Never perform real financial/account actions with invented values.
-
-## Reference policy
-`clone-thatim-vn` is reference-only. Do not copy Thatim branding, captured credentials, access tokens, CSRF values, user identity, phone, balance or session state.
 
 ## Product architecture
 Do not create eight duplicated product pages. One `ProductDetail` system, eight data/config variants.
