@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs><linearGradient id="g" x1="80" y1="60" x2="430" y2="450"><stop stop-color="#FFF1D6"/><stop offset="1" stop-color="#F3D38D"/></linearGradient></defs>
+  <circle cx="256" cy="256" r="248" fill="url(#g)"/>
+  <circle cx="256" cy="256" r="212" fill="#FFFDF8" stroke="#D99A16" stroke-width="10"/>
+  <circle cx="256" cy="205" r="78" fill="#D99A16" fill-opacity=".18"/>
+  <path d="M137 394c17-88 73-130 119-130s102 42 119 130" fill="#D99A16" fill-opacity=".20"/>
+  <path d="M166 221c38-68 108-105 175-79-48 8-82 34-96 72 42-15 84-6 115 23-77 26-151 11-194-16Z" fill="#C97900"/>
+  <text x="256" y="430" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="46" font-weight="700" fill="#0F1B3D">LV</text>
+</svg>
