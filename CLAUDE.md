@@ -1,115 +1,103 @@
 # CLAUDE — LacVietShop ALL-IN-ONE execution contract
 
-Read this file first.
+Read this file first, then execute `.webby/ALL_IN_ONE.md` completely from beginning to end.
 
 ## Mission
 Build the complete NEW Lạc Việt Media Agency web app in this repository. `th6322750-stack/clone-thatim-vn` is REFERENCE ONLY for the 20-page feature scope, information architecture, interaction flow and original screenshot context. Do not patch the clone and do not reproduce Thatim branding.
 
-## User-approved execution override
-The user explicitly approved this workflow:
+## Single-execution rule
+This project has **ONE continuous execution contract only**.
 
-`BUILD ALL 20 SCREENS FIRST -> COLLECT MISSING ASSETS LAST -> CHATGPT RENDERS/PREPARES THEM -> CLAUDE PATCHES THEM INTO THE EXACT SLOTS`
+Do NOT split work into `Task 001`, `Task 002`, separate stages requiring new user prompts, or “stop after P0/P1 and wait”. Internal P0/P1/P2 labels are sequencing hints only. Continue until the complete first-pass app is done unless a genuine destructive/security risk or impossible technical constraint blocks all further work.
 
-Missing visual assets DO NOT block the full build.
+User-approved workflow:
+
+`BUILD ALL 20 SCREENS -> CONSOLIDATE MISSING ASSETS + LIVE CONFIG GAPS -> CHATGPT PREPARES ASSETS -> CLAUDE PATCHES EXACT SLOTS`
+
+Missing visual assets and missing production integrations do not block the visual first pass.
 
 ## Authority
 - USER = final acceptance authority.
 - ChatGPT = design/UI/asset/state/motion-feel authority.
 - Claude = implementation/technical-mechanism authority.
 - `PROJECT_HANDOFF.md` + `.webby/*` = implementation design authority.
-- Approved renders = hierarchy/arrangement reference only; NEVER measure screenshots to invent geometry.
+- `references/ui-approved/*` = approved target visual hierarchy/composition references.
+- Approved renders are not rulers; never measure screenshots to invent geometry.
 
-## Locked implementation stack
-Use this stack unless a genuine technical constraint is discovered:
+## Mandatory visual references
+Before each route:
+1. Read `references/REFERENCE_MAP.md`.
+2. Inspect the matching target in `references/ui-approved/`.
+3. Use `PROJECT_HANDOFF.md` for exact design values/responsive/state rules.
+4. Consult `clone-thatim-vn` only for source feature/flow context when needed.
+
+## Locked stack
+Use:
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
 - pnpm
-- `@tabler/icons-react` for generic UI icons
-- React Hook Form + Zod for forms/validation when useful
-- Recharts for charts when useful
+- `@tabler/icons-react`
+- React Hook Form + Zod where useful
+- Recharts where useful
 
-Do not ask again which frontend framework to use. Record actual installed versions in `.webby/PROJECT_ENV.json` after initialization.
+Record actual installed versions/commands in `.webby/PROJECT_ENV.json` after initialization.
 
-## Build-first missing-asset rule
-When a required visual asset is absent, ambiguous, unmapped or too low-quality:
-1. DO NOT search the web for a replacement.
-2. DO NOT generate/redraw/fabricate it.
-3. DO NOT substitute another brand/product/platform mark.
-4. Insert a neutral layout-preserving placeholder marked with a stable asset key such as `TODO_ASSET:home.hero.brandVisual`.
-5. Continue building every other route/component/state.
-6. Append the missing item to `.webby/MISSING_ASSET_REPORT.md`.
-7. After the full 20-screen build is complete, return ONE consolidated missing-asset report.
+## Missing assets — keep building
+If a required production visual is absent, ambiguous, unmapped or insufficient quality:
+- do not search for a replacement;
+- do not generate, redraw or fabricate it;
+- do not substitute another logo/product/platform visual;
+- create a neutral layout-preserving `TODO_ASSET:<key>` slot;
+- append the structured gap to `.webby/MISSING_ASSET_REPORT.md`;
+- continue all independent routes/components.
 
-Each report item must contain:
-```text
-NEED_ASSET
-key: <stable asset key>
-route: <route>
-section: <section>
-role: <asset role>
-needed: <description>
-ratio/size: <required usage>
-placeholder: <file/component currently used>
-reference: <clone page/screenshot ChatGPT should inspect>
-```
+Do not ask the user to resolve asset gaps one-by-one during the build. Report them once after all 20 routes are complete.
 
-After ChatGPT supplies the real asset and updates the manifest, replace only the mapped placeholder slot. Do not redesign the surrounding UI.
+After ChatGPT provides the real asset and manifest mapping, patch the exact slot only. Do not redesign surrounding UI.
 
-## Data/config gaps are also non-blocking for the visual build
-If real business/payment/backend data is unavailable:
-- use clearly labeled typed DEMO data/config;
-- keep it isolated from production integrations;
-- never execute a real payment, withdrawal, account mutation or external API call using invented values;
-- record unresolved production config in `.webby/FINAL_GAPS_REPORT.md`;
-- continue the complete visual/interaction build.
+## Missing production data — keep visual build moving
+When domain/contact/payment/catalog/auth/backend values are unavailable:
+- use typed DEMO config isolated from production adapters;
+- never execute real financial/account/external side effects with invented values;
+- append unresolved live integration to `.webby/FINAL_GAPS_REPORT.md`;
+- continue building the complete UI and safe demo interactions.
 
-## Security gate
-The Thatim clone contains captured auth/session/user-state values. Never copy them. Never expose real secrets in HTML meta tags, public JS variables, client bundles or documentation examples. API tokens must be masked by default.
+## Security
+Never copy captured Thatim access tokens, CSRF values, session state, balance, identity, phone numbers or user data. No real secret in public client JS, HTML meta tags or documentation examples. API credentials masked by default.
 
-## Production architecture
+## Architecture
 - Production repo: `th6322750-stack/LacVietShop`.
 - Architecture: NEW web app rebuild.
 - Reference repo: `th6322750-stack/clone-thatim-vn` only.
-- Shared product architecture: ONE reusable `ProductDetail` + configs for YouTube, CapCut, Canva, Veo3, Gemini, ChatGPT, Netflix and VPN.
-
-## Implementation order
-P0 foundation -> P1 commercial journey -> P2 order/money lifecycle -> P3 account/growth/API -> P4 responsive/states/a11y/QA -> P5 consolidate missing assets -> P6 patch ChatGPT assets.
-
-Detailed 20-screen mapping and design values are in `PROJECT_HANDOFF.md`.
+- Product pages: ONE reusable `ProductDetail` + 8 configs for YouTube, CapCut, Canva, Veo3, Gemini, ChatGPT, Netflix and VPN.
 
 ## Icons
 Generic icons: `@tabler/icons-react` only.
-Brand/platform/product marks: exact mapped assets only. If missing, placeholder + report; do not swap in another logo.
+Branded marks: exact mapped assets only; otherwise `TODO_ASSET` + consolidated report.
 
 ## Motion
-Follow handoff motion FEEL. Claude owns mechanism. No scroll-jacking, global custom scroll engine or broad wheel/touch/key interception without reporting `TECHNICAL_CONSTRAINT` first.
+Follow handoff motion FEEL. Claude owns mechanism. No scroll-jacking, global custom scroll engine or broad wheel/touch/key interception without reporting `TECHNICAL_CONSTRAINT`.
 
-## Before editing
-1. DRIFT CHECK.
-2. SCOPE CHECK.
-3. SECURITY CHECK.
-4. Initialize/verify locked stack.
-5. Read only relevant files by default.
-6. Build continuously; do not stop the whole project for missing assets or missing production data.
-
-## Completion definition for first pass
-The first pass is complete when:
-- all 20 target screens/routes are reachable;
-- responsive shell works;
-- one shared ProductDetail powers all 8 product variants;
-- core UI interactions work with typed demo data where production data is unavailable;
+## Completion definition
+Do not call the first pass complete until:
+- all 20 target routes are reachable;
+- shared shell/responsive navigation works;
+- one ProductDetail powers all 8 product variants;
+- safe core UI interactions work with typed demo data where production integrations are unavailable;
 - loading/empty/error/form states exist;
-- build/lint/type checks pass as applicable;
-- `.webby/MISSING_ASSET_REPORT.md` contains every remaining visual asset gap;
-- `.webby/FINAL_GAPS_REPORT.md` contains every remaining production integration/config gap.
+- accessibility/focus basics are implemented;
+- available build/type/lint/smoke checks pass;
+- `.webby/MISSING_ASSET_REPORT.md` is consolidated;
+- `.webby/FINAL_GAPS_REPORT.md` is consolidated.
 
-## Reporting
-At the end of the all-in-one build report:
-1. changed/created architecture;
-2. all 20 routes completed;
-3. checks run/results;
-4. consolidated `MISSING_ASSET_REPORT`;
-5. consolidated production-config gaps.
+## Final report
+Only after the complete first pass, report:
+1. architecture/created files;
+2. status of all 20 routes;
+3. checks and results;
+4. consolidated missing assets;
+5. consolidated live-integration/config gaps;
+6. genuine technical constraints, if any.
 
-Do not self-approve final visual parity and do not auto-merge PRs.
+Do not auto-merge and do not self-approve final visual parity.
