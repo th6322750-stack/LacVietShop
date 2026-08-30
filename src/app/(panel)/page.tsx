@@ -17,14 +17,14 @@ import { Badge } from "@/components/ui/Badge";
 import { platforms, products } from "@/lib/demo/catalog";
 import { homeMetrics, notices } from "@/lib/demo/data";
 import { demoBrand } from "@/lib/demo/config";
-import { formatCompact, formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Trang chủ",
   description: demoBrand.tagline,
 };
 
-const metricIcons = [IconClipboardCheck, IconBolt, IconUsers, IconCoins];
+const metricIcons = [IconClipboardCheck, IconBolt, IconUsers];
 
 const commitments = [
   {
@@ -96,15 +96,15 @@ export default function HomePage() {
       </section>
 
       {/* 4 chỉ số */}
-      <section aria-label="Chỉ số hoạt động" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Chỉ số hoạt động" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {homeMetrics.map((m, i) => {
           const Icon = metricIcons[i];
           return (
             <StatCard
               key={m.key}
               label={m.label}
-              value={m.key === "revenue" ? formatCompact(m.value) : formatNumber(m.value)}
-              suffix={m.key === "revenue" ? "₫" : m.suffix}
+              value={formatNumber(m.value)}
+              suffix={m.suffix}
               icon={<Icon size={20} />}
               trend={m.trend}
               tone={i % 2 === 0 ? "gold" : "navy"}

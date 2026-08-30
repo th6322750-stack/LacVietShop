@@ -37,7 +37,6 @@ export const homeMetrics = [
   { key: "orders", label: "Đơn hàng đã xử lý", value: 3_425, suffix: "đơn", trend: 12.4 },
   { key: "interactions", label: "Lượt tương tác đã giao", value: 128_760, suffix: "lượt", trend: 8.1 },
   { key: "customers", label: "Khách hàng đồng hành", value: 52_318, suffix: "khách", trend: 5.6 },
-  { key: "revenue", label: "Giá trị giao dịch xử lý", value: 8_756_320_000, suffix: "₫", trend: 15.2 },
 ];
 
 /** Danh sách trạng thái đơn dùng cho seed và cho bộ lọc. */
