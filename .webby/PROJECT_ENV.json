@@ -63,7 +63,7 @@
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
     "build": "pnpm build — PASS (39 route)",
-    "routeSmoke": "5 bộ Playwright — 136 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, tài khoản 32; bộ tài khoản chạy với MAIL_DRY_RUN=true)",
+    "routeSmoke": "5 bộ Playwright — 137 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 26, tài khoản 32)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -199,7 +199,8 @@
     "demoLabels": "Đã gỡ nhãn DEMO/mô phỏng trang trí khỏi giao diện theo yêu cầu. GIỮ LẠI câu báo khi đơn chưa thực sự đẩy sang nhà cung cấp — bỏ câu đó thì khách tưởng đã đặt hàng xong.",
     "homeMetrics": "Số liệu trang chủ hạ về mức đơn vị mới mở (186 đơn / 47.200 lượt / 64 khách)",
     "removedSections": "Bỏ khối Câu hỏi thường gặp ở trang sản phẩm và dải DEMO ở trang Nạp tiền",
-    "paymentMethods": "Chỉ còn VietinBank (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT"
+    "paymentMethods": "Chỉ còn VietinBank (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT",
+    "tierPricing": "Bỏ dải bảng giá 4 bậc khỏi trang khách — khách lẻ không cần thấy giá cấp đại lý/nhà phân phối. Giá vẫn tính theo bậc của tài khoản ở phía sau."
   },
   "plannedPaymentGateway": "SePay — tự cộng số dư qua webhook biến động số dư ngân hàng (USER chốt 2026-08-31, chưa làm)"
 }

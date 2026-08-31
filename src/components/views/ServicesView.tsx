@@ -344,40 +344,11 @@ export function ServicesView({
               </p>
             </div>
 
-            {/* Bảng giá 4 bậc của máy chủ đang chọn */}
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {serviceTiers.map((t, i) => {
-                const mine = i === tierIndex;
-                return (
-                  <div
-                    key={t.id}
-                    className={cn(
-                      "min-w-0 rounded-control border px-3 py-2",
-                      mine ? "border-lv-border-gold bg-lv-gold-50" : "border-lv-border bg-lv-surface",
-                    )}
-                  >
-                    <p className={cn("truncate text-small", mine ? "text-lv-gold-700" : "text-lv-muted")}>
-                      {t.label}
-                      {mine ? " · của bạn" : ""}
-                    </p>
-                    <p
-                      className={cn(
-                        "lv-price mt-0.5 truncate text-body-strong",
-                        mine ? "text-lv-gold-700" : "text-lv-text",
-                      )}
-                    >
-                      {formatUnitPrice(server.pricesByTier[i] ?? server.pricePerUnit)}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
             {/* Thông số máy chủ — chỉ hiện trường mà nguồn có ghi */}
             <div className="mt-4 grid gap-3 rounded-card border border-lv-border bg-lv-bg p-4 sm:grid-cols-2 lg:grid-cols-4">
               <ServerFact
                 icon={<IconWallet size={16} />}
-                label="Đơn giá của bạn"
+                label="Đơn giá"
                 value={`${formatUnitPrice(unitPrice)}/tương tác`}
               />
               <ServerFact
@@ -518,7 +489,7 @@ export function ServicesView({
 
               <div className="mt-3 divide-y divide-lv-border">
                 <OrderSummaryRow label="Máy chủ" value={`#${server.index} · ${server.code}`} />
-                <OrderSummaryRow label={`Đơn giá (${serviceTiers[tierIndex].label})`} value={formatUnitPrice(unitPrice)} />
+                <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
                 <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
                 <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
                 {discount > 0 ? (
