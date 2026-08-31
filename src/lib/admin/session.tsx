@@ -29,7 +29,7 @@ interface SessionContextValue {
   session: AdminSession | null;
   /** `false` khi chưa đọc xong localStorage — tránh nháy nội dung trước khi biết đã đăng nhập chưa. */
   ready: boolean;
-  login: (username: string, password: string) => { ok: true } | { ok: false; error: string };
+  login: (username: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>;
   logout: () => void;
   can: (permission: AdminPermission) => boolean;
 }
@@ -50,10 +50,21 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
     setReady(true);
   }, []);
 
-  const login = React.useCallback((username: string, password: string) => {
+  const login = React.useCallback(async (username: string, password: string) => {
+    // Máy chủ mới là nơi quyết định: cookie httpOnly do nó cấp mở khoá các đường
+    // ghi dữ liệu chung (bảng giá). Danh sách quyền dưới đây chỉ để ẩn/hiện nút.
+    const server = await fetch("/api/admin/session", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username: username.trim(), password }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+
+    if (!server.ok) return { ok: false as const, error: String(server.error ?? "Đăng nhập không thành công.") };
+
     const account = adminAccounts.find((a) => a.username === username.trim().toLowerCase());
     if (!account) return { ok: false as const, error: "Không tìm thấy tài khoản này." };
-    if (account.password !== password) return { ok: false as const, error: "Mật khẩu không đúng." };
 
     const next: AdminSession = {
       id: account.id,
@@ -74,6 +85,7 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const logout = React.useCallback(() => {
+    void fetch("/api/admin/session", { method: "DELETE" }).catch(() => undefined);
     setSession(null);
     try {
       window.localStorage.removeItem(KEY);

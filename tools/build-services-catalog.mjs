@@ -204,6 +204,8 @@ const built = Object.values(platformsRaw).map((p) => {
           name: real.title,
           fullName: real.fullName,
           pricePerUnit: real.prices[0],
+          // Danh mục dự phòng là bản chụp giá công bố nên giá bán = giá vốn.
+          costPerUnit: real.prices[0],
           pricesByTier: real.prices,
           min: real.min,
           max: real.max,
@@ -226,6 +228,7 @@ const built = Object.values(platformsRaw).map((p) => {
         name: `Máy chủ 1 — ${svc.name}`,
         fullName: `Máy chủ 1 — ${svc.name}`,
         pricePerUnit: base,
+        costPerUnit: base,
         pricesByTier: tierRatios.map((r) => Number((base * r).toFixed(3))),
         min: pick([50, 100, 200, 500, 1000]),
         max: pick([50000, 100000, 500000, 1000000]),

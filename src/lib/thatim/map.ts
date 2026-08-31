@@ -82,13 +82,18 @@ function assetKeyFor(name: string, slug: string) {
 
 export interface MapOptions {
   usdToVnd: number;
-  markup: number;
   tierMultipliers: number[];
+  /**
+   * Đổi giá vốn thành giá bán theo bảng giá của mình. Truyền từ ngoài vào để tệp
+   * này vẫn thuần, không phụ thuộc kho dữ liệu phía máy chủ.
+   */
+  price: (cost: number, apiServiceId: string) => { price: number; belowCost: boolean };
 }
 
-export function priceInVnd(rate: number, o: MapOptions) {
+/** Giá vốn: API trả USD cho 1.000 tương tác. */
+export function costInVnd(rate: number, usdToVnd: number) {
   // Làm tròn 5 chữ số thập phân: đơn giá có loại nhỏ tới 0,03 đồng/tương tác.
-  return Math.round(((rate * o.usdToVnd) / 1000) * o.markup * 1e5) / 1e5;
+  return Math.round(((rate * usdToVnd) / 1000) * 1e5) / 1e5;
 }
 
 export function mapServicesToPlatforms(services: ThatimService[], o: MapOptions): Platform[] {
@@ -121,16 +126,20 @@ export function mapServicesToPlatforms(services: ThatimService[], o: MapOptions)
 
       const servers: ServiceServer[] = sorted.map((row, i) => {
         const parsed = parseServerName(row.name);
-        const base = priceInVnd(row.rate, o);
+        const apiServiceId = String(row.service);
+        const cost = costInVnd(row.rate, o.usdToVnd);
+        const sold = o.price(cost, apiServiceId);
         return {
           id: `api-${row.service}`,
-          code: String(row.service),
-          apiServiceId: String(row.service),
+          code: apiServiceId,
+          apiServiceId,
           index: i + 1,
           name: parsed.title,
           fullName: deEmoji(row.name),
-          pricePerUnit: base,
-          pricesByTier: o.tierMultipliers.map((m) => Math.round(base * m * 1e5) / 1e5),
+          pricePerUnit: sold.price,
+          costPerUnit: cost,
+          ...(sold.belowCost ? { belowCost: true } : {}),
+          pricesByTier: o.tierMultipliers.map((m) => Math.round(sold.price * m * 1e5) / 1e5),
           min: Number(row.min) || 1,
           max: Number(row.max) || 1_000_000,
           ...(parsed.speed ? { speed: parsed.speed } : {}),

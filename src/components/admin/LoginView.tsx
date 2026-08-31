@@ -25,9 +25,13 @@ export function LoginView() {
     if (ready && session) router.replace(next);
   }, [ready, session, router, next]);
 
-  function onSubmit(e: React.FormEvent) {
+  const [submitting, setSubmitting] = React.useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const result = login(username, password);
+    setSubmitting(true);
+    const result = await login(username, password);
+    setSubmitting(false);
     if (!result.ok) {
       setError(result.error);
       return;
@@ -83,8 +87,8 @@ export function LoginView() {
               />
               <FieldMessage>{error}</FieldMessage>
             </div>
-            <Button type="submit" block size="lg" icon={<IconLock size={17} />}>
-              Đăng nhập
+            <Button type="submit" block size="lg" loading={submitting} icon={<IconLock size={17} />}>
+              {submitting ? "Đang đăng nhập…" : "Đăng nhập"}
             </Button>
           </form>
         </div>

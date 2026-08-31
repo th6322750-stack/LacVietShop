@@ -52,12 +52,14 @@ status: OPEN
 GAP
 key: catalog.pricing
 area: business
-needed: Chốt hệ số bán ra (THATIM_MARKUP) và mức giảm theo bậc thành viên
-current_demo_source: giá gốc đã là giá thật của nhà cung cấp (rate USD/1.000 × 26.000đ, đối chiếu khớp
-  25/25 máy chủ trên bảng giá công bố). Hiện THATIM_MARKUP=1 nên bán đúng giá gốc — không có lãi.
-  Mức giảm theo bậc lấy tạm tỷ lệ quan sát được: src/lib/thatim/config.ts → tierMultipliers.
-production_risk_if_unresolved: Bán đúng giá vốn, không có biên lợi nhuận; bảng giá theo bậc chưa phải chính sách đã duyệt
-status: OPEN
+needed: Chốt mức lãi thực tế cho từng nhóm dịch vụ
+current_demo_source: đã có công cụ đặt giá ở /admin/services — hệ số chung cộng phần trăm, hoặc
+  đặt riêng theo từng mã dịch vụ (phần trăm hoặc giá cố định). Quy tắc lưu ở máy chủ
+  (data/lacviet-pricing.json) nên áp cho mọi khách, không phải localStorage của một trình duyệt.
+  Giá vốn hiển thị cạnh giá bán, có cảnh báo khi bán dưới vốn. Hiện hệ số chung = +0%, tức đang
+  bán đúng giá vốn, chưa có lãi.
+production_risk_if_unresolved: Bán đúng giá vốn thì không có biên lợi nhuận nào
+status: PARTIAL
 
 GAP
 key: auth.provider

@@ -2,236 +2,253 @@
 
 import * as React from "react";
 import {
+  IconAlertTriangle,
   IconArrowsHorizontal,
-  IconCheck,
   IconCoins,
   IconEdit,
-  IconFileExport,
   IconHash,
   IconLayoutGrid,
-  IconPlus,
+  IconPercentage,
+  IconRefresh,
   IconServer2,
-  IconTrash,
-  IconX,
+  IconTrendingUp,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
-import { SectionCard, StatCard } from "@/components/blocks/Cards";
+import { SectionCard, StatCard, InfoCard } from "@/components/blocks/Cards";
 import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/components/blocks/DataTable";
 import { AssetImage } from "@/components/blocks/AssetImage";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Input, Label, Select, Switch } from "@/components/ui/Field";
-import { ConfirmDialog, Modal } from "@/components/ui/Overlay";
+import { FieldMessage, Input, Label, Select } from "@/components/ui/Field";
+import { Modal } from "@/components/ui/Overlay";
 import { useToast } from "@/components/ui/Toast";
-import { memberLevels, type AdminService } from "@/lib/admin/data";
-import { platforms } from "@/lib/demo/catalog";
-import { useAdminStore } from "@/lib/admin/store";
 import { useAdminSession } from "@/lib/admin/session";
 import { downloadCsv } from "@/lib/admin/csv";
 import { formatNumber, formatUnitPrice } from "@/lib/utils";
+import type { Platform } from "@/types";
+
+/**
+ * Bảng giá bán.
+ *
+ * Danh mục lấy từ API nhà cung cấp — đó là GIÁ VỐN. Giá bán do quản trị viên đặt,
+ * lưu ở máy chủ (data/lacviet-pricing.json) nên khách ở mọi máy đều thấy như nhau.
+ * Không sửa trực tiếp danh mục ở đây: nhà cung cấp đổi gì thì mình nhận nấy, phần
+ * của mình chỉ là quy tắc giá.
+ */
+
+type PriceRule = { type: "percent"; value: number } | { type: "fixed"; value: number };
+
+interface PricingRules {
+  globalMarkup: number;
+  overrides: Record<string, PriceRule>;
+  updatedAt: string;
+  updatedBy?: string;
+}
+
+/** Một dòng bảng giá = một máy chủ của nhà cung cấp. */
+interface Row {
+  key: string;
+  apiServiceId: string;
+  platform: string;
+  platformAssetKey: string;
+  category: string;
+  fullName: string;
+  cost: number;
+  price: number;
+  min: number;
+  max: number;
+  belowCost: boolean;
+}
+
+const pct = (v: number) => `${Math.round((v - 1) * 1000) / 10}%`;
 
 export function AdminServicesView() {
   const toast = useToast();
   const { can } = useAdminSession();
-  const { services, updateService, deleteService, addService } = useAdminStore();
+  const editable = can("services.edit");
+
+  const [platforms, setPlatforms] = React.useState<Platform[] | null>(null);
+  const [source, setSource] = React.useState<"api" | "fallback" | null>(null);
+  const [rules, setRules] = React.useState<PricingRules | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [failed, setFailed] = React.useState<string | null>(null);
 
   const [search, setSearch] = React.useState("");
-  const [platform, setPlatform] = React.useState("");
-  const [editing, setEditing] = React.useState<AdminService | null>(null);
-  const [creating, setCreating] = React.useState(false);
-  const [confirmDelete, setConfirmDelete] = React.useState<AdminService | null>(null);
-  const [draft, setDraft] = React.useState({
-    platformId: platforms[0].id,
-    serviceName: "",
-    serverName: "",
-    prices: ["0", "0", "0", "0"],
-    min: "100",
-    max: "100000",
-  });
+  const [platformFilter, setPlatformFilter] = React.useState("");
+  const [onlyCustom, setOnlyCustom] = React.useState(false);
+  const [editing, setEditing] = React.useState<Row | null>(null);
+  const [markupDraft, setMarkupDraft] = React.useState("");
 
-  const platformNames = React.useMemo(() => [...new Set(services.map((s) => s.platformName))].sort(), [services]);
+  const load = React.useCallback(
+    async (refresh: boolean, quiet = false) => {
+      if (!quiet) setLoading(true);
+      setFailed(null);
+      try {
+        const [cat, pr] = await Promise.all([
+          fetch(`/api/thatim/catalog${refresh ? "?refresh=1" : ""}`).then((r) => r.json()),
+          fetch("/api/admin/pricing").then((r) => r.json()),
+        ]);
+        setPlatforms(cat.platforms ?? []);
+        setSource(cat.source ?? null);
+        if (pr.ok) {
+          setRules(pr.rules);
+          setMarkupDraft(String(Math.round((pr.rules.globalMarkup - 1) * 1000) / 10));
+        } else {
+          setFailed(String(pr.error ?? "Không đọc được bảng giá."));
+        }
+        if (refresh) toast.push({ tone: "success", title: "Đã nạp lại từ nhà cung cấp" });
+      } catch {
+        setFailed("Không gọi được máy chủ.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [toast],
+  );
+
+  React.useEffect(() => {
+    void load(false);
+  }, [load]);
+
+  const rows = React.useMemo<Row[]>(() => {
+    if (!platforms) return [];
+    return platforms.flatMap((p) =>
+      p.services.flatMap((svc) =>
+        svc.servers.map((sv) => ({
+          key: sv.id,
+          apiServiceId: sv.apiServiceId ?? sv.code,
+          platform: p.name,
+          platformAssetKey: p.assetKey,
+          category: svc.name,
+          fullName: sv.fullName,
+          cost: sv.costPerUnit,
+          price: sv.pricePerUnit,
+          min: sv.min,
+          max: sv.max,
+          belowCost: Boolean(sv.belowCost),
+        })),
+      ),
+    );
+  }, [platforms]);
+
+  const platformNames = React.useMemo(() => [...new Set(rows.map((r) => r.platform))].sort(), [rows]);
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
-    return services.filter((s) => {
-      if (platform && s.platformName !== platform) return false;
-      if (q && !`${s.serviceName} ${s.serverName} ${s.platformName} ${s.code}`.toLowerCase().includes(q)) return false;
+    return rows.filter((r) => {
+      if (platformFilter && r.platform !== platformFilter) return false;
+      if (onlyCustom && !rules?.overrides[r.apiServiceId]) return false;
+      if (q && !`${r.apiServiceId} ${r.platform} ${r.category} ${r.fullName}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [services, search, platform]);
+  }, [rows, search, platformFilter, onlyCustom, rules]);
 
   const { page, pageCount, slice, setPage, total, pageSize } = usePagination(filtered, 15);
 
-  const medianPrice = React.useMemo(() => {
-    if (filtered.length === 0) return 0;
-    const sorted = [...filtered].map((s) => s.prices[0]).sort((a, b) => a - b);
-    return sorted[Math.floor(sorted.length / 2)];
-  }, [filtered]);
+  const belowCostCount = rows.filter((r) => r.belowCost).length;
+  const overrideCount = Object.keys(rules?.overrides ?? {}).length;
+  const margin = React.useMemo(() => {
+    const withCost = rows.filter((r) => r.cost > 0);
+    if (!withCost.length) return 0;
+    return withCost.reduce((s, r) => s + r.price, 0) / withCost.reduce((s, r) => s + r.cost, 0);
+  }, [rows]);
 
-  function openEdit(service: AdminService) {
-    setCreating(false);
-    setEditing(service);
-    setDraft({
-      platformId: service.platformId,
-      serviceName: service.serviceName,
-      serverName: service.serverName,
-      prices: service.prices.map((p) => String(p)),
-      min: String(service.min),
-      max: String(service.max),
-    });
-  }
+  async function save(body: Record<string, unknown>, done: string) {
+    const res = await fetch("/api/admin/pricing", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
 
-  function openCreate() {
-    setEditing(null);
-    setCreating(true);
-    setDraft({
-      platformId: platforms[0].id,
-      serviceName: "",
-      serverName: "",
-      prices: ["1", "0.97", "0.94", "0.9"],
-      min: "100",
-      max: "100000",
-    });
-  }
-
-  function closeModal() {
-    setEditing(null);
-    setCreating(false);
-  }
-
-  function save() {
-    const prices = draft.prices.map((p) => Number(p) || 0) as [number, number, number, number];
-    const min = Number(draft.min) || 1;
-    const max = Number(draft.max) || 1;
-
-    if (creating) {
-      if (!draft.serviceName.trim()) {
-        toast.push({ tone: "warning", title: "Chưa nhập tên dịch vụ" });
-        return;
-      }
-      const platform = platforms.find((p) => p.id === draft.platformId) ?? platforms[0];
-      addService({
-        platformId: platform.id,
-        platformName: platform.name,
-        platformAssetKey: platform.assetKey,
-        serviceName: draft.serviceName.trim(),
-        serverName: draft.serverName.trim() || "Máy chủ 1",
-        prices,
-        min,
-        max,
-      });
-      toast.push({ tone: "success", title: `Đã thêm dịch vụ ${draft.serviceName.trim()}` });
-      closeModal();
-      return;
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không lưu được bảng giá", description: String(res.error) });
+      return false;
     }
-
-    if (!editing) return;
-    updateService(editing.id, {
-      serviceName: draft.serviceName.trim() || editing.serviceName,
-      serverName: draft.serverName.trim() || editing.serverName,
-      prices,
-      min,
-      max,
-    });
-    toast.push({ tone: "success", title: `Đã lưu dịch vụ ${editing.code}` });
-    closeModal();
+    setRules(res.rules);
+    toast.push({ tone: "success", title: done });
+    // Giá đổi thì danh mục phải nạp lại để bảng hiện số mới.
+    await load(false, true);
+    return true;
   }
 
-  function exportCsv() {
-    const rows: unknown[][] = [["Mã", "Nền tảng", "Dịch vụ", "Máy chủ", ...memberLevels, "MIN", "MAX", "Đang bật"]];
-    for (const s of filtered) {
-      rows.push([s.code, s.platformName, s.serviceName, s.serverName, ...s.prices, s.min, s.max, s.active ? "có" : "không"]);
-    }
-    const file = downloadCsv("bang-gia-dich-vu", rows);
-    toast.push({ tone: "success", title: `Đã xuất ${filtered.length} dòng`, description: file });
-  }
-
-  const columns: Column<AdminService>[] = [
+  const columns: Column<Row>[] = [
     {
       key: "service",
       header: "Dịch vụ",
-      cell: (s) => (
+      cell: (r) => (
         <div className="flex min-w-0 items-start gap-2.5">
-          <AssetImage assetKey={s.platformAssetKey} className="mt-0.5 h-9 w-9 shrink-0" rounded="control" />
+          <AssetImage assetKey={r.platformAssetKey} className="mt-0.5 h-9 w-9 shrink-0" rounded="control" />
           <div className="min-w-0 max-w-[420px] space-y-1">
-            <p className="truncate text-body-strong text-lv-text">{s.serviceName}</p>
+            <p className="truncate text-body-strong text-lv-text">{r.category}</p>
             <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-small text-lv-muted">
               <span className="flex items-center gap-1">
                 <IconLayoutGrid size={13} className="shrink-0" />
-                {s.platformName}
+                {r.platform}
               </span>
               <span className="flex items-center gap-1">
                 <IconHash size={13} className="shrink-0" />
-                {s.code}
+                {r.apiServiceId}
               </span>
               <span className="flex items-center gap-1">
                 <IconArrowsHorizontal size={13} className="shrink-0" />
-                {formatNumber(s.min)} – {formatNumber(s.max)}
+                {formatNumber(r.min)} – {formatNumber(r.max)}
               </span>
             </p>
-            {/* Tên đầy đủ mới là chỗ phân biệt các máy chủ cùng nhóm dịch vụ. */}
-            {s.serverFullName ? (
-              <p className="flex items-start gap-1 text-small text-lv-muted" title={s.serverFullName}>
-                <IconServer2 size={13} className="mt-0.5 shrink-0" />
-                <span className="truncate">{s.serverFullName}</span>
-              </p>
-            ) : null}
+            <p className="flex items-start gap-1 text-small text-lv-muted" title={r.fullName}>
+              <IconServer2 size={13} className="mt-0.5 shrink-0" />
+              <span className="truncate">{r.fullName}</span>
+            </p>
           </div>
         </div>
       ),
     },
-    ...memberLevels.map((level, index) => ({
-      key: `price-${index}`,
-      header: level,
-      align: "right" as const,
-      cell: (s: AdminService) => (
-        <span className={`lv-price ${index === 0 ? "text-body-strong text-lv-success" : "text-lv-navy-700"}`}>
-          {formatUnitPrice(s.prices[index])}
-        </span>
-      ),
-    })),
     {
-      key: "active",
-      header: "Bật",
-      align: "center",
-      cell: (s) =>
-        can("services.edit") ? (
-          <div className="flex justify-center">
-            <Switch
-              id={`svc-${s.id}`}
-              checked={s.active}
-              onCheckedChange={(next) => {
-                updateService(s.id, { active: next });
-                toast.push({ tone: next ? "success" : "warning", title: next ? `Đã bật ${s.code}` : `Đã tắt ${s.code}` });
-              }}
-            />
-          </div>
-        ) : s.active ? (
-          <IconCheck size={16} className="mx-auto text-lv-success" />
-        ) : (
-          <IconX size={16} className="mx-auto text-lv-muted" />
-        ),
+      key: "cost",
+      header: "Giá vốn",
+      align: "right",
+      cell: (r) => <span className="lv-price text-lv-muted">{formatUnitPrice(r.cost)}</span>,
+    },
+    {
+      key: "price",
+      header: "Giá bán",
+      align: "right",
+      cell: (r) => <span className="lv-price text-body-strong text-lv-success">{formatUnitPrice(r.price)}</span>,
+    },
+    {
+      key: "margin",
+      header: "Chênh lệch",
+      align: "right",
+      cell: (r) => {
+        const rule = rules?.overrides[r.apiServiceId];
+        const diff = r.cost > 0 ? r.price / r.cost : 1;
+        return (
+          <span className="flex flex-col items-end gap-0.5">
+            <span className={r.belowCost ? "text-body-strong text-lv-danger" : "text-lv-navy-700"}>
+              {r.belowCost ? "dưới vốn" : `+${pct(diff)}`}
+            </span>
+            {rule ? (
+              <Badge tone="gold">{rule.type === "fixed" ? "giá cố định" : "riêng"}</Badge>
+            ) : (
+              <span className="text-small text-lv-muted">theo chung</span>
+            )}
+          </span>
+        );
+      },
     },
     {
       key: "actions",
       header: "Thao tác",
       align: "right",
-      cell: (s) => (
-        <div className="flex items-center justify-end gap-1">
-          {can("services.edit") ? (
-            <Button variant="secondary" size="sm" aria-label={`Sửa ${s.code}`} onClick={() => openEdit(s)}>
-              <IconEdit size={15} />
-            </Button>
-          ) : null}
-          {can("services.delete") ? (
-            <Button variant="danger" size="sm" aria-label={`Xoá ${s.code}`} onClick={() => setConfirmDelete(s)}>
-              <IconTrash size={15} />
-            </Button>
-          ) : null}
-          {!can("services.edit") && !can("services.delete") ? (
-            <span className="text-small text-lv-muted">chỉ xem</span>
-          ) : null}
-        </div>
-      ),
+      cell: (r) =>
+        editable ? (
+          <Button variant="ghost" size="sm" aria-label={`Sửa giá ${r.apiServiceId}`} onClick={() => setEditing(r)}>
+            <IconEdit size={16} />
+          </Button>
+        ) : (
+          <span className="text-small text-lv-muted">chỉ xem</span>
+        ),
     },
   ];
 
@@ -239,152 +256,327 @@ export function AdminServicesView() {
     <div className="space-y-5">
       <PageHeader
         title="Dịch vụ & bảng giá"
-        description="Giá tính trên một tương tác, theo bốn cấp bậc thành viên."
+        description="Giá vốn lấy từ nhà cung cấp, giá bán do bạn đặt. Áp cho toàn hệ thống."
+        breadcrumb={[{ label: "Quản trị", href: "/admin" }, { label: "Dịch vụ & bảng giá" }]}
+        action={
+          <Button variant="secondary" icon={<IconRefresh size={17} />} onClick={() => void load(true)} loading={loading}>
+            Nạp lại
+          </Button>
+        }
       />
 
+      {failed ? (
+        <InfoCard title="Không đọc được bảng giá" tone="danger" icon={<IconAlertTriangle size={16} />}>
+          {failed} Đăng xuất rồi đăng nhập lại trang quản trị để cấp phiên mới.
+        </InfoCard>
+      ) : null}
+
+      {source === "fallback" ? (
+        <InfoCard title="Đang dùng danh mục dự phòng" tone="warning" icon={<IconAlertTriangle size={16} />}>
+          Chưa lấy được danh mục trực tiếp từ nhà cung cấp nên bảng dưới đây là bản chụp cũ. Sửa giá lúc này vẫn
+          lưu được, nhưng nên nạp lại khi API thông trở lại.
+        </InfoCard>
+      ) : null}
+
+      {belowCostCount > 0 ? (
+        <InfoCard
+          title={`${belowCostCount} dịch vụ đang bán dưới giá vốn`}
+          tone="danger"
+          icon={<IconAlertTriangle size={16} />}
+        >
+          Thường do đặt giá cố định rồi nhà cung cấp tăng giá vốn. Lọc “Chỉ giá đặt riêng” để soát lại.
+        </InfoCard>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Dịch vụ khớp lọc" value={formatNumber(filtered.length)} suffix={`/ ${services.length}`} tone="gold" icon={<IconLayoutGrid size={20} />} />
-        <StatCard label="Nền tảng" value={platformNames.length} suffix="nền tảng" tone="navy" icon={<IconLayoutGrid size={20} />} />
-        <StatCard label="Giá trung vị (Thành viên)" value={formatUnitPrice(medianPrice)} tone="info" icon={<IconCoins size={20} />} />
-        <StatCard label="Đang tắt" value={formatNumber(services.filter((s) => !s.active).length)} suffix="dịch vụ" tone="danger" icon={<IconX size={20} />} />
+        <StatCard
+          label="Dịch vụ"
+          value={loading ? "…" : formatNumber(rows.length)}
+          tone="navy"
+          icon={<IconServer2 size={18} />}
+          hint={`${platformNames.length} nền tảng`}
+        />
+        <StatCard
+          label="Hệ số chung"
+          value={rules ? `+${pct(rules.globalMarkup)}` : "…"}
+          tone="gold"
+          icon={<IconPercentage size={18} />}
+          hint="áp cho dịch vụ chưa đặt riêng"
+        />
+        <StatCard
+          label="Chênh lệch bình quân"
+          value={margin ? `+${pct(margin)}` : "…"}
+          tone="success"
+          icon={<IconTrendingUp size={18} />}
+          hint="giá bán so với giá vốn"
+        />
+        <StatCard
+          label="Đặt giá riêng"
+          value={formatNumber(overrideCount)}
+          tone={belowCostCount ? "danger" : "info"}
+          icon={<IconCoins size={18} />}
+          hint={belowCostCount ? `${belowCostCount} dịch vụ dưới vốn` : "dịch vụ có quy tắc riêng"}
+        />
       </div>
 
       <SectionCard
-        title="Bảng giá"
-        description={`${formatNumber(filtered.length)} dịch vụ`}
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            {can("export.csv") ? (
-              <Button variant="secondary" size="sm" icon={<IconFileExport size={16} />} onClick={exportCsv}>
-                Xuất CSV
-              </Button>
-            ) : null}
-            {can("services.edit") ? (
-              <Button size="sm" icon={<IconPlus size={16} />} onClick={openCreate}>
-                Thêm dịch vụ
-              </Button>
-            ) : null}
-          </div>
-        }
-        padded={false}
+        title="Hệ số bán chung"
+        description="Cộng thêm bao nhiêu phần trăm so với giá vốn, cho mọi dịch vụ chưa đặt giá riêng."
       >
-        <div className="px-5 py-4">
-          <FilterBar search={search} onSearch={setSearch} placeholder="Tên dịch vụ, máy chủ, mã…">
-            <Select aria-label="Nền tảng" value={platform} onChange={(e) => setPlatform(e.target.value)}>
-              <option value="">Tất cả nền tảng</option>
-              {platformNames.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </Select>
-          </FilterBar>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-[180px]">
+            <Label htmlFor="markup" hint="phần trăm">
+              Cộng thêm
+            </Label>
+            <Input
+              id="markup"
+              type="number"
+              step="0.5"
+              min={0}
+              disabled={!editable}
+              value={markupDraft}
+              onChange={(e) => setMarkupDraft(e.target.value)}
+            />
+          </div>
+          <Button
+            disabled={!editable || markupDraft === "" || !rules}
+            onClick={() => {
+              const v = Number(markupDraft);
+              if (!Number.isFinite(v) || v < 0) {
+                toast.push({ tone: "warning", title: "Phần trăm không hợp lệ" });
+                return;
+              }
+              void save({ globalMarkup: 1 + v / 100 }, `Đã đặt hệ số chung +${v}%`);
+            }}
+          >
+            Lưu hệ số
+          </Button>
+          <p className="text-small text-lv-muted">
+            Ví dụ giá vốn 2,3 đ → bán{" "}
+            {formatUnitPrice(Math.round(2.3 * (1 + (Number(markupDraft) || 0) / 100) * 1e5) / 1e5)}
+          </p>
         </div>
-        <DataTable
-          caption="Bảng giá dịch vụ theo cấp bậc"
-          columns={columns}
-          rows={slice}
-          rowKey={(s) => s.id}
-          emptyTitle="Không có dịch vụ nào khớp bộ lọc"
-        />
-        <div className="border-t border-lv-border px-5 py-3">
-          <Pagination page={page} pageCount={pageCount} onChange={setPage} total={total} pageSize={pageSize} />
-        </div>
+        {rules?.updatedBy ? (
+          <p className="mt-3 text-small text-lv-muted">
+            Sửa lần cuối bởi {rules.updatedBy} · {new Date(rules.updatedAt).toLocaleString("vi-VN")}
+          </p>
+        ) : null}
       </SectionCard>
 
-      <Modal
-        open={!!editing || creating}
-        onClose={closeModal}
-        title={creating ? "Thêm dịch vụ" : editing ? `Sửa dịch vụ ${editing.code}` : ""}
-        description={!creating && editing ? `${editing.platformName} · ${editing.serviceName}` : undefined}
-        footer={
-          <>
-            <Button variant="secondary" onClick={closeModal}>
-              Huỷ
-            </Button>
-            <Button onClick={save} data-autofocus>
-              {creating ? "Thêm" : "Lưu"}
-            </Button>
-          </>
-        }
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label htmlFor="svc-platform" required>
-              Nền tảng
-            </Label>
-            <Select
-              id="svc-platform"
-              value={draft.platformId}
-              disabled={!creating}
-              onChange={(e) => setDraft((d) => ({ ...d, platformId: e.target.value }))}
-            >
-              {platforms.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="svc-name" required>
-              Tên dịch vụ
-            </Label>
-            <Input
-              id="svc-name"
-              placeholder="Ví dụ: Tăng lượt xem video"
-              value={draft.serviceName}
-              onChange={(e) => setDraft((d) => ({ ...d, serviceName: e.target.value }))}
-            />
-          </div>
-          <div>
-            <Label htmlFor="svc-server">Tên máy chủ</Label>
-            <Input
-              id="svc-server"
-              placeholder="Máy chủ 1 — Nguồn Việt"
-              value={draft.serverName}
-              onChange={(e) => setDraft((d) => ({ ...d, serverName: e.target.value }))}
-            />
-          </div>
-          {memberLevels.map((level, index) => (
-            <div key={level}>
-              <Label htmlFor={`price-${index}`}>{level}</Label>
-              <Input
-                id={`price-${index}`}
-                type="number"
-                step="0.001"
-                value={draft.prices[index]}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, prices: d.prices.map((p, i) => (i === index ? e.target.value : p)) }))
-                }
-              />
-            </div>
-          ))}
-          <div>
-            <Label htmlFor="svc-min">Số lượng tối thiểu</Label>
-            <Input id="svc-min" type="number" value={draft.min} onChange={(e) => setDraft((d) => ({ ...d, min: e.target.value }))} />
-          </div>
-          <div>
-            <Label htmlFor="svc-max">Số lượng tối đa</Label>
-            <Input id="svc-max" type="number" value={draft.max} onChange={(e) => setDraft((d) => ({ ...d, max: e.target.value }))} />
-          </div>
-        </div>
-      </Modal>
+      <SectionCard title="Bảng giá" description={`${filtered.length} dịch vụ`}>
+        <FilterBar
+          search={search}
+          onSearch={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Tên dịch vụ, máy chủ, mã…"
+          right={
+            can("export.csv") ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  downloadCsv("bang-gia", [
+                    ["Mã dịch vụ", "Nền tảng", "Nhóm", "Máy chủ", "Giá vốn (đ)", "Giá bán (đ)", "MIN", "MAX"],
+                    ...filtered.map((r) => [
+                      r.apiServiceId,
+                      r.platform,
+                      r.category,
+                      r.fullName,
+                      r.cost,
+                      r.price,
+                      r.min,
+                      r.max,
+                    ]),
+                  ]);
+                  toast.push({ tone: "success", title: `Đã xuất ${filtered.length} dòng` });
+                }}
+              >
+                Xuất CSV
+              </Button>
+            ) : null
+          }
+        >
+          <Select
+            aria-label="Lọc theo nền tảng"
+            value={platformFilter}
+            onChange={(e) => {
+              setPlatformFilter(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">Tất cả nền tảng</option>
+            {platformNames.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Lọc theo quy tắc giá"
+            value={onlyCustom ? "custom" : "all"}
+            onChange={(e) => {
+              setOnlyCustom(e.target.value === "custom");
+              setPage(1);
+            }}
+          >
+            <option value="all">Mọi mức giá</option>
+            <option value="custom">Chỉ giá đặt riêng</option>
+          </Select>
+        </FilterBar>
 
-      <ConfirmDialog
-        open={!!confirmDelete}
-        onClose={() => setConfirmDelete(null)}
-        onConfirm={() => {
-          if (!confirmDelete) return;
-          deleteService(confirmDelete.id);
-          toast.push({ tone: "success", title: `Đã xoá dịch vụ ${confirmDelete.code}` });
-          setConfirmDelete(null);
+        <DataTable
+          caption="Bảng giá dịch vụ"
+          columns={columns}
+          rows={slice}
+          rowKey={(r) => r.key}
+          state={loading ? "loading" : "ready"}
+          emptyTitle="Không có dịch vụ nào khớp"
+        />
+        <Pagination page={page} pageCount={pageCount} total={total} pageSize={pageSize} onChange={setPage} />
+      </SectionCard>
+
+      <PriceModal
+        row={editing}
+        rule={editing ? rules?.overrides[editing.apiServiceId] : undefined}
+        globalMarkup={rules?.globalMarkup ?? 1}
+        onClose={() => setEditing(null)}
+        onSave={async (id, rule) => {
+          const ok = await save({ overrides: { [id]: rule } }, rule ? "Đã đặt giá riêng" : "Đã bỏ giá riêng");
+          if (ok) setEditing(null);
         }}
-        title={confirmDelete ? `Xoá dịch vụ ${confirmDelete.code}?` : ""}
-        message="Dịch vụ sẽ biến mất khỏi bảng giá. Nạp lại dữ liệu gốc mới khôi phục được."
-        confirmLabel="Xoá"
-        tone="danger"
       />
     </div>
+  );
+}
+
+/** Hộp đặt giá cho một dịch vụ. */
+function PriceModal({
+  row,
+  rule,
+  globalMarkup,
+  onClose,
+  onSave,
+}: {
+  row: Row | null;
+  rule?: PriceRule;
+  globalMarkup: number;
+  onClose: () => void;
+  onSave: (id: string, rule: PriceRule | null) => void | Promise<void>;
+}) {
+  const [mode, setMode] = React.useState<"global" | "percent" | "fixed">("global");
+  const [value, setValue] = React.useState("");
+
+  React.useEffect(() => {
+    if (!row) return;
+    if (rule?.type === "percent") {
+      setMode("percent");
+      setValue(String(Math.round((rule.value - 1) * 1000) / 10));
+    } else if (rule?.type === "fixed") {
+      setMode("fixed");
+      setValue(String(rule.value));
+    } else {
+      setMode("global");
+      setValue(String(Math.round((globalMarkup - 1) * 1000) / 10));
+    }
+  }, [row, rule, globalMarkup]);
+
+  if (!row) return null;
+
+  const num = Number(value);
+  const preview =
+    mode === "fixed"
+      ? num
+      : Math.round(row.cost * (1 + (mode === "global" ? (globalMarkup - 1) * 100 : num) / 100) * 1e5) / 1e5;
+  const below = Number.isFinite(preview) && preview < row.cost;
+
+  return (
+    <Modal open onClose={onClose} title="Đặt giá bán" description={`${row.platform} · ${row.category}`} size="md">
+      <div className="space-y-4">
+        <div className="rounded-card border border-lv-border bg-lv-bg p-3">
+          <p className="break-words text-small text-lv-muted">{row.fullName}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-small">
+            <span className="flex items-center gap-1 text-lv-muted">
+              <IconHash size={13} /> {row.apiServiceId}
+            </span>
+            <span>
+              <span className="text-lv-muted">Giá vốn </span>
+              <span className="lv-price text-body-strong text-lv-text">{formatUnitPrice(row.cost)}</span>
+            </span>
+          </p>
+        </div>
+
+        <div>
+          <Label htmlFor="price-mode">Cách tính giá bán</Label>
+          <Select id="price-mode" value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
+            <option value="global">Theo hệ số chung (+{pct(globalMarkup)})</option>
+            <option value="percent">Cộng phần trăm riêng</option>
+            <option value="fixed">Đặt giá cố định</option>
+          </Select>
+        </div>
+
+        {mode !== "global" ? (
+          <div>
+            <Label htmlFor="price-value" hint={mode === "fixed" ? "đồng / tương tác" : "phần trăm"}>
+              {mode === "fixed" ? "Giá bán" : "Cộng thêm"}
+            </Label>
+            <Input
+              id="price-value"
+              type="number"
+              step={mode === "fixed" ? "0.01" : "0.5"}
+              min={0}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              tone={below ? "invalid" : "default"}
+            />
+            {mode === "fixed" ? (
+              <FieldMessage tone={below ? "invalid" : "default"}>
+                {below
+                  ? "Thấp hơn giá vốn — mỗi đơn bán ra là lỗ."
+                  : "Giá cố định không tự tăng khi nhà cung cấp tăng giá vốn."}
+              </FieldMessage>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="rounded-card border border-lv-border-gold bg-lv-gold-50 px-3 py-2">
+          <p className="text-small text-lv-gold-700">Giá bán sau khi lưu</p>
+          <p className="lv-price mt-0.5 text-h3 text-lv-gold-700">
+            {Number.isFinite(preview) ? formatUnitPrice(preview) : "—"}
+            <span className="ml-2 text-small font-normal text-lv-muted">
+              {row.cost > 0 && Number.isFinite(preview)
+                ? `(${below ? "dưới vốn" : `+${pct(preview / row.cost)}`})`
+                : ""}
+            </span>
+          </p>
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            Huỷ
+          </Button>
+          {rule ? (
+            <Button variant="secondary" onClick={() => void onSave(row.apiServiceId, null)}>
+              Bỏ giá riêng
+            </Button>
+          ) : null}
+          <Button
+            disabled={mode !== "global" && (!Number.isFinite(num) || num < 0)}
+            onClick={() =>
+              void onSave(
+                row.apiServiceId,
+                mode === "global"
+                  ? null
+                  : mode === "fixed"
+                    ? { type: "fixed", value: num }
+                    : { type: "percent", value: 1 + num / 100 },
+              )
+            }
+          >
+            Lưu giá
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }

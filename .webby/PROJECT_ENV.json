@@ -63,7 +63,7 @@
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
     "build": "pnpm build — PASS (39 route)",
-    "routeSmoke": "5 bộ Playwright — 137 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 26, tài khoản 32)",
+    "routeSmoke": "5 bộ Playwright — 139 PASS / 0 FAIL (khách 57, quản trị 18, thêm mới 6, API+popup 26, tài khoản 32)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -71,7 +71,7 @@
     "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
     "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
-  "routesImplemented": 39,
+  "routesImplemented": 41,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
   "missingAssetKeys": 6,
   "openProductionGaps": 13,
@@ -202,5 +202,15 @@
     "paymentMethods": "Chỉ còn VietinBank (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT",
     "tierPricing": "Bỏ dải bảng giá 4 bậc khỏi trang khách — khách lẻ không cần thấy giá cấp đại lý/nhà phân phối. Giá vẫn tính theo bậc của tài khoản ở phía sau."
   },
-  "plannedPaymentGateway": "SePay — tự cộng số dư qua webhook biến động số dư ngân hàng (USER chốt 2026-08-31, chưa làm)"
+  "plannedPaymentGateway": "SePay — tự cộng số dư qua webhook biến động số dư ngân hàng (USER chốt 2026-08-31, chưa làm)",
+  "pricing": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "model": "Giá từ API nhà cung cấp là giá vốn; giá bán do quản trị đặt",
+    "store": "data/lacviet-pricing.json (đã gitignore) — server, không phải localStorage",
+    "rules": "Hệ số chung theo phần trăm; hoặc quy tắc riêng theo mã dịch vụ: percent (an toàn) hoặc fixed (có thể tụt dưới vốn khi nhà cung cấp tăng giá)",
+    "guard": "Đọc và ghi bảng giá đều cần cookie phiên quản trị httpOnly do /api/admin/session cấp",
+    "adminScreen": "/admin/services — hiện giá vốn, giá bán, chênh lệch, cảnh báo bán dưới vốn",
+    "removed": "Thêm/xoá dịch vụ tay: danh mục nay lấy từ API, dịch vụ tự thêm không có mã nhà cung cấp nên không đẩy đơn được"
+  }
 }

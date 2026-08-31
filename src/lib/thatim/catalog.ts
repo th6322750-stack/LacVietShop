@@ -8,6 +8,7 @@ import type { Platform } from "@/types";
 import { getServices } from "./client";
 import { mapServicesToPlatforms } from "./map";
 import { thatimConfig, isThatimConfigured, tierMultipliers } from "./config";
+import { readRules, sellingPrice } from "@/lib/server/pricing";
 import { platforms as fallbackPlatforms } from "@/lib/demo/services-catalog";
 
 if (typeof window !== "undefined") {
@@ -69,10 +70,11 @@ export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
     return fallbackCatalog(res.error);
   }
 
+  const rules = readRules();
   const platforms = mapServicesToPlatforms(res.data, {
     usdToVnd: thatimConfig.usdToVnd,
-    markup: thatimConfig.markup,
     tierMultipliers,
+    price: (cost, apiServiceId) => sellingPrice(cost, apiServiceId, rules),
   });
 
   const value: LiveCatalog = {

@@ -61,6 +61,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Nguồn: Nick Phonefarm ~ Có Đề Xuất ~ Không Tụt ~ Máy Chủ Xịn Nhất ~ Tốc Độ Nhanh: 10.000.000/Ngày ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 2.3,
+            "costPerUnit": 2.3,
             "pricesByTier": [
               2.3,
               2.28,
@@ -88,6 +89,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Nguồn: Nick Phonefarm ~ Có Thể Đưa Video Lên Đề Xuất Và Xu Hướng ~ Tốc Độ Chậm: 10.000- 100.000/ Ngày ~ Không Tụt ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 1.6,
+            "costPerUnit": 1.6,
             "pricesByTier": [
               1.6,
               1.58,
@@ -114,6 +116,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Hầu Như Không Tụt ~ Có Thể Đưa Video Lên Xu Hướng ~ Tốc Độ Nhanh : 20.000-500.000/Ngày ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 1.3,
+            "costPerUnit": 1.3,
             "pricesByTier": [
               1.3,
               1.29,
@@ -139,6 +142,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Không Tụt ~ Có Thể Bật Kiếm Tiền ~ Giá Rẻ ~ Có Đề Xuất Xu Hướng ~ Tốc Độ: 50.000-100.000/ Ngày~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 1.1,
+            "costPerUnit": 1.1,
             "pricesByTier": [
               1.1,
               1.09,
@@ -166,6 +170,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Giá Rẻ ~ Tốc Độ Nhanh: 1.000.000-10.000.000/Ngày ~ Có Thể Có Tỉ Lệ Tụt ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 0.37,
+            "costPerUnit": 0.37,
             "pricesByTier": [
               0.37,
               0.365,
@@ -191,6 +196,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Video Tiktok",
             "fullName": "Tăng Lượt Xem Video Tiktok ~ Giá Siêu Rẻ ~ Tốc Độ: 1.000.000-10.000.000/Ngày ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 0.2,
+            "costPerUnit": 0.2,
             "pricesByTier": [
               0.2,
               0.19,
@@ -223,6 +229,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Thả Tim Video Tiktok",
             "fullName": "Tăng Thả Tim Video Tiktok ~ Ít Tụt Nhất ~ Tốc Độ Nhanh: 1.000-10.000/Ngày ~ Bắt Đầu Nhanh ~ Tài Nguyên Random 🔥🔥🔥",
             "pricePerUnit": 8.5,
+            "costPerUnit": 8.5,
             "pricesByTier": [
               8.5,
               8.4,
@@ -248,6 +255,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Thả Tim Video",
             "fullName": "Tăng Thả Tim Video ~ Tốc Độ Nhanh: 1.000-5.000/Ngày ~ Giá Siêu Rẻ ~ Lên Ngay ~ Tài Nguyên Việt Nam🔥🔥 🔥",
             "pricePerUnit": 5.8,
+            "costPerUnit": 5.8,
             "pricesByTier": [
               5.8,
               5.7,
@@ -273,6 +281,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Thả Tim Video Người Dùng Bấm Tay",
             "fullName": "Tăng Lượt Thả Tim Video Người Dùng Bấm Tay ~ Tỉ Lệ Tụt Thấp Hơn ~ Lên Nhanh: 5.000-20.000/Ngày ~ Tài Nguyên Việt Nam 🇻🇳🔥🔥 🔥",
             "pricePerUnit": 157555.885,
+            "costPerUnit": 157555.885,
             "pricesByTier": [
               157555.885,
               156374.807,
@@ -297,6 +306,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Thả Tim Video Người Dùng Bấm Tay",
             "fullName": "Tăng Thả Tim Video Người Dùng Bấm Tay ~ Tỉ Lệ Tụt Cao ~ Tốc Độ Nhanh: 5.000-30.000/Ngày ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 7.5,
+            "costPerUnit": 7.5,
             "pricesByTier": [
               7.5,
               7.4,
@@ -321,6 +331,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Thả Tim Video",
             "fullName": "Tăng Thả Tim Video ~ Ít Tụt ~ Tốc Độ: 5.000-20.000/Ngày ~ Bắt Đầu Nhanh ~ Tài Nguyên Ngoại🔥🔥🔥🔥 🔥",
             "pricePerUnit": 8,
+            "costPerUnit": 8,
             "pricesByTier": [
               8,
               7.9,
@@ -346,6 +357,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Thả Tim Video",
             "fullName": "Tăng Thả Tim Video ~ Người Dùng ~ Lên Nhanh: 5.000-20.000/Ngày ~ Dành Cho Video Cần Tim Lớn ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 26,
+            "costPerUnit": 26,
             "pricesByTier": [
               26,
               25.8,
@@ -379,6 +391,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi",
             "fullName": "Tăng Người Theo Dõi ~ Có Tụt ~ Tốc Độ Siêu Nhanh : 5.000-10.000/Ngày ~ Ổn Định Nhất ~ Tài Nguyên Cổ Ngoại🔥🔥🔥",
             "pricePerUnit": 75,
+            "costPerUnit": 75,
             "pricesByTier": [
               75,
               74.8,
@@ -404,6 +417,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi",
             "fullName": "Tăng Người Theo Dõi ~ Có Tụt ~ Tốc Độ Nhanh: 1.000-5.000/Ngày ~ Tài Nguyên Ngoại 🔥🔥🔥",
             "pricePerUnit": 64,
+            "costPerUnit": 64,
             "pricesByTier": [
               64,
               63.5,
@@ -428,6 +442,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi Người Dùng",
             "fullName": "Tăng Người Theo Dõi Người Dùng ~ Hỗ Trợ Đè Đơn ~ Tỉ Lệ Tụt Cao ~ Tốc Độ Khá Nhanh : 400-500/Ngày ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥",
             "pricePerUnit": 37,
+            "costPerUnit": 37,
             "pricesByTier": [
               37,
               36.5,
@@ -453,6 +468,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi Người Dùng",
             "fullName": "Tăng Người Theo Dõi Người Dùng ~ Tốc Độ Chậm: 100-300/Ngày ~ Tỉ Lệ Tụt Cao ~ Tài Nguyên Việt Nam Có Tỉ Lệ Video Cao🔥🔥",
             "pricePerUnit": 21,
+            "costPerUnit": 21,
             "pricesByTier": [
               21,
               20.8,
@@ -477,6 +493,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi",
             "fullName": "Tăng Người Theo Dõi ~ Tốc Độ Nhanh: 2.000-5.000/Ngày ~ Tỉ Lệ Tụt Thấp ~ Tài Nguyên Ngoại Cổ Giá Rẻ 🔥🔥🔥",
             "pricePerUnit": 25,
+            "costPerUnit": 25,
             "pricesByTier": [
               25,
               24.8,
@@ -501,6 +518,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi Tiktok",
             "fullName": "Tăng Người Theo Dõi Tiktok ~ Tốc Độ Nhanh: 2.000-20.000/Ngày ~ Tỉ Lệ Tụt Thấp ~ Tài Nguyên Tài Khoản Cổ Ngoại 🔥🔥 🔥",
             "pricePerUnit": 25,
+            "costPerUnit": 25,
             "pricesByTier": [
               25,
               24.8,
@@ -525,6 +543,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Người Theo Dõi",
             "fullName": "Tăng Người Theo Dõi ~ Giá Rẻ ~ Tốc Độ Nhanh: 1.000-20.000/Ngày ~ Tài Nguyên Ngoại Random 🔥🔥",
             "pricePerUnit": 7,
+            "costPerUnit": 7,
             "pricesByTier": [
               7,
               6.9,
@@ -557,6 +576,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Lượt Xem Livestream Tiktok",
             "fullName": "Tăng Lượt Xem Livestream Tiktok ~ Máy Chủ Ổn Định ~ Tối Đa: 5.000 ~ Tốc Độ Nhanh ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥",
             "pricePerUnit": 3.2,
+            "costPerUnit": 3.2,
             "pricesByTier": [
               3.2,
               3.15,
@@ -582,6 +602,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Mắt Xem Live",
             "fullName": "Tăng Mắt Xem Live ~ Lên Siêu Nhanh ~ Máy Chủ Ổn Định ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥 ~ Xem Live 30 Phút",
             "pricePerUnit": 96,
+            "costPerUnit": 96,
             "pricesByTier": [
               96,
               94.5,
@@ -607,6 +628,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Mắt Xem Live",
             "fullName": "Tăng Mắt Xem Live ~ Lên Siêu Nhanh ~ Máy Chủ Ổn Định ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥 ~ Xem Live 60 Phút",
             "pricePerUnit": 192,
+            "costPerUnit": 192,
             "pricesByTier": [
               192,
               189,
@@ -632,6 +654,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Mắt Xem Live",
             "fullName": "Tăng Mắt Xem Live ~ Lên Siêu Nhanh ~ Máy Chủ Ổn Định ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥 ~ Xem Live 90 Phút",
             "pricePerUnit": 288,
+            "costPerUnit": 288,
             "pricesByTier": [
               288,
               283.5,
@@ -657,6 +680,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Mắt Xem Live",
             "fullName": "Tăng Mắt Xem Live ~ Lên Siêu Nhanh ~ Máy Chủ Ổn Định ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥 ~ Xem Live 120 Phút",
             "pricePerUnit": 384,
+            "costPerUnit": 384,
             "pricesByTier": [
               384,
               378,
@@ -682,6 +706,7 @@ export const platforms: Platform[] = [
             "name": "Tăng Mắt Xem Live",
             "fullName": "Tăng Mắt Xem Live ~ Lên Siêu Nhanh ~ Máy Chủ Ổn Định ~ Tài Nguyên Việt Nam 🇻🇳 🔥🔥🔥 ~ Xem Live 180 Phút",
             "pricePerUnit": 576,
+            "costPerUnit": 576,
             "pricesByTier": [
               576,
               567,
@@ -715,6 +740,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Lưu Video",
             "fullName": "Máy chủ 1 — Tăng Lượt Lưu Video",
             "pricePerUnit": 21.08,
+            "costPerUnit": 21.08,
             "pricesByTier": [
               21.08,
               20.803,
@@ -743,6 +769,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Chia Sẻ Video",
             "fullName": "Máy chủ 1 — Tăng Chia Sẻ Video",
             "pricePerUnit": 58.21,
+            "costPerUnit": 58.21,
             "pricesByTier": [
               58.21,
               57.444,
@@ -771,6 +798,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Bình Luận Video",
             "fullName": "Máy chủ 1 — Tăng Bình Luận Video",
             "pricePerUnit": 28.82,
+            "costPerUnit": 28.82,
             "pricesByTier": [
               28.82,
               28.441,
@@ -799,6 +827,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Seeding Livestream",
             "fullName": "Máy chủ 1 — Seeding Livestream",
             "pricePerUnit": 17.18,
+            "costPerUnit": 17.18,
             "pricesByTier": [
               17.18,
               16.954,
@@ -827,6 +856,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Mua Gói Tim Tháng",
             "fullName": "Máy chủ 1 — Mua Gói Tim Tháng",
             "pricePerUnit": 67.14,
+            "costPerUnit": 67.14,
             "pricesByTier": [
               67.14,
               66.256,
@@ -864,6 +894,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Likes",
             "fullName": "Máy chủ 1 — Instagram Likes",
             "pricePerUnit": 29.13,
+            "costPerUnit": 29.13,
             "pricesByTier": [
               29.13,
               28.747,
@@ -892,6 +923,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Followers",
             "fullName": "Máy chủ 1 — Instagram Followers",
             "pricePerUnit": 61.49,
+            "costPerUnit": 61.49,
             "pricesByTier": [
               61.49,
               60.681,
@@ -920,6 +952,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Video Views",
             "fullName": "Máy chủ 1 — Instagram Video Views",
             "pricePerUnit": 23.91,
+            "costPerUnit": 23.91,
             "pricesByTier": [
               23.91,
               23.595,
@@ -948,6 +981,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Story Views",
             "fullName": "Máy chủ 1 — Instagram Story Views",
             "pricePerUnit": 37.47,
+            "costPerUnit": 37.47,
             "pricesByTier": [
               37.47,
               36.977,
@@ -976,6 +1010,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Comments",
             "fullName": "Máy chủ 1 — Instagram Comments",
             "pricePerUnit": 50.34,
+            "costPerUnit": 50.34,
             "pricesByTier": [
               50.34,
               49.677,
@@ -1004,6 +1039,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Save",
             "fullName": "Máy chủ 1 — Instagram Save",
             "pricePerUnit": 21.61,
+            "costPerUnit": 21.61,
             "pricesByTier": [
               21.61,
               21.326,
@@ -1032,6 +1068,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Live Stream Views",
             "fullName": "Máy chủ 1 — Instagram Live Stream Views",
             "pricePerUnit": 40.28,
+            "costPerUnit": 40.28,
             "pricesByTier": [
               40.28,
               39.75,
@@ -1060,6 +1097,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Instagram Channel Member [ Targeted ]",
             "fullName": "Máy chủ 1 — Instagram Channel Member [ Targeted ]",
             "pricePerUnit": 26.84,
+            "costPerUnit": 26.84,
             "pricesByTier": [
               26.84,
               26.487,
@@ -1097,6 +1135,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — WhatsApp Channel Members [ Cheapest ]",
             "fullName": "Máy chủ 1 — WhatsApp Channel Members [ Cheapest ]",
             "pricePerUnit": 62.38,
+            "costPerUnit": 62.38,
             "pricesByTier": [
               62.38,
               61.559,
@@ -1125,6 +1164,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — WhatsApp Channel Emoji Reactions [ Cheapest ]",
             "fullName": "Máy chủ 1 — WhatsApp Channel Emoji Reactions [ Cheapest ]",
             "pricePerUnit": 42.13,
+            "costPerUnit": 42.13,
             "pricesByTier": [
               42.13,
               41.575,
@@ -1154,6 +1194,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Whatsapp Channel Emoji Reactions",
             "fullName": "Máy chủ 1 — Whatsapp Channel Emoji Reactions",
             "pricePerUnit": 68.06,
+            "costPerUnit": 68.06,
             "pricesByTier": [
               68.06,
               67.164,
@@ -1192,6 +1233,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — X - Twitter VIETNAM Services 🇻🇳",
             "fullName": "Máy chủ 1 — X - Twitter VIETNAM Services 🇻🇳",
             "pricePerUnit": 61.69,
+            "costPerUnit": 61.69,
             "pricesByTier": [
               61.69,
               60.878,
@@ -1220,6 +1262,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Impressions",
             "fullName": "Máy chủ 1 — Twitter Impressions",
             "pricePerUnit": 32.31,
+            "costPerUnit": 32.31,
             "pricesByTier": [
               32.31,
               31.885,
@@ -1248,6 +1291,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Followers",
             "fullName": "Máy chủ 1 — Twitter Followers",
             "pricePerUnit": 60.83,
+            "costPerUnit": 60.83,
             "pricesByTier": [
               60.83,
               60.029,
@@ -1276,6 +1320,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Likes ♻️",
             "fullName": "Máy chủ 1 — Twitter Likes ♻️",
             "pricePerUnit": 14.22,
+            "costPerUnit": 14.22,
             "pricesByTier": [
               14.22,
               14.033,
@@ -1304,6 +1349,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Retweet ♻️",
             "fullName": "Máy chủ 1 — Twitter Retweet ♻️",
             "pricePerUnit": 28.23,
+            "costPerUnit": 28.23,
             "pricesByTier": [
               28.23,
               27.858,
@@ -1332,6 +1378,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Views",
             "fullName": "Máy chủ 1 — Twitter Views",
             "pricePerUnit": 17.25,
+            "costPerUnit": 17.25,
             "pricesByTier": [
               17.25,
               17.023,
@@ -1360,6 +1407,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Twitter Space Listeners",
             "fullName": "Máy chủ 1 — Twitter Space Listeners",
             "pricePerUnit": 48.91,
+            "costPerUnit": 48.91,
             "pricesByTier": [
               48.91,
               48.266,
@@ -1397,6 +1445,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng View Video",
             "fullName": "Máy chủ 1 — Tăng View Video",
             "pricePerUnit": 21.13,
+            "costPerUnit": 21.13,
             "pricesByTier": [
               21.13,
               20.852,
@@ -1425,6 +1474,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Đăng Ký Kênh",
             "fullName": "Máy chủ 1 — Tăng Đăng Ký Kênh",
             "pricePerUnit": 44.61,
+            "costPerUnit": 44.61,
             "pricesByTier": [
               44.61,
               44.023,
@@ -1453,6 +1503,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Bình Luận Video",
             "fullName": "Máy chủ 1 — Tăng Bình Luận Video",
             "pricePerUnit": 30.75,
+            "costPerUnit": 30.75,
             "pricesByTier": [
               30.75,
               30.345,
@@ -1481,6 +1532,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Chia Sẻ Video",
             "fullName": "Máy chủ 1 — Tăng Chia Sẻ Video",
             "pricePerUnit": 30.79,
+            "costPerUnit": 30.79,
             "pricesByTier": [
               30.79,
               30.385,
@@ -1509,6 +1561,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Like Video",
             "fullName": "Máy chủ 1 — Tăng Lượt Like Video",
             "pricePerUnit": 59.48,
+            "costPerUnit": 59.48,
             "pricesByTier": [
               59.48,
               58.697,
@@ -1537,6 +1590,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Mắt Livestream",
             "fullName": "Máy chủ 1 — Tăng Mắt Livestream",
             "pricePerUnit": 49.71,
+            "costPerUnit": 49.71,
             "pricesByTier": [
               49.71,
               49.056,
@@ -1565,6 +1619,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng 4000H Xem",
             "fullName": "Máy chủ 1 — Tăng 4000H Xem",
             "pricePerUnit": 22.05,
+            "costPerUnit": 22.05,
             "pricesByTier": [
               22.05,
               21.76,
@@ -1602,6 +1657,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Threads Followers",
             "fullName": "Máy chủ 1 — Threads Followers",
             "pricePerUnit": 73.82,
+            "costPerUnit": 73.82,
             "pricesByTier": [
               73.82,
               72.848,
@@ -1630,6 +1686,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Threads Likes",
             "fullName": "Máy chủ 1 — Threads Likes",
             "pricePerUnit": 27.57,
+            "costPerUnit": 27.57,
             "pricesByTier": [
               27.57,
               27.207,
@@ -1658,6 +1715,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Threads Reshare",
             "fullName": "Máy chủ 1 — Threads Reshare",
             "pricePerUnit": 9.73,
+            "costPerUnit": 9.73,
             "pricesByTier": [
               9.73,
               9.602,
@@ -1686,6 +1744,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Threads Comments",
             "fullName": "Máy chủ 1 — Threads Comments",
             "pricePerUnit": 16.6,
+            "costPerUnit": 16.6,
             "pricesByTier": [
               16.6,
               16.381,
@@ -1723,6 +1782,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — SoundCloud",
             "fullName": "Máy chủ 1 — SoundCloud",
             "pricePerUnit": 56.47,
+            "costPerUnit": 56.47,
             "pricesByTier": [
               56.47,
               55.727,
@@ -1760,6 +1820,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Reddit Services [ OWN ]",
             "fullName": "Máy chủ 1 — Reddit Services [ OWN ]",
             "pricePerUnit": 38.89,
+            "costPerUnit": 38.89,
             "pricesByTier": [
               38.89,
               38.378,
@@ -1788,6 +1849,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Reddit",
             "fullName": "Máy chủ 1 — Reddit",
             "pricePerUnit": 68.76,
+            "costPerUnit": 68.76,
             "pricesByTier": [
               68.76,
               67.855,
@@ -1825,6 +1887,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Lazada",
             "fullName": "Máy chủ 1 — Lazada",
             "pricePerUnit": 52.28,
+            "costPerUnit": 52.28,
             "pricesByTier": [
               52.28,
               51.592,
@@ -1862,6 +1925,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Followers",
             "fullName": "Máy chủ 1 — Spotify Followers",
             "pricePerUnit": 51.49,
+            "costPerUnit": 51.49,
             "pricesByTier": [
               51.49,
               50.812,
@@ -1890,6 +1954,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Plays",
             "fullName": "Máy chủ 1 — Spotify Plays",
             "pricePerUnit": 68.72,
+            "costPerUnit": 68.72,
             "pricesByTier": [
               68.72,
               67.815,
@@ -1918,6 +1983,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Saves",
             "fullName": "Máy chủ 1 — Spotify Saves",
             "pricePerUnit": 73.68,
+            "costPerUnit": 73.68,
             "pricesByTier": [
               73.68,
               72.71,
@@ -1946,6 +2012,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Podcast Plays",
             "fullName": "Máy chủ 1 — Spotify Podcast Plays",
             "pricePerUnit": 10.01,
+            "costPerUnit": 10.01,
             "pricesByTier": [
               10.01,
               9.878,
@@ -1974,6 +2041,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Search Plays",
             "fullName": "Máy chủ 1 — Spotify Search Plays",
             "pricePerUnit": 70.15,
+            "costPerUnit": 70.15,
             "pricesByTier": [
               70.15,
               69.227,
@@ -2002,6 +2070,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Monthly Listeners",
             "fullName": "Máy chủ 1 — Spotify Monthly Listeners",
             "pricePerUnit": 55.31,
+            "costPerUnit": 55.31,
             "pricesByTier": [
               55.31,
               54.582,
@@ -2030,6 +2099,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Followers [ Targeted ]",
             "fullName": "Máy chủ 1 — Spotify Followers [ Targeted ]",
             "pricePerUnit": 13.38,
+            "costPerUnit": 13.38,
             "pricesByTier": [
               13.38,
               13.204,
@@ -2058,6 +2128,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Spotify Track Plays [ Targeted ]",
             "fullName": "Máy chủ 1 — Spotify Track Plays [ Targeted ]",
             "pricePerUnit": 36.26,
+            "costPerUnit": 36.26,
             "pricesByTier": [
               36.26,
               35.783,
@@ -2095,6 +2166,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Telegram Members",
             "fullName": "Máy chủ 1 — Telegram Members",
             "pricePerUnit": 70.65,
+            "costPerUnit": 70.65,
             "pricesByTier": [
               70.65,
               69.72,
@@ -2123,6 +2195,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Telegram Post View",
             "fullName": "Máy chủ 1 — Telegram Post View",
             "pricePerUnit": 56.76,
+            "costPerUnit": 56.76,
             "pricesByTier": [
               56.76,
               56.013,
@@ -2151,6 +2224,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Telegram Votes [ Story Views ]",
             "fullName": "Máy chủ 1 — Telegram Votes [ Story Views ]",
             "pricePerUnit": 59.89,
+            "costPerUnit": 59.89,
             "pricesByTier": [
               59.89,
               59.102,
@@ -2179,6 +2253,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Telegram Reaction",
             "fullName": "Máy chủ 1 — Telegram Reaction",
             "pricePerUnit": 15.69,
+            "costPerUnit": 15.69,
             "pricesByTier": [
               15.69,
               15.483,
@@ -2208,6 +2283,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tự Động Tăng View Post",
             "fullName": "Máy chủ 1 — Tự Động Tăng View Post",
             "pricePerUnit": 43.08,
+            "costPerUnit": 43.08,
             "pricesByTier": [
               43.08,
               42.513,
@@ -2245,6 +2321,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Views",
             "fullName": "Máy chủ 1 — Facebook Views",
             "pricePerUnit": 59.23,
+            "costPerUnit": 59.23,
             "pricesByTier": [
               59.23,
               58.45,
@@ -2273,6 +2350,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Post Reaction ᴺᴱᵂ",
             "fullName": "Máy chủ 1 — Facebook Post Reaction ᴺᴱᵂ",
             "pricePerUnit": 16.34,
+            "costPerUnit": 16.34,
             "pricesByTier": [
               16.34,
               16.125,
@@ -2302,6 +2380,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Page Followers",
             "fullName": "Máy chủ 1 — Facebook Page Followers",
             "pricePerUnit": 73.01,
+            "costPerUnit": 73.01,
             "pricesByTier": [
               73.01,
               72.049,
@@ -2330,6 +2409,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Profile Followers",
             "fullName": "Máy chủ 1 — Facebook Profile Followers",
             "pricePerUnit": 33.52,
+            "costPerUnit": 33.52,
             "pricesByTier": [
               33.52,
               33.079,
@@ -2358,6 +2438,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Page Likes",
             "fullName": "Máy chủ 1 — Facebook Page Likes",
             "pricePerUnit": 73.79,
+            "costPerUnit": 73.79,
             "pricesByTier": [
               73.79,
               72.819,
@@ -2386,6 +2467,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Group Member",
             "fullName": "Máy chủ 1 — Facebook Group Member",
             "pricePerUnit": 45.24,
+            "costPerUnit": 45.24,
             "pricesByTier": [
               45.24,
               44.645,
@@ -2414,6 +2496,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Post Shares",
             "fullName": "Máy chủ 1 — Facebook Post Shares",
             "pricePerUnit": 38.44,
+            "costPerUnit": 38.44,
             "pricesByTier": [
               38.44,
               37.934,
@@ -2442,6 +2525,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Comments",
             "fullName": "Máy chủ 1 — Facebook Comments",
             "pricePerUnit": 29.76,
+            "costPerUnit": 29.76,
             "pricesByTier": [
               29.76,
               29.368,
@@ -2470,6 +2554,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Page Review",
             "fullName": "Máy chủ 1 — Facebook Page Review",
             "pricePerUnit": 45.78,
+            "costPerUnit": 45.78,
             "pricesByTier": [
               45.78,
               45.177,
@@ -2498,6 +2583,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Facebook Story",
             "fullName": "Máy chủ 1 — Facebook Story",
             "pricePerUnit": 11.35,
+            "costPerUnit": 11.35,
             "pricesByTier": [
               11.35,
               11.201,
@@ -2535,6 +2621,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Like Bài Viết",
             "fullName": "Máy chủ 1 — Tăng Like Bài Viết",
             "pricePerUnit": 43.35,
+            "costPerUnit": 43.35,
             "pricesByTier": [
               43.35,
               42.779,
@@ -2563,6 +2650,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Mua Gói Like Tháng",
             "fullName": "Máy chủ 1 — Mua Gói Like Tháng",
             "pricePerUnit": 44.77,
+            "costPerUnit": 44.77,
             "pricesByTier": [
               44.77,
               44.181,
@@ -2591,6 +2679,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Theo Dõi",
             "fullName": "Máy chủ 1 — Tăng Người Theo Dõi",
             "pricePerUnit": 74.4,
+            "costPerUnit": 74.4,
             "pricesByTier": [
               74.4,
               73.421,
@@ -2619,6 +2708,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Like Fanpage",
             "fullName": "Máy chủ 1 — Tăng Like Fanpage",
             "pricePerUnit": 54.09,
+            "costPerUnit": 54.09,
             "pricesByTier": [
               54.09,
               53.378,
@@ -2647,6 +2737,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Mắt Livestream",
             "fullName": "Máy chủ 1 — Tăng Mắt Livestream",
             "pricePerUnit": 59.19,
+            "costPerUnit": 59.19,
             "pricesByTier": [
               59.19,
               58.411,
@@ -2675,6 +2766,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Chia Sẻ",
             "fullName": "Máy chủ 1 — Tăng Lượt Chia Sẻ",
             "pricePerUnit": 63.29,
+            "costPerUnit": 63.29,
             "pricesByTier": [
               63.29,
               62.457,
@@ -2703,6 +2795,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Member Nhóm",
             "fullName": "Máy chủ 1 — Tăng Member Nhóm",
             "pricePerUnit": 39.63,
+            "costPerUnit": 39.63,
             "pricesByTier": [
               39.63,
               39.108,
@@ -2731,6 +2824,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Đánh Giá Page",
             "fullName": "Máy chủ 1 — Tăng Đánh Giá Page",
             "pricePerUnit": 19.18,
+            "costPerUnit": 19.18,
             "pricesByTier": [
               19.18,
               18.928,
@@ -2759,6 +2853,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Like Bình Luận",
             "fullName": "Máy chủ 1 — Tăng Like Bình Luận",
             "pricePerUnit": 34.96,
+            "costPerUnit": 34.96,
             "pricesByTier": [
               34.96,
               34.5,
@@ -2787,6 +2882,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng View Video/Reel",
             "fullName": "Máy chủ 1 — Tăng View Video/Reel",
             "pricePerUnit": 36.31,
+            "costPerUnit": 36.31,
             "pricesByTier": [
               36.31,
               35.832,
@@ -2815,6 +2911,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Bình Luận",
             "fullName": "Máy chủ 1 — Tăng Bình Luận",
             "pricePerUnit": 64.13,
+            "costPerUnit": 64.13,
             "pricesByTier": [
               64.13,
               63.286,
@@ -2843,6 +2940,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng View Story",
             "fullName": "Máy chủ 1 — Tăng View Story",
             "pricePerUnit": 15.06,
+            "costPerUnit": 15.06,
             "pricesByTier": [
               15.06,
               14.862,
@@ -2871,6 +2969,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng View Bật Kiếm Tiền",
             "fullName": "Máy chủ 1 — Tăng View Bật Kiếm Tiền",
             "pricePerUnit": 24.42,
+            "costPerUnit": 24.42,
             "pricesByTier": [
               24.42,
               24.099,
@@ -2908,6 +3007,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Tim Bài Viết",
             "fullName": "Máy chủ 1 — Tăng Tim Bài Viết",
             "pricePerUnit": 36.41,
+            "costPerUnit": 36.41,
             "pricesByTier": [
               36.41,
               35.931,
@@ -2936,6 +3036,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Theo Dõi",
             "fullName": "Máy chủ 1 — Tăng Người Theo Dõi",
             "pricePerUnit": 32.23,
+            "costPerUnit": 32.23,
             "pricesByTier": [
               32.23,
               31.806,
@@ -2964,6 +3065,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Bình Luận Bài",
             "fullName": "Máy chủ 1 — Tăng Bình Luận Bài",
             "pricePerUnit": 17.75,
+            "costPerUnit": 17.75,
             "pricesByTier": [
               17.75,
               17.516,
@@ -2992,6 +3094,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Member Kênh",
             "fullName": "Máy chủ 1 — Tăng Member Kênh",
             "pricePerUnit": 44.52,
+            "costPerUnit": 44.52,
             "pricesByTier": [
               44.52,
               43.934,
@@ -3020,6 +3123,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Mua Gói Like Tháng",
             "fullName": "Máy chủ 1 — Mua Gói Like Tháng",
             "pricePerUnit": 24.25,
+            "costPerUnit": 24.25,
             "pricesByTier": [
               24.25,
               23.931,
@@ -3048,6 +3152,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Xem Video",
             "fullName": "Máy chủ 1 — Tăng Lượt Xem Video",
             "pricePerUnit": 60.91,
+            "costPerUnit": 60.91,
             "pricesByTier": [
               60.91,
               60.108,
@@ -3076,6 +3181,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Mắt Livestream",
             "fullName": "Máy chủ 1 — Tăng Mắt Livestream",
             "pricePerUnit": 67.98,
+            "costPerUnit": 67.98,
             "pricesByTier": [
               67.98,
               67.085,
@@ -3113,6 +3219,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Thích Sản Phẩm",
             "fullName": "Máy chủ 1 — Tăng Lượt Thích Sản Phẩm",
             "pricePerUnit": 24.1,
+            "costPerUnit": 24.1,
             "pricesByTier": [
               24.1,
               23.783,
@@ -3141,6 +3248,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Theo Dõi Gian Hàng",
             "fullName": "Máy chủ 1 — Tăng Theo Dõi Gian Hàng",
             "pricePerUnit": 11.95,
+            "costPerUnit": 11.95,
             "pricesByTier": [
               11.95,
               11.793,
@@ -3169,6 +3277,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Xem Livestream",
             "fullName": "Máy chủ 1 — Tăng Người Xem Livestream",
             "pricePerUnit": 20.71,
+            "costPerUnit": 20.71,
             "pricesByTier": [
               20.71,
               20.437,
@@ -3206,6 +3315,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Like Bài Viết",
             "fullName": "Máy chủ 1 — Tăng Like Bài Viết",
             "pricePerUnit": 66.09,
+            "costPerUnit": 66.09,
             "pricesByTier": [
               66.09,
               65.22,
@@ -3234,6 +3344,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Theo Dõi",
             "fullName": "Máy chủ 1 — Tăng Người Theo Dõi",
             "pricePerUnit": 71.61,
+            "costPerUnit": 71.61,
             "pricesByTier": [
               71.61,
               70.667,
@@ -3262,6 +3373,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Bình Luận",
             "fullName": "Máy chủ 1 — Tăng Bình Luận",
             "pricePerUnit": 10.91,
+            "costPerUnit": 10.91,
             "pricesByTier": [
               10.91,
               10.766,
@@ -3299,6 +3411,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Nghe Bài Hát",
             "fullName": "Máy chủ 1 — Tăng Lượt Nghe Bài Hát",
             "pricePerUnit": 54.18,
+            "costPerUnit": 54.18,
             "pricesByTier": [
               54.18,
               53.467,
@@ -3327,6 +3440,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Nghe Hàng Tháng nghệ Sĩ",
             "fullName": "Máy chủ 1 — Tăng Người Nghe Hàng Tháng nghệ Sĩ",
             "pricePerUnit": 75.38,
+            "costPerUnit": 75.38,
             "pricesByTier": [
               75.38,
               74.388,
@@ -3355,6 +3469,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Người Theo Dõi",
             "fullName": "Máy chủ 1 — Tăng Người Theo Dõi",
             "pricePerUnit": 19.44,
+            "costPerUnit": 19.44,
             "pricesByTier": [
               19.44,
               19.184,
@@ -3392,6 +3507,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Truy Cập Website Nhiều Nguồn",
             "fullName": "Máy chủ 1 — Tăng Truy Cập Website Nhiều Nguồn",
             "pricePerUnit": 29.82,
+            "costPerUnit": 29.82,
             "pricesByTier": [
               29.82,
               29.427,
@@ -3420,6 +3536,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Truy Cập Website Iphone",
             "fullName": "Máy chủ 1 — Tăng Truy Cập Website Iphone",
             "pricePerUnit": 9.34,
+            "costPerUnit": 9.34,
             "pricesByTier": [
               9.34,
               9.217,
@@ -3457,6 +3574,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Mắt Xem Live",
             "fullName": "Máy chủ 1 — Tăng Mắt Xem Live",
             "pricePerUnit": 21.83,
+            "costPerUnit": 21.83,
             "pricesByTier": [
               21.83,
               21.543,
@@ -3485,6 +3603,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Followers",
             "fullName": "Máy chủ 1 — TikTok Followers",
             "pricePerUnit": 56.67,
+            "costPerUnit": 56.67,
             "pricesByTier": [
               56.67,
               55.924,
@@ -3513,6 +3632,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Likes",
             "fullName": "Máy chủ 1 — TikTok Likes",
             "pricePerUnit": 63.78,
+            "costPerUnit": 63.78,
             "pricesByTier": [
               63.78,
               62.94,
@@ -3541,6 +3661,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok PK Battle Points",
             "fullName": "Máy chủ 1 — TikTok PK Battle Points",
             "pricePerUnit": 12.35,
+            "costPerUnit": 12.35,
             "pricesByTier": [
               12.35,
               12.187,
@@ -3569,6 +3690,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Video Views",
             "fullName": "Máy chủ 1 — TikTok Video Views",
             "pricePerUnit": 55.83,
+            "costPerUnit": 55.83,
             "pricesByTier": [
               55.83,
               55.095,
@@ -3597,6 +3719,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Video Save",
             "fullName": "Máy chủ 1 — TikTok Video Save",
             "pricePerUnit": 19.75,
+            "costPerUnit": 19.75,
             "pricesByTier": [
               19.75,
               19.49,
@@ -3625,6 +3748,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Video Share",
             "fullName": "Máy chủ 1 — TikTok Video Share",
             "pricePerUnit": 48.32,
+            "costPerUnit": 48.32,
             "pricesByTier": [
               48.32,
               47.684,
@@ -3653,6 +3777,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Story Likes",
             "fullName": "Máy chủ 1 — TikTok Story Likes",
             "pricePerUnit": 21.62,
+            "costPerUnit": 21.62,
             "pricesByTier": [
               21.62,
               21.335,
@@ -3681,6 +3806,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Comment",
             "fullName": "Máy chủ 1 — TikTok Comment",
             "pricePerUnit": 39.51,
+            "costPerUnit": 39.51,
             "pricesByTier": [
               39.51,
               38.99,
@@ -3709,6 +3835,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Live Stream Services [ Likes+PK Poin ]",
             "fullName": "Máy chủ 1 — TikTok Live Stream Services [ Likes+PK Poin ]",
             "pricePerUnit": 25.22,
+            "costPerUnit": 25.22,
             "pricesByTier": [
               25.22,
               24.888,
@@ -3737,6 +3864,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — TikTok Story",
             "fullName": "Máy chủ 1 — TikTok Story",
             "pricePerUnit": 43.92,
+            "costPerUnit": 43.92,
             "pricesByTier": [
               43.92,
               43.342,
@@ -3774,6 +3902,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube - Live Stream / Premiere Viewers | USA | Best for Ranking ᴺᴱᵂ",
             "fullName": "Máy chủ 1 — YouTube - Live Stream / Premiere Viewers | USA | Best for Ranking ᴺᴱᵂ",
             "pricePerUnit": 48.81,
+            "costPerUnit": 48.81,
             "pricesByTier": [
               48.81,
               48.168,
@@ -3802,6 +3931,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Video Views [ Social / Native Ads ] ᴺᴱᵂ",
             "fullName": "Máy chủ 1 — YouTube Video Views [ Social / Native Ads ] ᴺᴱᵂ",
             "pricePerUnit": 34.65,
+            "costPerUnit": 34.65,
             "pricesByTier": [
               34.65,
               34.194,
@@ -3830,6 +3960,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Likes ⚠️",
             "fullName": "Máy chủ 1 — YouTube Likes ⚠️",
             "pricePerUnit": 9.4,
+            "costPerUnit": 9.4,
             "pricesByTier": [
               9.4,
               9.276,
@@ -3858,6 +3989,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Video Likes - Non Drop - ♻️",
             "fullName": "Máy chủ 1 — YouTube Video Likes - Non Drop - ♻️",
             "pricePerUnit": 41.55,
+            "costPerUnit": 41.55,
             "pricesByTier": [
               41.55,
               41.003,
@@ -3886,6 +4018,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Comments By AI ᴺᴱᵂ🔥",
             "fullName": "Máy chủ 1 — YouTube Comments By AI ᴺᴱᵂ🔥",
             "pricePerUnit": 65.64,
+            "costPerUnit": 65.64,
             "pricesByTier": [
               65.64,
               64.776,
@@ -3914,6 +4047,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng 4000H Xem",
             "fullName": "Máy chủ 1 — Tăng 4000H Xem",
             "pricePerUnit": 38.55,
+            "costPerUnit": 38.55,
             "pricesByTier": [
               38.55,
               38.043,
@@ -3942,6 +4076,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Subscribers",
             "fullName": "Máy chủ 1 — YouTube Subscribers",
             "pricePerUnit": 62.58,
+            "costPerUnit": 62.58,
             "pricesByTier": [
               62.58,
               61.756,
@@ -3970,6 +4105,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Views US [Tốt Cho Seo]",
             "fullName": "Máy chủ 1 — YouTube Views US [Tốt Cho Seo]",
             "pricePerUnit": 23.91,
+            "costPerUnit": 23.91,
             "pricesByTier": [
               23.91,
               23.595,
@@ -3998,6 +4134,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Live Stream Views",
             "fullName": "Máy chủ 1 — YouTube Live Stream Views",
             "pricePerUnit": 15.06,
+            "costPerUnit": 15.06,
             "pricesByTier": [
               15.06,
               14.862,
@@ -4026,6 +4163,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — YouTube Video Views",
             "fullName": "Máy chủ 1 — YouTube Video Views",
             "pricePerUnit": 27.47,
+            "costPerUnit": 27.47,
             "pricesByTier": [
               27.47,
               27.108,
@@ -4063,6 +4201,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Đánh Giá Google Maps",
             "fullName": "Máy chủ 1 — Tăng Đánh Giá Google Maps",
             "pricePerUnit": 71.84,
+            "costPerUnit": 71.84,
             "pricesByTier": [
               71.84,
               70.894,
@@ -4100,6 +4239,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Like Twitter",
             "fullName": "Máy chủ 1 — Tăng Like Twitter",
             "pricePerUnit": 71.11,
+            "costPerUnit": 71.11,
             "pricesByTier": [
               71.11,
               70.174,
@@ -4128,6 +4268,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Theo Dõi Twitter",
             "fullName": "Máy chủ 1 — Tăng Theo Dõi Twitter",
             "pricePerUnit": 19.96,
+            "costPerUnit": 19.96,
             "pricesByTier": [
               19.96,
               19.697,
@@ -4156,6 +4297,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Comment Twitter",
             "fullName": "Máy chủ 1 — Tăng Comment Twitter",
             "pricePerUnit": 37.84,
+            "costPerUnit": 37.84,
             "pricesByTier": [
               37.84,
               37.342,
@@ -4184,6 +4326,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Retweet Twitter",
             "fullName": "Máy chủ 1 — Tăng Retweet Twitter",
             "pricePerUnit": 29.85,
+            "costPerUnit": 29.85,
             "pricesByTier": [
               29.85,
               29.457,
@@ -4212,6 +4355,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Lượt Tiếp Cận",
             "fullName": "Máy chủ 1 — Tăng Lượt Tiếp Cận",
             "pricePerUnit": 67.03,
+            "costPerUnit": 67.03,
             "pricesByTier": [
               67.03,
               66.148,
@@ -4249,6 +4393,7 @@ export const platforms: Platform[] = [
             "name": "Máy chủ 1 — Tăng Thành Viên Nhóm Zalo",
             "fullName": "Máy chủ 1 — Tăng Thành Viên Nhóm Zalo",
             "pricePerUnit": 47.05,
+            "costPerUnit": 47.05,
             "pricesByTier": [
               47.05,
               46.431,

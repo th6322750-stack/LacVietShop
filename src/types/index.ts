@@ -48,7 +48,12 @@ export interface ServiceServer {
   name: string;
   /** Tên đầy đủ nguyên văn, kèm mọi thông số ngăn bởi dấu "~". */
   fullName: string;
+  /** Giá bán cho khách, đồng/tương tác. */
   pricePerUnit: number;
+  /** Giá vốn lấy từ nhà cung cấp. Bằng pricePerUnit khi bán đúng giá vốn. */
+  costPerUnit: number;
+  /** Đang bán thấp hơn giá vốn — quản trị phải thấy cảnh báo. */
+  belowCost?: boolean;
   /** Giá theo từng bậc thành viên, cùng thứ tự với serviceTiers. */
   pricesByTier: number[];
   min: number;

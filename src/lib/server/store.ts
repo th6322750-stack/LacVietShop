@@ -47,10 +47,12 @@ export interface ResetCode {
 interface Db {
   accounts: Account[];
   sessions: Session[];
+  /** Phiên của quản trị viên — tách riêng khỏi phiên khách. */
+  adminSessions: Session[];
   resetCodes: ResetCode[];
 }
 
-const empty = (): Db => ({ accounts: [], sessions: [], resetCodes: [] });
+const empty = (): Db => ({ accounts: [], sessions: [], adminSessions: [], resetCodes: [] });
 
 export function readDb(): Db {
   try {
@@ -67,6 +69,7 @@ export function writeDb(db: Db) {
   const next: Db = {
     accounts: db.accounts,
     sessions: db.sessions.filter((s) => s.expiresAt > now),
+    adminSessions: (db.adminSessions ?? []).filter((s) => s.expiresAt > now),
     resetCodes: db.resetCodes.filter((c) => c.expiresAt > now),
   };
   fs.mkdirSync(DIR, { recursive: true });
