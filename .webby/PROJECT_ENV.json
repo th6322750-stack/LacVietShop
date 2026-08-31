@@ -37,7 +37,7 @@
     1200,
     1440
   ],
-  "status": "FIRST_PASS_BUILD_COMPLETE_ASSETS_PATCHED",
+  "status": "LIVE_SUPPLIER_API_WIRED",
   "versionRule": "Claude records actual installed package versions after initialization. Do not switch framework without TECHNICAL_CONSTRAINT evidence. Do not auto-merge.",
   "installedVersions": {
     "node": "v24.18.0",
@@ -60,18 +60,19 @@
   "checksRun": {
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
-    "build": "pnpm build — PASS (23 route, 20 route mục tiêu)",
-    "routeSmoke": "20/20 route HTTP 200, không lỗi console — chạy lại sau khi vá asset",
+    "build": "pnpm build — PASS (30 route, gồm 3 route API proxy)",
+    "routeSmoke": "4 bộ Playwright — 104 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
-    "assets": "0 ảnh vỡ trên /, /services, /products, /products/netflix, /deposit; 8 TODO_ASSET còn lại đúng như kế hoạch",
-    "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico"
+    "assets": "11 TODO_ASSET còn lại: 7 payment mark + deposit.realQr + 3 logo nền tảng chỉ có trong API (LinkedIn/Bigo/Discord)",
+    "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
+    "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
-  "routesImplemented": 24,
+  "routesImplemented": 30,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
-  "missingAssetKeys": 8,
-  "openProductionGaps": 10,
+  "missingAssetKeys": 11,
+  "openProductionGaps": 13,
   "autoMerge": false,
   "assetPatch": {
     "source": ".webby/ASSET_PATCH.md",
@@ -97,6 +98,67 @@
     ],
     "note": "ALL_IN_ONE.md liệt kê 20 màn gồm Affiliate và Panel con; user chốt bỏ nên còn 18 route khách. Code cũ vẫn nằm trong lịch sử nhánh claude/admin-panel nếu cần khôi phục.",
     "customerRoutes": 18,
-    "adminRoutes": 6
-  }
+    "adminRoutes": 8
+  },
+  "supplierIntegration": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "provider": "thatim.vn API v2",
+    "endpoint": "https://thatim.vn/api/v2",
+    "protocol": "POST form-urlencoded, phân biệt bằng tham số action",
+    "keyStorage": ".env.local (đã gitignore) — không có khoá nào trong mã nguồn hay trong git",
+    "serverOnlyModules": [
+      "src/lib/thatim/config.ts",
+      "src/lib/thatim/client.ts",
+      "src/lib/thatim/catalog.ts"
+    ],
+    "proxyRoutes": [
+      "/api/thatim/status",
+      "/api/thatim/catalog",
+      "/api/thatim/order"
+    ],
+    "actionsVerified": [
+      "balance",
+      "services"
+    ],
+    "actionsWiredNotRun": [
+      "add",
+      "status"
+    ],
+    "liveCatalog": {
+      "platforms": 26,
+      "serviceGroups": 105,
+      "servers": 423
+    },
+    "fallbackCatalog": "src/lib/demo/services-catalog.ts (23 nền tảng / 124 nhóm / 145 máy chủ, dựng từ bản chụp trang nhà cung cấp)",
+    "priceConversion": "đồng/tương tác = rate(USD/1.000) × THATIM_USD_TO_VND(26000) ÷ 1000 × THATIM_MARKUP(1)",
+    "priceVerification": "25/25 máy chủ Tiktok đối chiếu khớp từng đồng với bảng giá công bố của nhà cung cấp",
+    "orderGuard": "THATIM_ALLOW_ORDERS=false — đẩy đơn thật bị chặn; giao diện báo rõ thay vì âm thầm chạy đơn mô phỏng",
+    "supplierBalanceAtIntegration": "0.00577 USD"
+  },
+  "announcementPopup": {
+    "date": "2026-08-31",
+    "requestedBy": "USER",
+    "purpose": "Quản trị viên tự cấu hình popup thông báo hiện khi khách vào web",
+    "adminScreen": "/admin/announcement",
+    "permission": "announce.edit",
+    "storage": "kho quản trị trong localStorage (khoá lacviet_admin_db_v1 → announcement); trang khách đọc cùng khoá",
+    "seenRecord": "lacviet_notice_seen_v1",
+    "frequencies": [
+      "always",
+      "daily",
+      "once"
+    ],
+    "note": "Khi có backend thật chỉ cần thay hàm readAnnouncement trong src/components/blocks/AnnouncementPopup.tsx"
+  },
+  "adminRoutesDetail": [
+    "/admin",
+    "/admin/login",
+    "/admin/orders",
+    "/admin/services",
+    "/admin/products",
+    "/admin/users",
+    "/admin/announcement",
+    "/admin/api"
+  ]
 }

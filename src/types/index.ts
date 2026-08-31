@@ -38,18 +38,36 @@ export interface PlatformService {
 
 export interface ServiceServer {
   id: string;
+  /** Mã máy chủ hiển thị — do hệ thống mình đánh, không phải id của nhà cung cấp. */
   code: string;
+  /** service_id thật của nhà cung cấp; điền khi đấu API thatim.vn, hiện để null. */
+  apiServiceId: string | null;
+  /** Số thứ tự máy chủ trong nhóm dịch vụ, đúng như bảng bên nguồn. */
+  index: number;
+  /** Tên rút gọn dùng cho ô chọn và bảng. */
   name: string;
+  /** Tên đầy đủ nguyên văn, kèm mọi thông số ngăn bởi dấu "~". */
+  fullName: string;
   pricePerUnit: number;
+  /** Giá theo từng bậc thành viên, cùng thứ tự với serviceTiers. */
+  pricesByTier: number[];
   min: number;
   max: number;
-  speed: string;
-  refill: string;
-  startTime: string;
+  /** Các thông số dưới đây chỉ có khi nguồn ghi rõ — không tự bịa. */
+  speed?: string;
+  refill?: string;
+  startTime?: string;
+  sourceNote?: string;
   note?: string;
   available: boolean;
   tags: string[];
   supportsReaction?: boolean;
+  /**
+   * "api"   = lấy trực tiếp từ API nhà cung cấp (có apiServiceId, đặt đơn thật được)
+   * "clone" = thông số thật đọc từ bản chụp trang nhà cung cấp
+   * "demo"  = chỗ dành sẵn chờ đấu API
+   */
+  source: "api" | "clone" | "demo";
 }
 
 export interface ProductPackage {

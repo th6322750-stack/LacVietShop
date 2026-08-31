@@ -27,6 +27,8 @@ export const ADMIN_PERMISSIONS = [
   "users.lock",
   "export.csv",
   "data.reset",
+  "announce.edit",
+  "api.view",
 ] as const;
 
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
@@ -151,17 +153,22 @@ export interface AdminService {
   serviceName: string;
   serverName: string;
   code: string;
-  /** Giá theo 4 cấp bậc, đồng/tương tác. */
+  /** Tên máy chủ đầy đủ nguyên văn bên nguồn (kèm nguồn, tốc độ, ghi chú). */
+  serverFullName?: string;
+  /** Giá theo 4 cấp bậc, đồng/tương tác — cùng thứ tự memberLevels. */
   prices: [number, number, number, number];
   min: number;
   max: number;
   active: boolean;
+  /** Nguồn số liệu: api = lấy từ nhà cung cấp, clone = bản chụp, demo = chỗ dành sẵn, bỏ trống = tự thêm. */
+  source?: "api" | "clone" | "demo";
 }
 
 export const adminServices: AdminService[] = platforms.flatMap((platform) =>
   platform.services.flatMap((service) =>
     service.servers.map((server) => {
-      const base = server.pricePerUnit;
+      // Bảng giá 4 bậc lấy thẳng từ nguồn, không suy ra bằng hệ số.
+      const t = server.pricesByTier;
       return {
         id: server.id,
         platformId: platform.id,
@@ -169,16 +176,13 @@ export const adminServices: AdminService[] = platforms.flatMap((platform) =>
         platformAssetKey: platform.assetKey,
         serviceName: service.name,
         serverName: server.name,
+        serverFullName: server.fullName,
         code: server.code,
-        prices: [
-          base,
-          Math.round(base * 0.97 * 1000) / 1000,
-          Math.round(base * 0.94 * 1000) / 1000,
-          Math.round(base * 0.9 * 1000) / 1000,
-        ] as [number, number, number, number],
+        prices: [t[0], t[1] ?? t[0], t[2] ?? t[0], t[3] ?? t[0]] as [number, number, number, number],
         min: server.min,
         max: server.max,
         active: server.available,
+        source: server.source,
       };
     }),
   ),
@@ -333,4 +337,40 @@ export const txTypeLabels: Record<AdminTxType, string> = {
   refund: "Hoàn tiền",
   commission: "Hoa hồng",
   withdraw: "Rút tiền",
+};
+
+// ---------------------------------------------------------------------------
+// Popup thông báo cho khách
+// ---------------------------------------------------------------------------
+export interface AdminAnnouncement {
+  enabled: boolean;
+  title: string;
+  /** Xuống dòng bằng ký tự newline; hiển thị mỗi dòng một đoạn. */
+  body: string;
+  tone: "info" | "success" | "warning" | "danger";
+  /** Ảnh minh hoạ tuỳ chọn, lưu dạng data URL đã thu nhỏ. */
+  imageSrc?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  /** always = mỗi lần vào, daily = mỗi ngày một lần, once = chỉ một lần. */
+  frequency: "always" | "daily" | "once";
+  /** Tăng số này để hiện lại cho cả những người đã tắt popup. */
+  version: number;
+  /** Khoảng thời gian hiển thị, để trống là không giới hạn (yyyy-mm-dd). */
+  startAt?: string;
+  endAt?: string;
+}
+
+export const defaultAnnouncement: AdminAnnouncement = {
+  enabled: true,
+  title: "Chào mừng bạn đến với Lạc Việt",
+  body: [
+    "Hệ thống hoạt động 24/7, đơn hàng được xử lý tự động ngay sau khi trừ số dư.",
+    "Nạp tiền qua chuyển khoản ngân hàng để được cộng số dư trong vòng 1 phút.",
+  ].join("\n"),
+  tone: "info",
+  ctaLabel: "Xem bảng dịch vụ",
+  ctaHref: "/services",
+  frequency: "daily",
+  version: 1,
 };

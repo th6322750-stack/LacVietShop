@@ -10,6 +10,8 @@ import {
   IconClockHour4,
   IconInfoCircle,
   IconRefresh,
+  IconSearch,
+  IconServer2,
   IconShieldCheck,
   IconTicket,
   IconWallet,
@@ -23,10 +25,11 @@ import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label, Select, Textarea } from "@/components/ui/Field";
 import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
-import { platforms } from "@/lib/demo/catalog";
+import { serviceTiers } from "@/lib/demo/catalog";
 import { account } from "@/lib/demo/data";
 import { commerceAdapter } from "@/lib/demo/config";
 import { cn, formatMoney, formatNumber, formatUnitPrice } from "@/lib/utils";
+import type { Platform, ServiceServer } from "@/types";
 
 const reactions = [
   { id: "like", label: "Thích" },
@@ -47,13 +50,42 @@ const schema = z.object({
 
 type FormValues = z.input<typeof schema>;
 
-export function ServicesView({ initialPlatform }: { initialPlatform?: string }) {
+/** Bậc giá áp cho tài khoản đang đăng nhập; rơi về bậc đầu nếu không khớp. */
+const tierIndex = Math.max(
+  0,
+  serviceTiers.findIndex((t) => t.id === account.tier),
+);
+
+function priceFor(server: ServiceServer) {
+  return server.pricesByTier[tierIndex] ?? server.pricePerUnit;
+}
+
+function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+export function ServicesView({
+  initialPlatform,
+  platforms,
+  catalogSource,
+  catalogError,
+}: {
+  initialPlatform?: string;
+  /** Danh mục lấy phía server: API nhà cung cấp, hoặc bản tĩnh dự phòng. */
+  platforms: Platform[];
+  catalogSource: "api" | "fallback";
+  catalogError?: string;
+}) {
   const toast = useToast();
   const [region, setRegion] = React.useState<"vn" | "global">(
     platforms.find((p) => p.id === initialPlatform)?.region ?? "vn",
   );
   const regionPlatforms = platforms.filter((p) => p.region === region);
 
+  const [platformQuery, setPlatformQuery] = React.useState("");
   const [platformId, setPlatformId] = React.useState(
     initialPlatform && platforms.some((p) => p.id === initialPlatform) ? initialPlatform : regionPlatforms[0].id,
   );
@@ -67,6 +99,12 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
 
   const [submitting, setSubmitting] = React.useState(false);
   const [result, setResult] = React.useState<{ code: string } | null>(null);
+
+  const shownPlatforms = React.useMemo(() => {
+    const q = normalize(platformQuery.trim());
+    if (!q) return regionPlatforms;
+    return regionPlatforms.filter((p) => normalize(p.name).includes(q));
+  }, [regionPlatforms, platformQuery]);
 
   const {
     register,
@@ -98,9 +136,15 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
     setValue("quantity", next.servers[0].min);
   }
 
+  function selectServer(next: ServiceServer) {
+    setServerId(next.id);
+    setValue("quantity", next.min);
+  }
+
+  const unitPrice = priceFor(server);
   const quantity = Number(watch("quantity") || 0);
   const coupon = (watch("coupon") ?? "").trim().toUpperCase();
-  const subtotal = quantity * server.pricePerUnit;
+  const subtotal = quantity * unitPrice;
   const discount = coupon === "LACVIET10" ? Math.round(subtotal * 0.1) : 0;
   const total = Math.max(0, Math.round(subtotal - discount));
   const notEnoughBalance = total > account.balance;
@@ -126,6 +170,39 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
     }
 
     setSubmitting(true);
+
+    // Máy chủ có mã dịch vụ thật thì thử đẩy sang nhà cung cấp trước.
+    if (server.apiServiceId) {
+      const live = await fetch("/api/thatim/order", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          service: server.apiServiceId,
+          link: values.target,
+          quantity: Number(values.quantity),
+        }),
+      })
+        .then((r) => r.json())
+        .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+
+      if (live.ok) {
+        setSubmitting(false);
+        setResult({ code: String(live.order) });
+        toast.push({
+          tone: "success",
+          title: `Đã đẩy đơn #${live.order} sang nhà cung cấp`,
+          description: "Theo dõi tiến độ tại trang Tiến độ đơn hàng.",
+        });
+        return;
+      }
+      // Chưa bật đẩy đơn thật (hoặc lỗi) → chạy tiếp luồng mô phỏng, báo rõ lý do.
+      toast.push({
+        tone: "warning",
+        title: "Chưa đẩy đơn thật",
+        description: String(live.error ?? "Nhà cung cấp từ chối đơn."),
+      });
+    }
+
     const res = await commerceAdapter.submitOrder({
       serverId: server.id,
       quantity: Number(values.quantity),
@@ -145,6 +222,9 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
     });
   }
 
+  const serviceCount = platform.services.length;
+  const serverCount = platform.services.reduce((s, x) => s + x.servers.length, 0);
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -152,6 +232,22 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
         description="Chọn nền tảng, dịch vụ và máy chủ phù hợp rồi tạo đơn."
         breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Dịch vụ / Tạo đơn" }]}
       />
+
+      {catalogSource === "api" ? (
+        <p className="flex flex-wrap items-center gap-2 text-small text-lv-muted">
+          <Badge tone="success">Bảng giá trực tiếp</Badge>
+          Danh mục và đơn giá lấy thẳng từ nhà cung cấp · {platforms.length} nền tảng ·{" "}
+          {platforms.reduce((s, p) => s + p.services.length, 0)} nhóm dịch vụ ·{" "}
+          {platforms.reduce((s, p) => s + p.services.reduce((n, x) => n + x.servers.length, 0), 0)} máy chủ
+        </p>
+      ) : (
+        <div>
+          <InfoCard title="Đang dùng bảng giá dự phòng" tone="warning" icon={<IconAlertTriangle size={16} />}>
+            Chưa lấy được danh mục trực tiếp từ nhà cung cấp{catalogError ? ` (${catalogError})` : ""}. Bảng dưới
+            đây dựng từ bản chụp trang của họ, đơn giá có thể đã cũ.
+          </InfoCard>
+        </div>
+      )}
 
       <Tabs
         ariaLabel="Khu vực dịch vụ"
@@ -163,76 +259,156 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
         onChange={(id) => {
           const next = id as "vn" | "global";
           setRegion(next);
+          setPlatformQuery("");
           const first = platforms.find((p) => p.region === next);
           if (first) selectPlatform(first.id);
         }}
       />
 
-      <SectionCard title="Chọn nền tảng" description="Mỗi nền tảng có nhóm dịch vụ và máy chủ riêng.">
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8">
-          {regionPlatforms.map((p) => (
-            <PlatformTile
-              key={p.id}
-              name={p.name}
-              assetKey={p.assetKey}
-              selected={p.id === platformId}
-              onClick={() => selectPlatform(p.id)}
-              count={p.services.length}
-            />
-          ))}
+      <SectionCard
+        title="Chọn nền tảng"
+        description={`${regionPlatforms.length} nền tảng · mỗi nền tảng có nhóm dịch vụ và máy chủ riêng.`}
+      >
+        <div className="mb-3 max-w-sm">
+          <Input
+            id="platform-search"
+            type="search"
+            aria-label="Tìm nền tảng"
+            placeholder="Tìm nền tảng…"
+            value={platformQuery}
+            onChange={(e) => setPlatformQuery(e.target.value)}
+            prefix={<IconSearch size={16} />}
+          />
         </div>
+
+        {shownPlatforms.length === 0 ? (
+          <p className="py-6 text-center text-small text-lv-muted">Không có nền tảng nào khớp “{platformQuery}”.</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8">
+            {shownPlatforms.map((p) => (
+              <PlatformTile
+                key={p.id}
+                name={p.name}
+                assetKey={p.assetKey}
+                selected={p.id === platformId}
+                onClick={() => selectPlatform(p.id)}
+                count={p.services.length}
+              />
+            ))}
+          </div>
+        )}
       </SectionCard>
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5 xl:grid-cols-12">
         {/* Cột trái ~8/12 */}
         <div className="min-w-0 space-y-5 xl:col-span-8">
-          <SectionCard title="Tạo đơn hàng" description={`${platform.name} · ${service.name}`}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="service">Chọn dịch vụ</Label>
-                <Select id="service" value={serviceId} onChange={(e) => selectService(e.target.value)}>
-                  {platform.services.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="server">Chọn máy chủ</Label>
-                <Select id="server" value={serverId} onChange={(e) => setServerId(e.target.value)}>
-                  {service.servers.map((s) => (
-                    <option key={s.id} value={s.id} disabled={!s.available}>
-                      {s.code} — {s.name}
-                      {s.available ? "" : " (tạm dừng)"}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+          <SectionCard
+            title="Tạo đơn hàng"
+            description={`${platform.name} · ${serviceCount} dịch vụ · ${serverCount} máy chủ`}
+          >
+            <div>
+              <Label htmlFor="service">Chọn dịch vụ</Label>
+              <Select id="service" value={serviceId} onChange={(e) => selectService(e.target.value)}>
+                {platform.services.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.servers.length} máy chủ)
+                  </option>
+                ))}
+              </Select>
             </div>
 
-            {/* Thông số máy chủ */}
+            {/* Bộ chọn máy chủ dựng theo bảng máy chủ bên nhà cung cấp:
+                số thứ tự, tên đầy đủ, MIN/MAX và giá theo bậc thành viên. */}
+            <div className="mt-4">
+              <Label>
+                Chọn máy chủ
+                <span className="ml-1.5 font-normal text-lv-muted">({service.servers.length})</span>
+              </Label>
+              <div
+                role="radiogroup"
+                aria-label="Danh sách máy chủ"
+                className="max-h-[26rem] space-y-2 overflow-y-auto rounded-card border border-lv-border bg-lv-bg p-2"
+              >
+                {service.servers.map((s) => (
+                  <ServerOption
+                    key={s.id}
+                    server={s}
+                    selected={s.id === server.id}
+                    onSelect={() => selectServer(s)}
+                  />
+                ))}
+              </div>
+              <p className="mt-1.5 text-small text-lv-muted">
+                {catalogSource === "api"
+                  ? "Mã máy chủ chính là mã dịch vụ bên nhà cung cấp, dùng thẳng khi đẩy đơn."
+                  : "Máy chủ gắn nhãn DEMO chưa có số liệu từ nhà cung cấp, sẽ cập nhật khi đấu API."}
+              </p>
+            </div>
+
+            {/* Bảng giá 4 bậc của máy chủ đang chọn */}
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {serviceTiers.map((t, i) => {
+                const mine = i === tierIndex;
+                return (
+                  <div
+                    key={t.id}
+                    className={cn(
+                      "min-w-0 rounded-control border px-3 py-2",
+                      mine ? "border-lv-border-gold bg-lv-gold-50" : "border-lv-border bg-lv-surface",
+                    )}
+                  >
+                    <p className={cn("truncate text-small", mine ? "text-lv-gold-700" : "text-lv-muted")}>
+                      {t.label}
+                      {mine ? " · của bạn" : ""}
+                    </p>
+                    <p
+                      className={cn(
+                        "lv-price mt-0.5 truncate text-body-strong",
+                        mine ? "text-lv-gold-700" : "text-lv-text",
+                      )}
+                    >
+                      {formatUnitPrice(server.pricesByTier[i] ?? server.pricePerUnit)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Thông số máy chủ — chỉ hiện trường mà nguồn có ghi */}
             <div className="mt-4 grid gap-3 rounded-card border border-lv-border bg-lv-bg p-4 sm:grid-cols-2 lg:grid-cols-4">
-              <ServerFact icon={<IconWallet size={16} />} label="Đơn giá" value={`${formatUnitPrice(server.pricePerUnit)}/tương tác`} />
-              <ServerFact icon={<IconClockHour4 size={16} />} label="Bắt đầu" value={server.startTime} />
-              <ServerFact icon={<IconRefresh size={16} />} label="Tốc độ" value={server.speed} />
-              <ServerFact icon={<IconShieldCheck size={16} />} label="Bảo hành" value={server.refill} />
               <ServerFact
+                icon={<IconWallet size={16} />}
+                label="Đơn giá của bạn"
+                value={`${formatUnitPrice(unitPrice)}/tương tác`}
+              />
+              <ServerFact
+                icon={<IconInfoCircle size={16} />}
                 label="Giới hạn"
                 value={`${formatNumber(server.min)} – ${formatNumber(server.max)}`}
-                icon={<IconInfoCircle size={16} />}
               />
-              <div className="min-w-0 sm:col-span-2 lg:col-span-3">
-                <p className="text-small text-lv-muted">Ghi chú máy chủ</p>
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  {server.tags.map((t) => (
-                    <Badge key={t} tone="gold">
-                      {t}
-                    </Badge>
-                  ))}
-                  {!server.available ? <Badge tone="danger">Đang bảo trì</Badge> : null}
+              {server.speed ? <ServerFact icon={<IconRefresh size={16} />} label="Tốc độ" value={server.speed} /> : null}
+              {server.refill ? (
+                <ServerFact icon={<IconShieldCheck size={16} />} label="Bảo hành" value={server.refill} />
+              ) : null}
+              {server.sourceNote ? (
+                <ServerFact icon={<IconServer2 size={16} />} label="Nguồn tài nguyên" value={server.sourceNote} />
+              ) : null}
+              {server.startTime ? (
+                <ServerFact icon={<IconClockHour4 size={16} />} label="Bắt đầu" value={server.startTime} />
+              ) : null}
+              {server.tags.length > 0 ? (
+                <div className="min-w-0 sm:col-span-2 lg:col-span-4">
+                  <p className="text-small text-lv-muted">Ghi chú máy chủ</p>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {server.tags.map((t) => (
+                      <Badge key={t} tone="gold">
+                        {t}
+                      </Badge>
+                    ))}
+                    {!server.available ? <Badge tone="danger">Đang bảo trì</Badge> : null}
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
 
             {/* Cảnh báo pháp lý — luôn giữ màu đỏ theo §8 */}
@@ -342,8 +518,8 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
               </div>
 
               <div className="mt-3 divide-y divide-lv-border">
-                <OrderSummaryRow label="Máy chủ" value={server.code} />
-                <OrderSummaryRow label="Đơn giá" value={`${formatUnitPrice(server.pricePerUnit)}`} />
+                <OrderSummaryRow label="Máy chủ" value={`#${server.index} · ${server.code}`} />
+                <OrderSummaryRow label={`Đơn giá (${serviceTiers[tierIndex].label})`} value={formatUnitPrice(unitPrice)} />
                 <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
                 <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
                 {discount > 0 ? (
@@ -378,7 +554,9 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
               </Button>
 
               <p className="mt-2 text-center text-small text-lv-muted">
-                Đơn được tạo bằng dữ liệu DEMO, không gửi tới nhà cung cấp thật.
+                {server.apiServiceId
+                  ? `Mã dịch vụ nhà cung cấp: ${server.apiServiceId}`
+                  : "Máy chủ này chưa có mã dịch vụ thật, đơn sẽ chạy ở chế độ mô phỏng."}
               </p>
 
               {result ? (
@@ -407,14 +585,87 @@ export function ServicesView({ initialPlatform }: { initialPlatform?: string }) 
   );
 }
 
+/** Một dòng máy chủ trong danh sách chọn — bố cục theo bảng bên nhà cung cấp. */
+function ServerOption({
+  server,
+  selected,
+  onSelect,
+}: {
+  server: ServiceServer;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      disabled={!server.available}
+      className={cn(
+        "flex w-full gap-3 rounded-control border p-3 text-left transition-colors duration-button",
+        selected
+          ? "border-lv-gold-500 bg-lv-gold-50"
+          : "border-lv-border bg-lv-surface hover:border-lv-border-gold",
+        !server.available && "opacity-60",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded-control text-small-strong",
+          selected ? "bg-lv-gold-600 text-white" : "bg-lv-bg text-lv-navy-700",
+        )}
+      >
+        {server.index}
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="block break-words text-body-strong text-lv-text">{server.name}</span>
+        <span className="mt-0.5 block text-small text-lv-muted">
+          Mã {server.code} · MIN {formatNumber(server.min)} · MAX {formatNumber(server.max)}
+        </span>
+        {server.tags.length > 0 || server.speed ? (
+          <span className="mt-1 flex flex-wrap gap-1">
+            {server.speed ? (
+              <Badge tone="neutral">
+                {server.speed}
+              </Badge>
+            ) : null}
+            {server.tags.slice(0, 3).map((t) => (
+              <Badge key={t} tone="neutral">
+                {t}
+              </Badge>
+            ))}
+          </span>
+        ) : null}
+      </span>
+
+      <span className="shrink-0 text-right">
+        <span className="lv-price block text-body-strong text-lv-gold-700">{formatUnitPrice(priceFor(server))}</span>
+        <span className="block text-small text-lv-muted">/tương tác</span>
+        {server.source === "demo" ? (
+          <Badge tone="warning" className="mt-1">
+            DEMO
+          </Badge>
+        ) : null}
+        {!server.available ? (
+          <Badge tone="danger" className="mt-1">
+            Bảo trì
+          </Badge>
+        ) : null}
+      </span>
+    </button>
+  );
+}
+
 function ServerFact({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="flex items-center gap-1.5 text-small text-lv-muted">
         {icon}
         {label}
       </p>
-      <p className="mt-0.5 text-body-strong text-lv-text">{value}</p>
+      <p className="mt-0.5 break-words text-body-strong text-lv-text">{value}</p>
     </div>
   );
 }

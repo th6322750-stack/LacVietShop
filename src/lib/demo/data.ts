@@ -22,8 +22,9 @@ export const account: AccountProfile = {
   username: "nguyenvana",
   emailMasked: "ngu•••••@demo.invalid",
   phoneMasked: "09•• ••• 123",
-  tier: "agency",
-  tierLabel: "Đại lý",
+  // Khách lẻ thông thường — bậc giá mặc định của bảng giá 4 bậc.
+  tier: "member",
+  tierLabel: "Thành viên",
   balance: 2_450_000,
   totalDeposited: 18_750_000,
   totalSpent: 16_300_000,

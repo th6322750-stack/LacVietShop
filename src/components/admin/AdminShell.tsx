@@ -5,11 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   IconArrowBackUp,
+  IconBellRinging,
   IconChartHistogram,
   IconLayoutGrid,
   IconLogout,
   IconMenu2,
   IconPackage,
+  IconPlugConnected,
   IconRefresh,
   IconShoppingCart,
   IconUsers,
@@ -38,6 +40,8 @@ const navItems: AdminNavItem[] = [
   { href: "/admin/services", label: "Dịch vụ & bảng giá", icon: IconLayoutGrid },
   { href: "/admin/products", label: "Sản phẩm premium", icon: IconPackage },
   { href: "/admin/users", label: "Người dùng & giao dịch", icon: IconUsers },
+  { href: "/admin/announcement", label: "Popup thông báo", icon: IconBellRinging },
+  { href: "/admin/api", label: "Kết nối API", icon: IconPlugConnected },
 ];
 
 function isActive(pathname: string, href: string) {

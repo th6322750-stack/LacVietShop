@@ -7,6 +7,8 @@ import {
   adminServices,
   adminTransactions,
   adminUsers,
+  defaultAnnouncement,
+  type AdminAnnouncement,
   type AdminOrder,
   type AdminProduct,
   type AdminService,
@@ -33,7 +35,11 @@ interface AdminDb {
   services: AdminService[];
   products: AdminProduct[];
   transactions: AdminTransaction[];
+  announcement: AdminAnnouncement;
 }
+
+/** Khoá localStorage mà trang khách đọc để dựng popup thông báo. */
+export const ADMIN_DB_KEY = KEY;
 
 function seed(): AdminDb {
   return {
@@ -42,6 +48,7 @@ function seed(): AdminDb {
     services: adminServices,
     products: adminProducts,
     transactions: adminTransactions,
+    announcement: defaultAnnouncement,
   };
 }
 
@@ -69,6 +76,7 @@ interface StoreContextValue extends AdminDb {
   adjustBalance: (userId: number, amount: number, note: string) => void;
   setUserLevel: (userId: number, level: MemberLevel) => void;
   toggleUserLock: (userId: number) => void;
+  setAnnouncement: (patch: Partial<AdminAnnouncement>) => void;
   reset: () => void;
 }
 
@@ -82,7 +90,8 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
   React.useEffect(() => {
     try {
       const raw = window.localStorage.getItem(KEY);
-      if (raw) setDb(JSON.parse(raw) as AdminDb);
+      // Trộn với seed để bản lưu từ phiên bản cũ (thiếu khoá mới) vẫn dùng được.
+      if (raw) setDb({ ...seed(), ...(JSON.parse(raw) as Partial<AdminDb>) });
     } catch {
       /* dữ liệu hỏng hoặc bị chặn -> dùng seed */
     }
@@ -225,6 +234,10 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
             u.id === userId ? { ...u, status: u.status === "locked" ? "active" : "locked" } : u,
           ),
         });
+      },
+
+      setAnnouncement(patch) {
+        persist({ ...db, announcement: { ...db.announcement, ...patch } });
       },
 
       reset() {

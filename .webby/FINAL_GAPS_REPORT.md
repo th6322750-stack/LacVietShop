@@ -6,7 +6,7 @@ Lượt dựng đầu tiên cho 20 route đã hoàn tất. Toàn bộ giao diệ
 Không có hiệu ứng phụ thật nào được thực hiện: không chuyển tiền, không tạo tài khoản,
 không gọi API bên ngoài, không tạo tên miền/DNS.
 
-- Tổng số gap còn mở: **10**
+- Tổng số gap còn mở: **13** (1 đã chuyển sang PARTIAL: backend.orderApi)
 - Ranh giới adapter: `src/lib/demo/config.ts` (`commerceAdapter`, `demoBrand`, `demoPaymentNotice`)
 - Dữ liệu trình diễn: `src/lib/demo/data.ts`, `src/lib/demo/catalog.ts`
 - Biến môi trường dự kiến: `.env.example` (chưa có giá trị thật nào được commit)
@@ -48,10 +48,12 @@ status: OPEN
 
 GAP
 key: catalog.pricing
-area: catalog
-needed: Bảng giá dịch vụ và sản phẩm premium thật theo từng cấp bậc (Thành viên/CTV/Đại lý/NPP)
-current_demo_source: src/lib/demo/catalog.ts (10 nền tảng, 8 sản phẩm với giá trình diễn)
-production_risk_if_unresolved: Khách thấy giá sai; đơn hàng tính tiền không đúng doanh thu thực tế
+area: business
+needed: Chốt hệ số bán ra (THATIM_MARKUP) và mức giảm theo bậc thành viên
+current_demo_source: giá gốc đã là giá thật của nhà cung cấp (rate USD/1.000 × 26.000đ, đối chiếu khớp
+  25/25 máy chủ trên bảng giá công bố). Hiện THATIM_MARKUP=1 nên bán đúng giá gốc — không có lãi.
+  Mức giảm theo bậc lấy tạm tỷ lệ quan sát được: src/lib/thatim/config.ts → tierMultipliers.
+production_risk_if_unresolved: Bán đúng giá vốn, không có biên lợi nhuận; bảng giá theo bậc chưa phải chính sách đã duyệt
 status: OPEN
 
 GAP
@@ -65,10 +67,13 @@ status: OPEN
 GAP
 key: backend.orderApi
 area: backend
-needed: API tạo đơn, tra trạng thái, bảo hành/bù hụt và webhook cập nhật tiến độ
-current_demo_source: src/lib/demo/config.ts → commerceAdapter.submitOrder (mã đơn giả lập, chờ 450ms)
-production_risk_if_unresolved: Đơn hàng không đến nhà cung cấp; tiến độ hiển thị là dữ liệu tĩnh
-status: OPEN
+needed: Bật đẩy đơn thật và bổ sung webhook cập nhật tiến độ, bảo hành/bù hụt
+current_demo_source: đã đấu API nhà cung cấp — src/lib/thatim/* + src/app/api/thatim/*. Danh mục và
+  đơn giá đã lấy trực tiếp (26 nền tảng / 105 nhóm / 423 máy chủ). Đẩy đơn đã nối dây nhưng bị chặn
+  bằng THATIM_ALLOW_ORDERS=false; khi chặn thì rơi về commerceAdapter.submitOrder và báo rõ lý do.
+  Tra trạng thái đơn có sẵn ở GET /api/thatim/order?order=...; chưa có webhook nên tiến độ vẫn tĩnh.
+production_risk_if_unresolved: Đơn khách đặt chưa thực sự tới nhà cung cấp; tiến độ hiển thị là dữ liệu tĩnh
+status: PARTIAL
 
 GAP
 key: backend.apiTokens
@@ -93,6 +98,30 @@ needed: Quy trình cấp phát panel con thật: tên miền con, DNS, chứng c
 current_demo_source: src/components/views/ChildPanelView.tsx (form chỉ hiện thông báo mô phỏng)
 production_risk_if_unresolved: Đại lý tưởng đã tạo được panel nhưng thực tế không có website nào được dựng
 status: OPEN
+
+GAP
+key: supplier.balance
+area: business
+needed: Nạp tiền vào tài khoản nhà cung cấp trước khi bật đẩy đơn thật
+current_demo_source: action=balance trả 0.00577 USD (≈150đ) — không đủ cho bất kỳ đơn nào
+production_risk_if_unresolved: Bật THATIM_ALLOW_ORDERS mà chưa nạp thì mọi đơn khách đặt đều bị nhà cung cấp từ chối
+status: OPEN
+
+GAP
+key: supplier.apiKey
+area: security
+needed: Xoay khoá API hiện tại và cấp khoá riêng cho môi trường production
+current_demo_source: .env.local (đã gitignore, không commit). Khoá đang dùng từng được dán vào khung chat nên coi như đã lộ.
+production_risk_if_unresolved: Người khác cầm được khoá là tiêu được số dư và đọc toàn bộ bảng giá của tài khoản
+status: OPEN
+
+GAP
+key: order.reconciliation
+area: backend
+needed: Lưu đơn đã đẩy (mã đơn nhà cung cấp ↔ đơn của mình) và đối soát tiền
+current_demo_source: POST /api/thatim/order trả mã đơn nhưng chưa ghi vào kho dữ liệu nào; kho quản trị vẫn là localStorage
+production_risk_if_unresolved: Đẩy đơn thành công nhưng mất dấu, không tra được tiến độ và không đối soát được doanh thu
+status: OPEN
 ```
 
 ## Nguyên tắc đã áp dụng trong lượt dựng này
@@ -103,3 +132,8 @@ status: OPEN
   không phải sửa từng màn hình.
 - Không có giá trị bí mật nào nằm trong mã client: khoá API hiển thị dạng đã che, ví dụ trong
   tài liệu dùng token giả, `.env.example` để trống.
+- Khoá API nhà cung cấp chỉ tồn tại trong `.env.local` (đã gitignore) và chỉ được đọc ở
+  `src/lib/thatim/*` — các tệp này có chốt chặn ném lỗi nếu bị nạp ở phía trình duyệt.
+  Trình duyệt chỉ gọi được ba route proxy trong `src/app/api/thatim/`.
+- Đẩy đơn thật là hành động tiêu tiền nên mặc định TẮT (`THATIM_ALLOW_ORDERS=false`); khi tắt,
+  giao diện báo rõ "Chưa đẩy đơn thật" thay vì âm thầm chạy đơn mô phỏng.

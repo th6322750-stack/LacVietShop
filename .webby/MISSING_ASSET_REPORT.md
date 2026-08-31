@@ -6,9 +6,9 @@ Claude đã hoàn tất lượt dựng đầu tiên cho toàn bộ 20 route. M�
 
 Claude **không** tìm trên mạng, **không** tự vẽ, **không** mượn logo/ảnh thương hiệu khác.
 
-- Tổng số khoá còn thiếu: **8**
+- Tổng số khoá còn thiếu: **11**
 - Nguồn sự thật: `src/lib/assets.ts` (sinh báo cáo bằng `node tools/gen-reports.mjs`)
-- Kiểm chứng: kiểm thử Playwright thấy 7 khoá `data-todo-asset` render trong DOM khi duyệt hết 20 route;
+- Kiểm chứng: kiểm thử Playwright thấy 10 khoá `data-todo-asset` render trong DOM khi duyệt hết 20 route;
   khoá còn lại (`brand.favicon`) dùng ở tầng metadata nên không xuất hiện dưới dạng phần tử
 
 ## Cách ChatGPT bàn giao asset
@@ -31,6 +31,46 @@ needed: QR sinh từ tài khoản nhận tiền thật đã được duyệt (ch
 ratio/size: 1:1
 placeholder: <AssetImage assetKey="deposit.realQr" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="deposit.realQr")
 reference_target: references/ui-approved/08-deposit.webp
+status: OPEN
+```
+
+### Logo nền tảng dịch vụ (3)
+
+```text
+NEED_ASSET
+key: platform.linkedin-global
+route: /,/services
+section: Ô chọn nền tảng, bảng đơn hàng
+role: PLATFORM_MARK
+needed: Logo chính thức LinkedIn Global đúng bản quyền, nền trong suốt
+ratio/size: 1:1 (28–40px)
+placeholder: <AssetImage assetKey="platform.linkedin-global" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="platform.linkedin-global")
+reference_target: references/ui-approved/02-services.webp
+reference_original: clone-thatim-vn: modules/images/platforms
+status: OPEN
+
+NEED_ASSET
+key: platform.bigo-global
+route: /,/services
+section: Ô chọn nền tảng, bảng đơn hàng
+role: PLATFORM_MARK
+needed: Logo chính thức Bigo Global đúng bản quyền, nền trong suốt
+ratio/size: 1:1 (28–40px)
+placeholder: <AssetImage assetKey="platform.bigo-global" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="platform.bigo-global")
+reference_target: references/ui-approved/02-services.webp
+reference_original: clone-thatim-vn: modules/images/platforms
+status: OPEN
+
+NEED_ASSET
+key: platform.discord-global
+route: /,/services
+section: Ô chọn nền tảng, bảng đơn hàng
+role: PLATFORM_MARK
+needed: Logo chính thức Discord Global đúng bản quyền, nền trong suốt
+ratio/size: 1:1 (28–40px)
+placeholder: <AssetImage assetKey="platform.discord-global" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="platform.discord-global")
+reference_target: references/ui-approved/02-services.webp
+reference_original: clone-thatim-vn: modules/images/platforms
 status: OPEN
 ```
 
@@ -126,7 +166,7 @@ status: OPEN
 
 - Lượt vá asset (`.webby/ASSET_PATCH.md`) đã áp dụng: 8 asset Lạc Việt do ChatGPT chuẩn bị +
   18 mark nền tảng/sản phẩm lấy đúng file nguồn đã khoá trong `clone-thatim-vn`.
-  Số khoá thiếu giảm từ 34 xuống 8.
+  Số khoá thiếu giảm từ 34 xuống 11.
 - 8 khoá còn lại đều thuộc nhóm thanh toán và **cố ý để trống** cho tới khi duyệt
   `payment.gateway` / `payment.receivingAccount` (`.webby/ASSET_PATCH.md §D`).
   Không dựng QR giả.
