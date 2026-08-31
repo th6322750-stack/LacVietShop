@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconBellRinging, IconX } from "@tabler/icons-react";
+import { IconBellRinging, IconClockPause, IconX } from "@tabler/icons-react";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Overlay";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,8 @@ interface SeenRecord {
   v: number;
   /** Ngày tắt gần nhất, dạng yyyy-mm-dd. */
   d: string;
+  /** Mốc thời gian (epoch ms) mà trước đó không hiện lại — do khách bấm tạm ẩn. */
+  until?: number;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -57,15 +59,20 @@ export function clearAnnouncementSeen() {
 }
 
 /** Quyết định có hiện popup hay không theo cấu hình và lịch sử đã xem. */
-export function shouldShow(a: AdminAnnouncement, seen: SeenRecord | null, now = today()) {
+export function shouldShow(a: AdminAnnouncement, seen: SeenRecord | null, at = new Date()) {
+  const day = at.toISOString().slice(0, 10);
   if (!a.enabled || !a.title.trim()) return false;
-  if (a.startAt && now < a.startAt) return false;
-  if (a.endAt && now > a.endAt) return false;
+  if (a.startAt && day < a.startAt) return false;
+  if (a.endAt && day > a.endAt) return false;
   if (!seen) return true;
-  // Nội dung được phát lại (đổi version) thì ai cũng thấy lại.
+  // Quản trị viên phát lại (đổi version) thì ai cũng thấy lại, kể cả đang tạm ẩn.
   if (seen.v !== a.version) return true;
+  // Khách bấm "Ẩn trong N giờ": im đúng N giờ rồi hiện lại. Đây là lựa chọn riêng
+  // của khách nên nó thắng luật tần suất — nếu không thì luật "mỗi ngày một lần"
+  // sẽ chặn tiếp và nút tạm ẩn hoá ra không khác gì nút Đóng.
+  if (seen.until) return at.getTime() >= seen.until;
   if (a.frequency === "always") return true;
-  if (a.frequency === "daily") return seen.d !== now;
+  if (a.frequency === "daily") return seen.d !== day;
   return false;
 }
 
@@ -78,10 +85,13 @@ export function AnnouncementPopup() {
     if (shouldShow(a, readSeen())) setAnnouncement(a);
   }, []);
 
-  function close() {
+  /** snoozeHours > 0 nghĩa là khách chọn tạm ẩn, không phải chỉ đóng. */
+  function close(snoozeHours = 0) {
     if (announcement) {
+      const record: SeenRecord = { v: announcement.version, d: today() };
+      if (snoozeHours > 0) record.until = Date.now() + snoozeHours * 3_600_000;
       try {
-        window.localStorage.setItem(SEEN_KEY, JSON.stringify({ v: announcement.version, d: today() }));
+        window.localStorage.setItem(SEEN_KEY, JSON.stringify(record));
       } catch {
         /* trình duyệt chặn lưu trữ — vẫn đóng được popup */
       }
@@ -92,7 +102,7 @@ export function AnnouncementPopup() {
   if (!announcement) return null;
 
   return (
-    <Modal open onClose={close} title={announcement.title} size="md">
+    <Modal open onClose={() => close()} title={announcement.title} size="md">
       <AnnouncementCard announcement={announcement} onClose={close} hideTitle />
     </Modal>
   );
@@ -116,11 +126,13 @@ export function AnnouncementCard({
   preview = false,
 }: {
   announcement: AdminAnnouncement;
-  onClose: () => void;
+  /** Nhận số giờ tạm ẩn; bỏ trống hoặc 0 là đóng thường. */
+  onClose: (snoozeHours?: number) => void;
   hideTitle?: boolean;
   preview?: boolean;
 }) {
   const lines = announcement.body.split("\n").filter((l) => l.trim());
+  const snooze = announcement.snoozeHours ?? 0;
 
   return (
     <div className="space-y-3">
@@ -151,14 +163,24 @@ export function AnnouncementCard({
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2 pt-1">
-        <Button variant="ghost" icon={<IconX size={17} />} onClick={onClose} disabled={preview}>
+        <Button variant="ghost" icon={<IconX size={17} />} onClick={() => onClose()} disabled={preview}>
           Đóng
         </Button>
+        {snooze > 0 ? (
+          <Button
+            variant="secondary"
+            icon={<IconClockPause size={17} />}
+            onClick={() => onClose(snooze)}
+            disabled={preview}
+          >
+            Ẩn trong {snooze} giờ
+          </Button>
+        ) : null}
         {announcement.ctaLabel && announcement.ctaHref ? (
           preview ? (
             <Button disabled>{announcement.ctaLabel}</Button>
           ) : (
-            <LinkButton href={announcement.ctaHref} onClick={onClose}>
+            <LinkButton href={announcement.ctaHref} onClick={() => onClose()}>
               {announcement.ctaLabel}
             </LinkButton>
           )

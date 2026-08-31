@@ -200,33 +200,45 @@ export function AdminApiView() {
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Khi chưa có kết quả thì phải nói là đang kiểm tra. Kết luận
+            "chưa cấu hình" hay "đang tắt" lúc còn đang gọi là báo sai. */}
         <StatCard
           label="Trạng thái"
-          value={connected ? "Đang kết nối" : status?.configured ? "Lỗi kết nối" : "Chưa cấu hình"}
-          tone={connected ? "success" : "danger"}
+          value={
+            !status
+              ? "Đang kiểm tra…"
+              : connected
+                ? "Đang kết nối"
+                : status.configured
+                  ? "Lỗi kết nối"
+                  : "Chưa cấu hình"
+          }
+          tone={!status ? "info" : connected ? "success" : "danger"}
           icon={connected ? <IconCircleCheck size={18} /> : <IconPlugConnected size={18} />}
           hint={status?.endpoint}
         />
         <StatCard
           label="Số dư nhà cung cấp"
-          value={status?.balance !== null && status?.balance !== undefined ? `${status.balance} ${status.currency}` : "—"}
+          value={
+            !status ? "…" : status.balance !== null && status.balance !== undefined ? `${status.balance} ${status.currency}` : "—"
+          }
           tone="gold"
           icon={<IconCoins size={18} />}
           hint={status?.balanceVnd !== null && status?.balanceVnd !== undefined ? `≈ ${formatNumber(status.balanceVnd)} đ` : undefined}
         />
         <StatCard
           label="Dịch vụ lấy được"
-          value={formatNumber(status?.catalog?.serverCount ?? 0)}
+          value={!status ? "…" : formatNumber(status.catalog?.serverCount ?? 0)}
           tone="navy"
           icon={<IconServer2 size={18} />}
-          hint={`${status?.catalog?.platformCount ?? 0} nền tảng · ${status?.catalog?.serviceCount ?? 0} nhóm`}
+          hint={status ? `${status.catalog?.platformCount ?? 0} nền tảng · ${status.catalog?.serviceCount ?? 0} nhóm` : undefined}
         />
         <StatCard
           label="Đẩy đơn thật"
-          value={status?.allowOrders ? "Đang bật" : "Đang tắt"}
-          tone={status?.allowOrders ? "success" : "info"}
+          value={!status ? "…" : status.allowOrders ? "Đang bật" : "Đang tắt"}
+          tone={!status ? "info" : status.allowOrders ? "success" : "info"}
           icon={<IconShieldLock size={18} />}
-          hint={status?.allowOrders ? "Đơn sẽ tiêu tiền thật" : "THATIM_ALLOW_ORDERS=true để bật"}
+          hint={status ? (status.allowOrders ? "Đơn sẽ tiêu tiền thật" : "THATIM_ALLOW_ORDERS=true để bật") : undefined}
         />
       </div>
 

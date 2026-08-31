@@ -311,7 +311,7 @@ export function ServicesView({
               <Select id="service" value={serviceId} onChange={(e) => selectService(e.target.value)}>
                 {platform.services.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.servers.length} máy chủ)
+                    {s.name}
                   </option>
                 ))}
               </Select>
@@ -322,7 +322,6 @@ export function ServicesView({
             <div className="mt-4">
               <Label>
                 Chọn máy chủ
-                <span className="ml-1.5 font-normal text-lv-muted">({service.servers.length})</span>
               </Label>
               <div
                 role="radiogroup"

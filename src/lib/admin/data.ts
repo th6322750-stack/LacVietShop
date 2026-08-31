@@ -356,6 +356,11 @@ export interface AdminAnnouncement {
   frequency: "always" | "daily" | "once";
   /** Tăng số này để hiện lại cho cả những người đã tắt popup. */
   version: number;
+  /**
+   * Số giờ tạm ẩn khi khách bấm nút "Ẩn trong N giờ".
+   * 0 = không hiện nút tạm ẩn, khách chỉ có nút Đóng thường.
+   */
+  snoozeHours: number;
   /** Khoảng thời gian hiển thị, để trống là không giới hạn (yyyy-mm-dd). */
   startAt?: string;
   endAt?: string;
@@ -373,4 +378,5 @@ export const defaultAnnouncement: AdminAnnouncement = {
   ctaHref: "/services",
   frequency: "daily",
   version: 1,
+  snoozeHours: 1,
 };

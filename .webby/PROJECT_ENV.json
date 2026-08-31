@@ -149,7 +149,8 @@
       "daily",
       "once"
     ],
-    "note": "Khi có backend thật chỉ cần thay hàm readAnnouncement trong src/components/blocks/AnnouncementPopup.tsx"
+    "note": "Khi có backend thật chỉ cần thay hàm readAnnouncement trong src/components/blocks/AnnouncementPopup.tsx",
+    "snooze": "Nút \"Ẩn trong N giờ\" trên popup; N cấu hình ở /admin/announcement (0 = không hiện nút). Bản ghi tạm ẩn thắng luật tần suất: hết N giờ là hiện lại."
   },
   "adminRoutesDetail": [
     "/admin",

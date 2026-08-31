@@ -26,6 +26,9 @@ const frequencies: { id: AdminAnnouncement["frequency"]; label: string; hint: st
   { id: "once", label: "Chỉ một lần", hint: "Khách tắt là thôi, trừ khi bạn phát lại." },
 ];
 
+/** Thời lượng cho nút "Ẩn trong N giờ" trên popup; 0 là không hiện nút đó. */
+const snoozeOptions = [0, 1, 2, 4, 8, 12, 24];
+
 export function AdminAnnouncementView() {
   const toast = useToast();
   const { can } = useAdminSession();
@@ -181,6 +184,27 @@ export function AdminAnnouncementView() {
                     {frequencies.find((f) => f.id === draft.frequency)?.hint}
                   </FieldMessage>
                 </div>
+              </div>
+
+              <div className="sm:max-w-[50%]">
+                <Label htmlFor="ann-snooze">Nút tạm ẩn</Label>
+                <Select
+                  id="ann-snooze"
+                  value={String(draft.snoozeHours ?? 0)}
+                  disabled={!editable}
+                  onChange={(e) => patch({ snoozeHours: Number(e.target.value) })}
+                >
+                  {snoozeOptions.map((h) => (
+                    <option key={h} value={h}>
+                      {h === 0 ? "Không có nút tạm ẩn" : `Ẩn trong ${h} giờ`}
+                    </option>
+                  ))}
+                </Select>
+                <FieldMessage tone="default">
+                  {(draft.snoozeHours ?? 0) === 0
+                    ? "Khách chỉ có nút Đóng thường."
+                    : `Khách bấm nút này thì popup im đúng ${draft.snoozeHours} giờ rồi hiện lại, bất kể tần suất chọn ở trên.`}
+                </FieldMessage>
               </div>
             </div>
           </SectionCard>
