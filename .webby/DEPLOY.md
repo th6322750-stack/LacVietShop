@@ -89,7 +89,11 @@ Kiểm tra ngay ba đường sau:
 | Định dạng dữ liệu | **JSON** |
 | Tự động gửi lại khi server trả lỗi | **Bật** |
 
-Sang bước **Bảo mật**: chọn kiểu **API Key**, dán đúng chuỗi đã đặt ở `SEPAY_WEBHOOK_KEY`.
+Sang bước **Bảo mật**: chọn **HMAC-SHA256** — SePay khuyến nghị, và an toàn hơn API Key vì nó
+ký cả nội dung, sửa một byte là phát hiện. Bấm biểu tượng con mắt để hiện **Secret Key** dạng
+`whsec_…`, rồi đặt đúng chuỗi đó vào `SEPAY_WEBHOOK_KEY` trên Vercel.
+
+Code vẫn nhận kiểu **API Key** nếu sau này anh đổi cấu hình.
 
 > Hệ thống chống cộng trùng bằng mã giao dịch SePay, nên bật “tự động gửi lại” là an toàn —
 > cùng một giao dịch gửi bao nhiêu lần cũng chỉ cộng tiền một lần.
