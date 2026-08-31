@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   IconArrowRight,
   IconBolt,
@@ -15,9 +14,8 @@ import { PlatformTile, ProductCard } from "@/components/blocks/Commerce";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { platforms, products } from "@/lib/demo/catalog";
-import { homeMetrics, notices } from "@/lib/demo/data";
 import { demoBrand } from "@/lib/demo/config";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Trang chủ",
@@ -54,6 +52,21 @@ const featuredPlatforms = [...platforms]
     return b.services.length - a.services.length;
   })
   .slice(0, 8);
+
+/**
+ * Ba con số trên trang chủ. Đếm thẳng từ danh mục đang bán nên luôn đúng —
+ * trước đây là số lượt/đơn/khách nghĩ ra, mà bịa số với khách thì không được.
+ */
+const catalogMetrics = [
+  { key: "platforms", label: "Nền tảng phục vụ", value: platforms.length, suffix: "nền tảng" },
+  {
+    key: "services",
+    label: "Dịch vụ đang bán",
+    value: platforms.reduce((n, x) => n + x.services.length, 0),
+    suffix: "dịch vụ",
+  },
+  { key: "products", label: "Sản phẩm premium", value: products.length, suffix: "sản phẩm" },
+];
 
 export default function HomePage() {
   const featured = products.slice(0, 4);
@@ -106,9 +119,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4 chỉ số */}
-      <section aria-label="Chỉ số hoạt động" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {homeMetrics.map((m, i) => {
+      {/* Quy mô danh mục — đếm thẳng từ danh mục đang bán, không phải số ước lượng. */}
+      <section aria-label="Quy mô danh mục" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {catalogMetrics.map((m, i) => {
           const Icon = metricIcons[i];
           return (
             <StatCard
@@ -117,7 +130,6 @@ export default function HomePage() {
               value={formatNumber(m.value)}
               suffix={m.suffix}
               icon={<Icon size={20} />}
-              trend={m.trend}
               tone={i % 2 === 0 ? "gold" : "navy"}
             />
           );
@@ -169,7 +181,7 @@ export default function HomePage() {
         {/* Giới thiệu */}
         <SectionCard
           title={`Về ${demoBrand.name}`}
-          className="lg:col-span-7"
+          className="lg:col-span-12"
           description="Đối tác truyền thông số đồng hành cùng thương hiệu Việt."
         >
           <p className="text-body text-lv-navy-700">
@@ -192,35 +204,6 @@ export default function HomePage() {
           </ul>
         </SectionCard>
 
-        {/* Thông báo mới nhất */}
-        <SectionCard
-          title="Thông báo mới nhất"
-          className="lg:col-span-5"
-          description="Cập nhật vận hành và chính sách."
-        >
-          <ul className="space-y-3">
-            {notices.map((n) => (
-              <li key={n.id} className="rounded-card border border-lv-border p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={n.tone === "success" ? "success" : n.tone === "warning" ? "warning" : "info"}>
-                    {n.tone === "success" ? "Vận hành" : n.tone === "warning" ? "Lưu ý" : "Ưu đãi"}
-                  </Badge>
-                  {n.pinned ? <Badge tone="gold">Ghim</Badge> : null}
-                  <span className="ml-auto text-small text-lv-muted">{formatDate(n.publishedAt)}</span>
-                </div>
-                <p className="mt-2 text-body-strong text-lv-text">{n.title}</p>
-                <p className="mt-1 text-small text-lv-muted">{n.body}</p>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/history"
-            className="mt-3 inline-flex items-center gap-1 text-small-strong text-lv-gold-700 hover:underline"
-          >
-            Xem lịch sử hoạt động
-            <IconArrowRight size={15} />
-          </Link>
-        </SectionCard>
       </div>
     </div>
   );

@@ -13,7 +13,6 @@ import {
   IconPackage,
   IconPlugConnected,
   IconRefresh,
-  IconShoppingCart,
   IconUsers,
   type Icon,
 } from "@tabler/icons-react";
@@ -36,9 +35,8 @@ interface AdminNavItem {
 
 const navItems: AdminNavItem[] = [
   { href: "/admin", label: "Dashboard", icon: IconChartHistogram },
-  { href: "/admin/orders", label: "Đơn hàng", icon: IconShoppingCart },
   { href: "/admin/services", label: "Dịch vụ & bảng giá", icon: IconLayoutGrid },
-  { href: "/admin/products", label: "Sản phẩm premium", icon: IconPackage },
+  { href: "/admin/premium", label: "Sản phẩm premium", icon: IconPackage },
   { href: "/admin/users", label: "Người dùng & giao dịch", icon: IconUsers },
   { href: "/admin/announcement", label: "Popup thông báo", icon: IconBellRinging },
   { href: "/admin/api", label: "Kết nối API", icon: IconPlugConnected },

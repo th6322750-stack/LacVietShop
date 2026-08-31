@@ -95,14 +95,11 @@ export function CustomerLoginView() {
           {submitting ? "Đang đăng nhập…" : "Đăng nhập"}
         </Button>
 
-        <div className="flex items-center justify-between text-small">
+        <p className="text-center text-small">
           <Link href="/forgot-password" className="text-lv-muted transition-colors duration-button hover:text-lv-gold-700">
             Quên mật khẩu?
           </Link>
-          <Link href="/admin/login" className="text-lv-muted transition-colors duration-button hover:text-lv-gold-700">
-            Đăng nhập quản trị
-          </Link>
-        </div>
+        </p>
       </form>
     </AuthShell>
   );

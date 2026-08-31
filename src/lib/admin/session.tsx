@@ -41,13 +41,42 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
+    let local: AdminSession | null = null;
     try {
       const raw = window.localStorage.getItem(KEY);
-      if (raw) setSession(JSON.parse(raw) as AdminSession);
+      if (raw) local = JSON.parse(raw) as AdminSession;
     } catch {
       /* trình duyệt chặn storage — coi như chưa đăng nhập */
     }
-    setReady(true);
+
+    if (!local) {
+      setReady(true);
+      return;
+    }
+
+    // Máy chủ mới là nơi quyết định. Phiên trong trình duyệt có thể còn trong khi
+    // cookie phía máy chủ đã hết hạn hoặc bị xoá — lúc đó giao diện tưởng đã đăng
+    // nhập nhưng mọi lời gọi đều bị từ chối, người dùng không hiểu vì sao.
+    fetch("/api/admin/session")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.admin) {
+          setSession(local);
+        } else {
+          try {
+            window.localStorage.removeItem(KEY);
+          } catch {
+            /* bỏ qua */
+          }
+          setSession(null);
+        }
+      })
+      .catch(() => {
+        // Không hỏi được máy chủ thì cứ giữ phiên, để mất mạng tạm thời không
+        // đá người dùng ra ngoài.
+        setSession(local);
+      })
+      .finally(() => setReady(true));
   }, []);
 
   const login = React.useCallback(async (username: string, password: string) => {
