@@ -14,7 +14,7 @@ export function CustomerLoginView() {
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
-  const { login, session, ready, accountCount } = useCustomerAuth();
+  const { login, session, ready } = useCustomerAuth();
 
   const [identifier, setIdentifier] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -103,16 +103,6 @@ export function CustomerLoginView() {
             Đăng nhập quản trị
           </Link>
         </div>
-
-        {ready && accountCount === 0 ? (
-          <p className="rounded-card border border-lv-border bg-lv-bg px-3 py-2 text-small text-lv-muted">
-            Trình duyệt này chưa có tài khoản nào. Hãy{" "}
-            <Link href="/register" className="font-semibold text-lv-gold-700 hover:underline">
-              đăng ký
-            </Link>{" "}
-            trước.
-          </p>
-        ) : null}
       </form>
     </AuthShell>
   );

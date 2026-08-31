@@ -59,15 +59,16 @@ status: OPEN
 GAP
 key: auth.provider
 area: backend
-needed: Backend xác thực thật: lưu tài khoản phía máy chủ, băm mật khẩu bằng thuật toán chậm
-  (bcrypt/argon2), xác minh email + số điện thoại, khôi phục mật khẩu, phiên có hạn và 2FA
-current_demo_source: đã có ba màn /register, /login, /forgot-password (src/components/views/auth/*)
-  chạy trên src/lib/customer/auth.tsx — tài khoản nằm trong localStorage của TỪNG trình duyệt,
-  mật khẩu băm SHA-256 ở phía client. Đây là luồng giao diện hoàn chỉnh, KHÔNG phải bảo mật:
-  ai mở DevTools cũng sửa được. Trang /forgot-password nói thẳng là chưa gửi được email.
-  Các route khách hiện vẫn xem được khi chưa đăng nhập (chưa bật chặn).
-production_risk_if_unresolved: Tài khoản không dùng được liên máy, mật khẩu không được bảo vệ đúng cách,
-  không khôi phục được truy cập, và ai cũng vào thẳng được panel khách
+needed: Đưa kho tài khoản ra máy chủ thật (hiện là tệp JSON trong data/), xác minh email +
+  số điện thoại, giới hạn tần suất gọi API, và đổi kênh gửi thư sang tên miền riêng
+current_demo_source: đã có backend xác thực chạy cục bộ — src/lib/server/{store,auth,mailer}.ts
+  và 6 route /api/auth/*. Mật khẩu băm bcrypt phía máy chủ, phiên là cookie httpOnly, mã đặt lại
+  6 số băm bcrypt, hạn 15 phút, sai 5 lần huỷ, gửi lại cách 60 giây, và trả lời giống nhau dù
+  email có tồn tại hay không. Gửi thư qua Gmail SMTP; chưa cấu hình SMTP_PASS thì mã in ra
+  cửa sổ máy chủ để vẫn kiểm thử được. Kho dữ liệu là tệp JSON, chỉ hợp giai đoạn kiểm thử.
+  Các route khách vẫn xem được khi chưa đăng nhập (chưa bật chặn).
+production_risk_if_unresolved: Tệp JSON không chịu được truy cập đồng thời và không sao lưu;
+  Gmail giới hạn ~500 thư/ngày, gửi từ @gmail.com dễ bị coi là lừa đảo; chưa chặn dò mã hàng loạt
 status: PARTIAL
 
 GAP

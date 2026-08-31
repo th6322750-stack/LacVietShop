@@ -3,41 +3,22 @@
 import * as React from "react";
 
 /**
- * Tài khoản và phiên đăng nhập của KHÁCH HÀNG.
+ * Phiên đăng nhập của KHÁCH HÀNG.
  *
- * CẢNH BÁO: bản dựng này chưa có backend xác thực (gap `auth.provider`).
- * Tài khoản nằm trong localStorage của từng trình duyệt, nên:
- *   - đăng ký ở máy này thì máy khác không đăng nhập được;
- *   - không có xác minh email/số điện thoại, không có khôi phục mật khẩu thật;
- *   - băm mật khẩu ở phía trình duyệt KHÔNG phải bảo mật — ai mở DevTools cũng
- *     sửa được dữ liệu. Nó chỉ để không lưu mật khẩu dạng chữ thường nhìn thấy ngay.
+ * Tài khoản nằm ở máy chủ (src/lib/server/*), trình duyệt chỉ gọi API. Phiên là
+ * cookie httpOnly nên mã JavaScript ở trang không đọc được — kể cả khi có lỗi XSS.
+ * Mật khẩu băm bằng bcrypt phía máy chủ, không bao giờ rời khỏi đó.
  *
- * Khi có backend thật, thay phần thân register/login bằng lời gọi API; giao diện
- * và luồng màn hình giữ nguyên.
+ * Giai đoạn kiểm thử, kho dữ liệu là một tệp JSON trong data/ (xem
+ * src/lib/server/store.ts). Đổi sang cơ sở dữ liệu thật không phải sửa tệp này.
  */
-
-const ACCOUNTS_KEY = "lacviet_customer_accounts_v1";
-const SESSION_KEY = "lacviet_customer_session_v1";
-
-export interface CustomerAccount {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  /** Muối ngẫu nhiên cho từng tài khoản. */
-  salt: string;
-  /** SHA-256 của (muối + mật khẩu), dạng hex. */
-  hash: string;
-  createdAt: string;
-}
 
 export interface CustomerSession {
   id: string;
   name: string;
   username: string;
   email: string;
-  loginAt: string;
+  phone: string;
 }
 
 export interface RegisterInput {
@@ -48,148 +29,106 @@ export interface RegisterInput {
   password: string;
 }
 
-type Result = { ok: true } | { ok: false; error: string; field?: keyof RegisterInput };
+export type AuthResult = { ok: true } | { ok: false; error: string; field?: keyof RegisterInput };
 
-function readJson<T>(key: string): T | null {
+/** Kênh mà mã đặt lại được gửi đi — "console" là SMTP chưa cấu hình. */
+export type Delivery = "smtp" | "console";
+
+/** Mọi route auth đều trả cùng một hình dạng, nên gom về một kiểu cho gọn. */
+interface ApiReply {
+  ok: boolean;
+  error?: string;
+  field?: string;
+  account?: CustomerSession;
+  delivery?: Delivery;
+}
+
+async function post(url: string, body: unknown): Promise<ApiReply> {
   try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return (await res.json()) as ApiReply;
   } catch {
-    return null;
+    return { ok: false, error: "Không gọi được máy chủ." };
   }
-}
-
-function randomSalt() {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function digest(salt: string, password: string) {
-  const data = new TextEncoder().encode(`${salt}:${password}`);
-  const buf = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 interface AuthContextValue {
   session: CustomerSession | null;
-  /** `false` khi chưa đọc xong localStorage — tránh nháy nút đăng nhập rồi lại đổi. */
+  /** `false` khi chưa hỏi xong máy chủ — tránh nháy nút đăng nhập rồi lại đổi. */
   ready: boolean;
-  /** Số tài khoản đã đăng ký trên trình duyệt này. */
-  accountCount: number;
-  register: (input: RegisterInput) => Promise<Result>;
-  login: (identifier: string, password: string) => Promise<Result>;
-  logout: () => void;
-  /** Có nội dung khi trình duyệt từ chối lưu. */
-  storageError: string | null;
+  register: (input: RegisterInput) => Promise<AuthResult>;
+  login: (identifier: string, password: string) => Promise<AuthResult>;
+  logout: () => Promise<void>;
+  requestResetCode: (email: string) => Promise<{ ok: true; delivery: Delivery } | { ok: false; error: string }>;
+  resetPassword: (
+    email: string,
+    code: string,
+    password: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string; field?: string }>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<CustomerSession | null>(null);
-  const [accounts, setAccounts] = React.useState<CustomerAccount[]>([]);
   const [ready, setReady] = React.useState(false);
-  const [storageError, setStorageError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setAccounts(readJson<CustomerAccount[]>(ACCOUNTS_KEY) ?? []);
-    setSession(readJson<CustomerSession>(SESSION_KEY));
-    setReady(true);
-  }, []);
-
-  const persistAccounts = React.useCallback((next: CustomerAccount[]) => {
-    setAccounts(next);
-    try {
-      window.localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(next));
-      setStorageError(null);
-    } catch {
-      // Không nuốt lỗi: người dùng phải biết tài khoản vừa tạo sẽ mất khi tải lại.
-      setStorageError("Trình duyệt không lưu được dữ liệu. Tài khoản vừa tạo chỉ tồn tại trong phiên này.");
-    }
-  }, []);
-
-  const startSession = React.useCallback((account: CustomerAccount) => {
-    const next: CustomerSession = {
-      id: account.id,
-      name: account.name,
-      username: account.username,
-      email: account.email,
-      loginAt: new Date().toISOString(),
+    let alive = true;
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d: { account: CustomerSession | null }) => {
+        if (alive) setSession(d.account ?? null);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (alive) setReady(true);
+      });
+    return () => {
+      alive = false;
     };
-    setSession(next);
-    try {
-      window.localStorage.setItem(SESSION_KEY, JSON.stringify(next));
-    } catch {
-      /* phiên vẫn dùng được cho tới khi tải lại trang */
-    }
   }, []);
 
-  const register = React.useCallback(
-    async (input: RegisterInput): Promise<Result> => {
-      if (!crypto?.subtle) {
-        return { ok: false, error: "Trình duyệt không hỗ trợ mã hoá, không tạo được tài khoản." };
-      }
-      const username = input.username.trim().toLowerCase();
-      const email = input.email.trim().toLowerCase();
-
-      if (accounts.some((a) => a.username === username)) {
-        return { ok: false, error: "Tên đăng nhập này đã có người dùng.", field: "username" };
-      }
-      if (accounts.some((a) => a.email === email)) {
-        return { ok: false, error: "Email này đã được đăng ký.", field: "email" };
-      }
-
-      const salt = randomSalt();
-      const account: CustomerAccount = {
-        id: `kh-${Date.now().toString(36)}`,
-        name: input.name.trim(),
-        username,
-        email,
-        phone: input.phone.trim(),
-        salt,
-        hash: await digest(salt, input.password),
-        createdAt: new Date().toISOString(),
-      };
-
-      persistAccounts([...accounts, account]);
-      startSession(account);
-      return { ok: true };
-    },
-    [accounts, persistAccounts, startSession],
-  );
-
-  const login = React.useCallback(
-    async (identifier: string, password: string): Promise<Result> => {
-      if (!crypto?.subtle) {
-        return { ok: false, error: "Trình duyệt không hỗ trợ mã hoá, không đăng nhập được." };
-      }
-      const id = identifier.trim().toLowerCase();
-      const account = accounts.find((a) => a.username === id || a.email === id);
-      if (!account) {
-        return { ok: false, error: "Không tìm thấy tài khoản trên trình duyệt này." };
-      }
-      if ((await digest(account.salt, password)) !== account.hash) {
-        return { ok: false, error: "Mật khẩu không đúng." };
-      }
-      startSession(account);
-      return { ok: true };
-    },
-    [accounts, startSession],
-  );
-
-  const logout = React.useCallback(() => {
-    setSession(null);
-    try {
-      window.localStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* bỏ qua */
+  const register = React.useCallback(async (input: RegisterInput): Promise<AuthResult> => {
+    const res = await post("/api/auth/register", input);
+    if (!res.ok) {
+      return { ok: false, error: res.error ?? "Không tạo được tài khoản.", field: res.field as keyof RegisterInput };
     }
+    setSession(res.account ?? null);
+    return { ok: true };
+  }, []);
+
+  const login = React.useCallback(async (identifier: string, password: string): Promise<AuthResult> => {
+    const res = await post("/api/auth/login", { identifier, password });
+    if (!res.ok) return { ok: false, error: res.error ?? "Đăng nhập không thành công." };
+    setSession(res.account ?? null);
+    return { ok: true };
+  }, []);
+
+  const logout = React.useCallback(async () => {
+    await post("/api/auth/logout", {});
+    setSession(null);
+  }, []);
+
+  const requestResetCode = React.useCallback(async (email: string) => {
+    const res = await post("/api/auth/forgot", { email });
+    if (!res.ok) return { ok: false as const, error: res.error ?? "Không gửi được yêu cầu." };
+    return { ok: true as const, delivery: res.delivery ?? ("smtp" as Delivery) };
+  }, []);
+
+  const resetPassword = React.useCallback(async (email: string, code: string, password: string) => {
+    const res = await post("/api/auth/reset", { email, code, password });
+    if (!res.ok) return { ok: false as const, error: res.error ?? "Không đặt lại được mật khẩu.", field: res.field };
+    return { ok: true as const };
   }, []);
 
   const value = React.useMemo(
-    () => ({ session, ready, accountCount: accounts.length, register, login, logout, storageError }),
-    [session, ready, accounts.length, register, login, logout, storageError],
+    () => ({ session, ready, register, login, logout, requestResetCode, resetPassword }),
+    [session, ready, register, login, logout, requestResetCode, resetPassword],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

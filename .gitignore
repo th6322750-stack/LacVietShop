@@ -8,3 +8,6 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Dữ liệu chạy cục bộ: tài khoản khách, phiên, mã đặt lại mật khẩu.
+data/

@@ -55,13 +55,15 @@
     "eslint": "8.57.1",
     "eslint-config-next": "15.5.24",
     "postcss": "8.5.26",
-    "autoprefixer": "10.5.4"
+    "autoprefixer": "10.5.4",
+    "nodemailer": "9.0.6",
+    "bcryptjs": "3.0.3"
   },
   "checksRun": {
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
-    "build": "pnpm build — PASS (33 route)",
-    "routeSmoke": "5 bộ Playwright — 128 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, đăng ký/đăng nhập 24)",
+    "build": "pnpm build — PASS (39 route)",
+    "routeSmoke": "5 bộ Playwright — 136 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, tài khoản 32)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -69,7 +71,7 @@
     "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
     "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
-  "routesImplemented": 33,
+  "routesImplemented": 39,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
   "missingAssetKeys": 11,
   "openProductionGaps": 13,
@@ -165,15 +167,26 @@
   "customerAuth": {
     "date": "2026-08-31",
     "requestedBy": "USER",
-    "routes": [
+    "mode": "Backend chạy cục bộ trên máy chính — giai đoạn kiểm thử",
+    "screens": [
       "/register",
       "/login",
       "/forgot-password"
     ],
-    "store": "src/lib/customer/auth.tsx — localStorage theo từng trình duyệt",
-    "passwordHandling": "SHA-256(muối + mật khẩu) phía client, muối ngẫu nhiên 16 byte mỗi tài khoản",
-    "notSecurity": "Băm phía trình duyệt KHÔNG phải bảo mật; chỉ để không lưu mật khẩu dạng đọc được. Xác thực thật phải ở server (gap auth.provider).",
-    "panelGuard": "CHƯA bật — các route khách vẫn xem được khi chưa đăng nhập, để bản trình diễn duyệt được ngay",
-    "topbar": "Chưa đăng nhập hiện nút Đăng nhập/Đăng ký; đã đăng nhập hiện tên phiên + nút đăng xuất"
+    "apiRoutes": [
+      "/api/auth/register",
+      "/api/auth/login",
+      "/api/auth/logout",
+      "/api/auth/me",
+      "/api/auth/forgot",
+      "/api/auth/reset"
+    ],
+    "store": "src/lib/server/store.ts — tệp JSON data/lacviet-auth.json (đã gitignore)",
+    "passwordHashing": "bcrypt cost 10, phía máy chủ",
+    "session": "cookie httpOnly + sameSite lax, hạn 30 ngày, token ngẫu nhiên 32 byte",
+    "resetFlow": "OTP 6 số gửi qua email; băm bcrypt trước khi lưu, hạn 15 phút, sai 5 lần huỷ, gửi lại cách 60 giây",
+    "antiEnumeration": "Đăng nhập và quên mật khẩu trả lời giống nhau dù tài khoản có tồn tại hay không",
+    "mailer": "nodemailer qua Gmail SMTP (lacvietmedia.agency@gmail.com). SMTP_PASS là App Password, để trống thì mã in ra cửa sổ máy chủ.",
+    "panelGuard": "CHƯA bật — các route khách vẫn xem được khi chưa đăng nhập"
   }
 }
