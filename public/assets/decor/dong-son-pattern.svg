@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <pattern id="p" width="128" height="128" patternUnits="userSpaceOnUse">
+      <circle cx="64" cy="64" r="50" stroke="#D99A16" stroke-opacity=".16" stroke-width="2"/>
+      <circle cx="64" cy="64" r="36" stroke="#D99A16" stroke-opacity=".13" stroke-width="2" stroke-dasharray="5 7"/>
+      <circle cx="64" cy="64" r="18" stroke="#C97900" stroke-opacity=".13" stroke-width="2"/>
+      <path d="M64 8l7 16h-14L64 8Zm56 56-16 7V57l16 7ZM64 120l-7-16h14l-7 16ZM8 64l16-7v14L8 64Z" fill="#D99A16" fill-opacity=".12"/>
+      <path d="M31 31l12 4-8 8-4-12Zm66 0-4 12-8-8 12-4Zm0 66-12-4 8-8 4 12Zm-66 0 4-12 8 8-12 4Z" fill="#A65F00" fill-opacity=".10"/>
+      <path d="M53 64c5-9 17-15 28-11-8 2-13 7-15 14 7-2 13 0 18 5-12 3-24 0-31-8Z" fill="#D99A16" fill-opacity=".10"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="url(#p)"/>
+</svg>

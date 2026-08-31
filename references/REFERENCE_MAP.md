@@ -7,7 +7,8 @@ These files are lightweight visual reference copies of the 20 Lạc Việt Media
 - `references/ui-approved/*` = approved visual hierarchy, composition, brand direction, relative emphasis and page identity.
 - `/PROJECT_HANDOFF.md` + `/.webby/*` = implementation geometry, tokens, responsive/state/motion rules. Claude MUST NOT measure pixels from reference images to invent values.
 - `th6322750-stack/clone-thatim-vn` = source reference only for feature scope, original information architecture and interaction flow. Do not copy Thatim branding, credentials, user/session state or production secrets.
-- These WebP copies are intentionally lightweight **reference-only** images, not production master assets.
+- Reference files are intentionally lightweight and **reference-only**, not production master assets.
+- Three original lightweight WebP files were corrupt. Their repaired SVG replacements listed below are now the visual authority for `/purchased`, `/products/canva`, and `/products/gemini`. Ignore the old corrupt WebP files for those routes.
 
 | Approved target image | Target route | Original clone reference |
 |---|---|---|
@@ -22,12 +23,12 @@ These files are lightweight visual reference copies of the 20 Lạc Việt Media
 | `ui-approved/09-affiliate.webp` | `/affiliate` | `affiliate.html` / `screenshots/affiliate.png` |
 | `ui-approved/10-child-panel.webp` | `/child-panel` | `child_panel.html` / `screenshots/child_panel.png` |
 | `ui-approved/11-api-docs.webp` | `/api-docs` | `api_docs.html` / `screenshots/api_docs.png` |
-| `ui-approved/12-product-purchased.webp` | `/purchased` | `product_purchased.html` / `screenshots/product_purchased.png` |
+| `ui-approved/12-product-purchased-fixed.svg` | `/purchased` | `product_purchased.html` / `screenshots/product_purchased.png` |
 | `ui-approved/13-product-youtube.webp` | `/products/youtube` | `product_6.html` / `screenshots/product_6.png` |
 | `ui-approved/14-product-capcut.webp` | `/products/capcut` | `product_7.html` / `screenshots/product_7.png` |
-| `ui-approved/15-product-canva.webp` | `/products/canva` | `product_8.html` / `screenshots/product_8.png` |
+| `ui-approved/15-product-canva-fixed.svg` | `/products/canva` | `product_8.html` / `screenshots/product_8.png` |
 | `ui-approved/16-product-veo3.webp` | `/products/veo3` | `product_9.html` / `screenshots/product_9.png` |
-| `ui-approved/17-product-gemini.webp` | `/products/gemini` | `product_10.html` / `screenshots/product_10.png` |
+| `ui-approved/17-product-gemini-fixed.svg` | `/products/gemini` | `product_10.html` / `screenshots/product_10.png` |
 | `ui-approved/18-product-chatgpt.webp` | `/products/chatgpt` | `product_11.html` / `screenshots/product_11.png` |
 | `ui-approved/19-product-netflix.webp` | `/products/netflix` | `product_12.html` / `screenshots/product_12.png` |
 | `ui-approved/20-product-vpn.webp` | `/products/vpn` | `product_174.html` / `screenshots/product_174.png` |

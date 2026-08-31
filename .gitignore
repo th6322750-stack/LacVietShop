@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+build/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# Dữ liệu chạy cục bộ: tài khoản khách, phiên, mã đặt lại mật khẩu.
+data/

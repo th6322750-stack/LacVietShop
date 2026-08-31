@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Token nguồn: PROJECT_HANDOFF.md §6 — không sửa giá trị nếu handoff chưa đổi.
+   Lưu dạng bộ ba kênh màu "R G B" để Tailwind dùng được modifier alpha (bg-lv-border/60). */
+:root {
+  --lv-bg: 248 250 252;
+  --lv-surface: 255 255 255;
+  --lv-surface-soft: 255 253 248;
+  --lv-border: 230 234 240;
+  --lv-border-gold: 240 213 155;
+  --lv-navy-950: 11 21 51;
+  --lv-navy-900: 15 27 61;
+  --lv-navy-700: 38 55 94;
+  --lv-text: 15 27 61;
+  --lv-muted: 102 112 133;
+  --lv-gold-700: 166 95 0;
+  --lv-gold-600: 201 121 0;
+  --lv-gold-500: 217 154 22;
+  --lv-gold-400: 237 184 75;
+  --lv-gold-100: 255 241 214;
+  --lv-gold-050: 255 249 237;
+  --lv-success: 22 163 74;
+  --lv-warning: 217 119 6;
+  --lv-danger: 220 38 38;
+  --lv-info: 37 99 235;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: rgb(var(--lv-bg));
+    color: rgb(var(--lv-text));
+    font-size: 14px;
+    line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* §11 khả năng truy cập: focus luôn nhìn thấy được, không tắt outline. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--lv-gold-600));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: rgb(var(--lv-gold-100));
+    color: rgb(var(--lv-navy-900));
+  }
+}
+
+@layer components {
+  .lv-card {
+    @apply rounded-card border border-lv-border bg-lv-surface shadow-card;
+  }
+
+  .lv-panel {
+    @apply rounded-panel border border-lv-border bg-lv-surface shadow-card;
+  }
+
+  /* Giá tiền không được xuống dòng (§6 content rules). */
+  .lv-price {
+    @apply whitespace-nowrap tabular-nums;
+  }
+
+  .lv-scroll-x {
+    @apply overflow-x-auto;
+    scrollbar-width: thin;
+  }
+
+  .lv-skeleton {
+    @apply relative overflow-hidden bg-lv-border/60;
+  }
+
+  .lv-skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+}
+
+/* §10: reduced-motion bỏ mọi chuyển động không thiết yếu. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

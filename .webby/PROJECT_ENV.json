@@ -14,14 +14,231 @@
   "charts": "Recharts when useful",
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
-  "testCommand": "pnpm test if tests are configured; otherwise route/component smoke checks",
+  "testCommand": "chưa cấu hình test runner; dùng kiểm thử khói Playwright ngoài repo (20 route + 6 bề rộng)",
   "lintCommand": "pnpm lint",
   "buildDirectory": ".next",
   "deployMechanism": null,
-  "protectedRefs": ["main"],
+  "protectedRefs": [
+    "main"
+  ],
   "layoutMode": "MIXED_APP_SHELL",
-  "breakpoints": [576, 768, 992, 1200, 1400],
-  "responsiveMatrix": [390, 576, 768, 992, 1200, 1440],
-  "status": "READY_FOR_ALL_IN_ONE_BUILD",
-  "versionRule": "Claude records actual installed package versions after initialization. Do not switch framework without TECHNICAL_CONSTRAINT evidence. Do not auto-merge."
+  "breakpoints": [
+    576,
+    768,
+    992,
+    1200,
+    1400
+  ],
+  "responsiveMatrix": [
+    390,
+    576,
+    768,
+    992,
+    1200,
+    1440
+  ],
+  "status": "LIVE_SUPPLIER_API_WIRED",
+  "versionRule": "Claude records actual installed package versions after initialization. Do not switch framework without TECHNICAL_CONSTRAINT evidence. Do not auto-merge.",
+  "installedVersions": {
+    "node": "v24.18.0",
+    "pnpm": "10.34.5",
+    "next": "15.5.24",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "5.9.3",
+    "tailwindcss": "3.4.19",
+    "@tabler/icons-react": "3.46.0",
+    "recharts": "2.15.4",
+    "react-hook-form": "7.87.0",
+    "zod": "3.25.76",
+    "@hookform/resolvers": "3.10.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.5.24",
+    "postcss": "8.5.26",
+    "autoprefixer": "10.5.4",
+    "nodemailer": "9.0.6",
+    "bcryptjs": "3.0.3"
+  },
+  "checksRun": {
+    "typecheck": "pnpm typecheck — PASS",
+    "lint": "pnpm lint — PASS (0 warning, 0 error)",
+    "build": "pnpm build — PASS (39 route)",
+    "routeSmoke": "6 bộ — 156 PASS / 0 FAIL (khách 57, quản trị 18, thêm mới 6, API+popup 26, tài khoản 32, nạp tiền SePay 17)",
+    "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
+    "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
+    "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
+    "assets": "6 TODO_ASSET: payment.vietinbank, payment.momo, deposit.realQr, 3 logo nền tảng chỉ có trong API (LinkedIn/Bigo/Discord)",
+    "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
+    "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
+  },
+  "routesImplemented": 43,
+  "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
+  "missingAssetKeys": 6,
+  "openProductionGaps": 13,
+  "autoMerge": false,
+  "assetPatch": {
+    "source": ".webby/ASSET_PATCH.md",
+    "lacVietAssetsIntegrated": 8,
+    "cloneMarksCopied": 18,
+    "remainingTodoAssets": 8,
+    "remainingReason": "7 payment marks + deposit.realQr — cố ý hoãn tới khi duyệt payment.gateway / payment.receivingAccount",
+    "referenceRepair": "RESOLVED (3 SVG mới); còn lỗi XML ở 15-product-canva-fixed.svg do 3 dấu & chưa escape"
+  },
+  "scopeChange": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "change": "Hệ thống chỉ còn hai mặt: giao diện khách hàng và giao diện quản trị. Bỏ mảng đại lý khỏi app khách.",
+    "removedRoutes": [
+      "/affiliate",
+      "/child-panel"
+    ],
+    "removedUi": [
+      "thẻ sidebar 'Trở thành đại lý / cộng tác viên'",
+      "huy hiệu cấp bậc ở topbar, trang Dịch vụ, trang Nạp tiền",
+      "thẻ 'Hạng thành viên' ở trang Tài khoản",
+      "nội dung nhắc đại lý ở trang chủ và banner trang Sản phẩm"
+    ],
+    "note": "ALL_IN_ONE.md liệt kê 20 màn gồm Affiliate và Panel con; user chốt bỏ nên còn 18 route khách. Code cũ vẫn nằm trong lịch sử nhánh claude/admin-panel nếu cần khôi phục.",
+    "customerRoutes": 18,
+    "adminRoutes": 8
+  },
+  "supplierIntegration": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "provider": "thatim.vn API v2",
+    "endpoint": "https://thatim.vn/api/v2",
+    "protocol": "POST form-urlencoded, phân biệt bằng tham số action",
+    "keyStorage": ".env.local (đã gitignore) — không có khoá nào trong mã nguồn hay trong git",
+    "serverOnlyModules": [
+      "src/lib/thatim/config.ts",
+      "src/lib/thatim/client.ts",
+      "src/lib/thatim/catalog.ts"
+    ],
+    "proxyRoutes": [
+      "/api/thatim/status",
+      "/api/thatim/catalog",
+      "/api/thatim/order"
+    ],
+    "actionsVerified": [
+      "balance",
+      "services"
+    ],
+    "actionsWiredNotRun": [
+      "add",
+      "status"
+    ],
+    "liveCatalog": {
+      "platforms": 26,
+      "serviceGroups": 105,
+      "servers": 423
+    },
+    "fallbackCatalog": "src/lib/demo/services-catalog.ts (23 nền tảng / 124 nhóm / 145 máy chủ, dựng từ bản chụp trang nhà cung cấp)",
+    "priceConversion": "đồng/tương tác = rate(USD/1.000) × THATIM_USD_TO_VND(26000) ÷ 1000 × THATIM_MARKUP(1)",
+    "priceVerification": "25/25 máy chủ Tiktok đối chiếu khớp từng đồng với bảng giá công bố của nhà cung cấp",
+    "orderGuard": "THATIM_ALLOW_ORDERS=false — đẩy đơn thật bị chặn; giao diện báo rõ thay vì âm thầm chạy đơn mô phỏng",
+    "supplierBalanceAtIntegration": "0.00577 USD"
+  },
+  "announcementPopup": {
+    "date": "2026-08-31",
+    "requestedBy": "USER",
+    "purpose": "Quản trị viên tự cấu hình popup thông báo hiện khi khách vào web",
+    "adminScreen": "/admin/announcement",
+    "permission": "announce.edit",
+    "storage": "kho quản trị trong localStorage (khoá lacviet_admin_db_v1 → announcement); trang khách đọc cùng khoá",
+    "seenRecord": "lacviet_notice_seen_v1",
+    "frequencies": [
+      "always",
+      "daily",
+      "once"
+    ],
+    "note": "Khi có backend thật chỉ cần thay hàm readAnnouncement trong src/components/blocks/AnnouncementPopup.tsx",
+    "snooze": "Nút \"Ẩn trong N giờ\" trên popup; N cấu hình ở /admin/announcement (0 = không hiện nút). Bản ghi tạm ẩn thắng luật tần suất: hết N giờ là hiện lại."
+  },
+  "adminRoutesDetail": [
+    "/admin",
+    "/admin/login",
+    "/admin/orders",
+    "/admin/services",
+    "/admin/products",
+    "/admin/users",
+    "/admin/announcement",
+    "/admin/api"
+  ],
+  "customerAuth": {
+    "date": "2026-08-31",
+    "requestedBy": "USER",
+    "mode": "Backend chạy cục bộ trên máy chính — giai đoạn kiểm thử",
+    "screens": [
+      "/register",
+      "/login",
+      "/forgot-password"
+    ],
+    "apiRoutes": [
+      "/api/auth/register",
+      "/api/auth/login",
+      "/api/auth/logout",
+      "/api/auth/me",
+      "/api/auth/forgot",
+      "/api/auth/reset"
+    ],
+    "store": "src/lib/server/store.ts — tệp JSON data/lacviet-auth.json (đã gitignore)",
+    "passwordHashing": "bcrypt cost 10, phía máy chủ",
+    "session": "cookie httpOnly + sameSite lax, hạn 30 ngày, token ngẫu nhiên 32 byte",
+    "resetFlow": "OTP 6 số gửi qua email; băm bcrypt trước khi lưu, hạn 15 phút, sai 5 lần huỷ, gửi lại cách 60 giây",
+    "antiEnumeration": "Đăng nhập và quên mật khẩu trả lời giống nhau dù tài khoản có tồn tại hay không",
+    "mailer": "nodemailer qua Gmail SMTP (lacvietmedia.agency@gmail.com), App Password trong .env.local. MAIL_DRY_RUN=true thì chỉ in mã ra màn hình, không gửi thư — bộ kiểm thử tài khoản phải chạy ở chế độ này.",
+    "panelGuard": "CHƯA bật — các route khách vẫn xem được khi chưa đăng nhập"
+  },
+  "uiDecisions": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "featuredPlatformsOnHome": "8 nền tảng trong nước nhiều dịch vụ nhất, thay vì đổ hết 23 nền tảng",
+    "brandMark": "Chỉ dùng logo ngang brand.logoHorizontal; bỏ hẳn mark tròn brand.markCompact khỏi mọi khung",
+    "guestTopbar": "Chưa đăng nhập thì ẩn số dư, nút nạp tiền và chuông thông báo",
+    "filterBar": "Ô lọc có bề rộng cố định để cả hàng nằm gọn một dòng, không rơi mỗi ô một dòng",
+    "demoLabels": "Đã gỡ nhãn DEMO/mô phỏng trang trí khỏi giao diện theo yêu cầu. GIỮ LẠI câu báo khi đơn chưa thực sự đẩy sang nhà cung cấp — bỏ câu đó thì khách tưởng đã đặt hàng xong.",
+    "homeMetrics": "Số liệu trang chủ hạ về mức đơn vị mới mở (186 đơn / 47.200 lượt / 64 khách)",
+    "removedSections": "Bỏ khối Câu hỏi thường gặp ở trang sản phẩm và dải DEMO ở trang Nạp tiền",
+    "paymentMethods": "Chỉ còn VietinBank (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT",
+    "tierPricing": "Bỏ dải bảng giá 4 bậc khỏi trang khách — khách lẻ không cần thấy giá cấp đại lý/nhà phân phối. Giá vẫn tính theo bậc của tài khoản ở phía sau."
+  },
+  "plannedPaymentGateway": "SePay — tự cộng số dư qua webhook biến động số dư ngân hàng (USER chốt 2026-08-31, chưa làm)",
+  "pricing": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "model": "Giá từ API nhà cung cấp là giá vốn; giá bán do quản trị đặt",
+    "store": "data/lacviet-pricing.json (đã gitignore) — server, không phải localStorage",
+    "rules": "Hệ số chung theo phần trăm; hoặc quy tắc riêng theo mã dịch vụ: percent (an toàn) hoặc fixed (có thể tụt dưới vốn khi nhà cung cấp tăng giá)",
+    "guard": "Đọc và ghi bảng giá đều cần cookie phiên quản trị httpOnly do /api/admin/session cấp",
+    "adminScreen": "/admin/services — hiện giá vốn, giá bán, chênh lệch, cảnh báo bán dưới vốn",
+    "removed": "Thêm/xoá dịch vụ tay: danh mục nay lấy từ API, dịch vụ tự thêm không có mã nhà cung cấp nên không đẩy đơn được"
+  },
+  "dataLayer": {
+    "date": "2026-08-31",
+    "file": "src/lib/server/db.ts",
+    "modes": "Có DATABASE_URL → Postgres (Neon). Không có → tệp data/lacviet-db.json khi chạy ở máy nhà.",
+    "why": "Vercel không cho ghi tệp và mỗi lần deploy là mất sạch, nên lên Vercel bắt buộc phải có Postgres.",
+    "tables": [
+      "accounts",
+      "sessions",
+      "reset_codes",
+      "pricing",
+      "deposits"
+    ],
+    "note": "Bảng tự tạo ở lần gọi đầu tiên; số dư khách nằm ở accounts.balance"
+  },
+  "deposits": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "provider": "SePay",
+    "flow": "Khách chọn số tiền → máy chủ sinh mã LV+8 ký tự → QR qr.sepay.vn → khách chuyển khoản → webhook khớp mã → cộng số dư",
+    "webhookRoute": "/api/webhooks/sepay",
+    "guards": [
+      "Đòi đúng SEPAY_WEBHOOK_KEY trong header Authorization, so sánh timing-safe",
+      "Chỉ nhận transferType = in",
+      "sepay_id là khoá duy nhất nên gửi lại cùng giao dịch không cộng tiền hai lần",
+      "Cộng đúng số tiền thực nhận, ghi chú lại nếu lệch với số khách bấm"
+    ],
+    "status": "Đã kiểm thử 17/17 bằng webhook giả; chưa chạy với tiền thật"
+  }
 }

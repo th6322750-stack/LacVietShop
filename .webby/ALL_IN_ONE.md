@@ -2,7 +2,7 @@
 
 `TASK_MODE: NEW_REDESIGN`
 
-This is ONE continuous execution contract. Do not split the project into Task 001 / Task 002 / later phases that require separate user prompts. Work through the full project continuously until the complete first-pass app is done, then report the remaining asset/integration gaps once.
+This is ONE continuous execution contract. Do not split the project into Task 001 / Task 002 / later phases that require separate user prompts. Work through the full project continuously until the complete first-pass app is done, then continue with any ChatGPT-prepared asset patch available in this repo before asking for final visual acceptance.
 
 ## Mission
 Build the complete NEW Lạc Việt Media Agency web app in `th6322750-stack/LacVietShop` using the approved Lạc Việt UI references in this repo and `th6322750-stack/clone-thatim-vn` only as the original feature/flow reference.
@@ -12,7 +12,7 @@ Read before implementation:
 1. `/CLAUDE.md`
 2. `/PROJECT_HANDOFF.md`
 3. `/references/REFERENCE_MAP.md`
-4. `/references/ui-approved/01-home.webp` through `/references/ui-approved/20-product-vpn.webp`
+4. The exact per-route approved target listed in `/references/REFERENCE_MAP.md` (17 lightweight WebP targets + 3 repaired SVG targets)
 5. `/references/brand/lac-viet-logo-horizontal.webp`
 6. `/.webby/HANDOFF.json`
 7. `/.webby/ASSET_COUNT_PLAN.json`
@@ -20,11 +20,12 @@ Read before implementation:
 9. `/.webby/PROJECT_ENV.json`
 10. `/.webby/MISSING_ASSET_REPORT.md`
 11. `/.webby/FINAL_GAPS_REPORT.md`
+12. `/.webby/ASSET_PATCH.md` when it exists
 
-Before implementing each route, inspect its matching approved target image from `references/REFERENCE_MAP.md`.
+Before implementing or visually checking each route, inspect its matching approved target from `references/REFERENCE_MAP.md`.
 
 ## Visual authority
-- Approved Lạc Việt images in `references/ui-approved/` = target hierarchy, composition, route identity, brand direction and relative emphasis.
+- Approved Lạc Việt files in `references/ui-approved/` = target hierarchy, composition, route identity, brand direction and relative emphasis.
 - `PROJECT_HANDOFF.md` + `.webby/*` = geometry, tokens, responsive rules, states and behavior.
 - Never measure screenshot pixels to invent CSS values.
 - `clone-thatim-vn` = reference only for original page scope/flow; never copy Thatim branding, captured credentials, user/session data or secret values.
@@ -83,21 +84,7 @@ If an exact production visual asset is missing, ambiguous, unmapped or insuffici
 5. Append one structured entry to `.webby/MISSING_ASSET_REPORT.md`.
 6. Continue building the entire app.
 
-Each entry must contain:
-```text
-NEED_ASSET
-key: <stable key>
-route: <route>
-section: <section>
-role: <role>
-needed: <what ChatGPT must prepare/render>
-ratio/size: <required usage>
-placeholder: <component/file/slot>
-reference_target: <approved Lạc Việt image>
-reference_original: <Thatim page/screenshot when useful>
-```
-
-Do not ask the user to resolve each asset one-by-one during the build. Collect them all and report once after the complete first pass. ChatGPT will then render/prepare the missing assets and update the manifest; Claude will patch those exact slots afterward without redesigning surrounding UI.
+Do not ask the user to resolve each asset one-by-one during the build. Collect them all and report once after the complete first pass. ChatGPT will then prepare/map the missing assets and commit an `ASSET_PATCH`; Claude applies those exact mappings without redesigning surrounding UI.
 
 ## Missing production data policy — continue visual build
 For unavailable domain/contact/payment/catalog/auth/backend values:
@@ -110,10 +97,34 @@ For unavailable domain/contact/payment/catalog/auth/backend values:
 Never copy access tokens, CSRF values, balances, phone numbers, account identity or session state captured in `clone-thatim-vn`. No real secret may appear in public client JS, HTML meta tags or docs examples. API credentials are masked by default.
 
 ## Do not split execution
-Do not stop after “foundation”, “P1”, “P2”, or any numbered internal phase to wait for another user message. Those labels are only implementation order. Continue through all scopes autonomously unless there is a genuine destructive/security risk or a technical constraint that makes further work impossible.
+Do not stop after “foundation”, “P1”, “P2”, “first pass”, or any numbered internal phase to wait for another design task. Those labels are only implementation order. Continue autonomously whenever the next authority/mapping has already been committed to the repo.
 
-## Final first-pass completion criteria
-The single execution is complete only when:
+## POST-FIRST-PASS CONTINUATION — SAME JOB, NOT A NEW TASK
+
+If the 20-route first pass is already complete and `.webby/ASSET_PATCH.md` exists, continue the SAME all-in-one execution:
+
+1. Read `.webby/ASSET_PATCH.md`.
+2. Apply every ChatGPT-prepared Lạc Việt asset already committed under `public/assets/`.
+3. Copy the approved horizontal logo from `references/brand/` to its declared runtime destination.
+4. For platform/product AUTHENTIC assets, obtain only the exact `clone-thatim-vn` source paths declared in `ASSET_PATCH.md`; do not choose alternatives.
+5. Update only the matching `src` values in `src/lib/assets.ts` plus metadata/favicon wiring required by the mapped asset.
+6. Regenerate `.webby/MISSING_ASSET_REPORT.md` with the project report generator.
+7. Leave payment-brand marks and real QR unresolved when payment configuration is still unapproved. Do not fabricate a real payment setup.
+8. Rerun typecheck, lint, build, 20-route smoke and responsive checks.
+9. Continue until all currently resolvable design assets are patched. Do not stop merely because production payment/auth/backend gaps remain.
+
+`ASSET_PATCH.md` is data for this same all-in-one execution, not Task 002.
+
+## Reference integrity — repaired
+The three previously corrupt lightweight WebP references have valid repaired visual-authority replacements:
+- `/purchased` → `references/ui-approved/12-product-purchased-fixed.svg`
+- `/products/canva` → `references/ui-approved/15-product-canva-fixed.svg`
+- `/products/gemini` → `references/ui-approved/17-product-gemini-fixed.svg`
+
+Use the repaired SVG files above and the mapping in `references/REFERENCE_MAP.md`. Ignore the old corrupt `12-product-purchased.webp`, `15-product-canva.webp`, and `17-product-gemini.webp` files. These reference blockers are RESOLVED.
+
+## Completion criteria before final user review
+The continuous execution is ready for final visual review only when:
 - all 20 target routes are reachable;
 - shared AppShell is consistent;
 - responsive behavior is implemented;
@@ -121,16 +132,17 @@ The single execution is complete only when:
 - core UI interactions run with safe typed demo data where needed;
 - states/validation/accessibility basics are present;
 - available checks pass;
-- `.webby/MISSING_ASSET_REPORT.md` is consolidated;
-- `.webby/FINAL_GAPS_REPORT.md` is consolidated.
+- every currently resolvable mapped asset in `.webby/ASSET_PATCH.md` is integrated;
+- `.webby/MISSING_ASSET_REPORT.md` contains only genuinely unresolved items tied to unavailable production configuration or unavailable exact source assets;
+- `.webby/FINAL_GAPS_REPORT.md` remains the source of truth for production integration gaps.
 
-## Final response only after the complete first pass
+## Final response
 Report:
 1. app structure and stack;
-2. confirmation/status of all 20 routes;
-3. checks run and results;
-4. consolidated missing asset report path;
-5. consolidated production integration gaps path;
+2. status of all 20 routes;
+3. asset patch count applied and exact remaining TODO_ASSET count;
+4. checks run and results;
+5. remaining production gaps;
 6. genuine technical constraints, if any.
 
 Do not auto-merge and do not self-approve final visual parity.
