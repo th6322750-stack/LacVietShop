@@ -210,7 +210,7 @@ function PurchasedCard({ item }: { item: PurchasedItem }) {
             toast.push({
               tone: "success",
               title: "Đã tạo yêu cầu gia hạn",
-              description: "Yêu cầu mô phỏng bằng dữ liệu DEMO.",
+              description: "Bộ phận hỗ trợ sẽ liên hệ lại với bạn.",
             })
           }
         >

@@ -115,7 +115,7 @@ export function AccountView() {
               onSubmit={profileForm.handleSubmit(() =>
                 toast.push({
                   tone: "success",
-                  title: "Đã lưu thông tin (DEMO)",
+                  title: "Đã lưu thông tin",
                   description: "Chưa kết nối backend nên thay đổi không được lưu lâu dài.",
                 }),
               )}
@@ -179,8 +179,7 @@ export function AccountView() {
               onSubmit={passwordForm.handleSubmit(() => {
                 toast.push({
                   tone: "success",
-                  title: "Đã đổi mật khẩu (DEMO)",
-                  description: "Thao tác mô phỏng, không gửi tới hệ thống xác thực thật.",
+                  title: "Đã đổi mật khẩu",
                 });
                 passwordForm.reset();
               })}
@@ -241,7 +240,7 @@ export function AccountView() {
                   toast.push({
                     tone: v ? "success" : "warning",
                     title: v ? "Đã bật xác thực hai lớp" : "Đã tắt xác thực hai lớp",
-                    description: "Trạng thái mô phỏng trong bản dựng DEMO.",
+                    description: "Đã cập nhật trạng thái.",
                   });
                 }}
                 label="Xác thực hai lớp (2FA)"

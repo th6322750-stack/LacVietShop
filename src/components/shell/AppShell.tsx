@@ -19,7 +19,6 @@ import { AssetImage } from "@/components/blocks/AssetImage";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Overlay";
 import { Tooltip } from "@/components/ui/Popover";
-import { Badge } from "@/components/ui/Badge";
 import { useCustomerAuth } from "@/lib/customer/auth";
 import { isActivePath, navGroups, navItems } from "./nav-items";
 
@@ -67,16 +66,8 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-topbar shrink-0 items-center border-b border-lv-border px-4">
-        <Link href="/" className="flex min-w-0 items-center gap-2" aria-label={demoBrand.name}>
-          <AssetImage assetKey="brand.markCompact" className="h-9 w-9 shrink-0" rounded="control" />
-          <span className={cn("min-w-0", compact ? "hidden xl:block" : "block")}>
-            <AssetImage
-              assetKey="brand.logoHorizontal"
-              className="h-7 w-[132px]"
-              rounded="none"
-              showLabel
-            />
-          </span>
+        <Link href="/" className="flex min-w-0 items-center" aria-label={demoBrand.name}>
+          <AssetImage assetKey="brand.logoHorizontal" className="h-9 w-[150px]" rounded="none" showLabel />
         </Link>
       </div>
 
@@ -186,26 +177,8 @@ function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         </form>
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden items-center gap-2 rounded-control border border-lv-border-gold bg-lv-gold-50 px-3 py-1.5 sm:flex">
-            <IconWallet size={17} className="text-lv-gold-700" aria-hidden />
-            <span className="text-small text-lv-muted">Số dư</span>
-            <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(account.balance)}</span>
-          </div>
-
-          <LinkButton href="/deposit" size="sm" icon={<IconPlus size={16} />} className="hidden sm:inline-flex">
-            Nạp tiền
-          </LinkButton>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Thông báo"
-            className="relative h-10 w-10 p-0"
-            icon={<IconBell size={19} />}
-          >
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-lv-danger" aria-hidden />
-          </Button>
-
+          {/* Số dư, nạp tiền và chuông chỉ có nghĩa với người đã đăng nhập. */}
+          <WalletCorner />
           <AccountCorner />
         </div>
       </div>
@@ -218,6 +191,36 @@ function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
  * Chưa đăng nhập -> hai nút Đăng nhập / Đăng ký.
  * Đã đăng nhập  -> tên thật của phiên, kèm nút đăng xuất.
  */
+/** Số dư + nút nạp tiền + chuông thông báo; ẩn hẳn khi chưa đăng nhập. */
+function WalletCorner() {
+  const { session, ready } = useCustomerAuth();
+  if (!ready || !session) return null;
+
+  return (
+    <>
+      <div className="hidden items-center gap-2 rounded-control border border-lv-border-gold bg-lv-gold-50 px-3 py-1.5 sm:flex">
+        <IconWallet size={17} className="text-lv-gold-700" aria-hidden />
+        <span className="text-small text-lv-muted">Số dư</span>
+        <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(account.balance)}</span>
+      </div>
+
+      <LinkButton href="/deposit" size="sm" icon={<IconPlus size={16} />} className="hidden sm:inline-flex">
+        Nạp tiền
+      </LinkButton>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Thông báo"
+        className="relative h-10 w-10 p-0"
+        icon={<IconBell size={19} />}
+      >
+        <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-lv-danger" aria-hidden />
+      </Button>
+    </>
+  );
+}
+
 function AccountCorner() {
   const { session, ready, logout } = useCustomerAuth();
 
@@ -268,10 +271,9 @@ function Footer() {
       <div className="mx-auto flex max-w-shell flex-wrap items-center justify-between gap-3 px-gutter-m py-5 xl:px-gutter">
         <div className="flex items-center gap-3">
           <AssetImage assetKey="brand.logoHorizontal" className="h-7 w-[132px]" rounded="none" showLabel />
-          <Badge tone="warning">Bản dựng DEMO</Badge>
         </div>
         <p className="text-small text-lv-muted">
-          © {new Date().getUTCFullYear()} {demoBrand.name}. Dữ liệu hiển thị là dữ liệu trình diễn.
+          © {new Date().getUTCFullYear()} {demoBrand.name}.
         </p>
       </div>
     </footer>

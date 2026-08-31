@@ -63,7 +63,7 @@
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
     "build": "pnpm build — PASS (39 route)",
-    "routeSmoke": "5 bộ Playwright — 136 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, tài khoản 32)",
+    "routeSmoke": "5 bộ Playwright — 136 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, tài khoản 32; bộ tài khoản chạy với MAIL_DRY_RUN=true)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -186,7 +186,16 @@
     "session": "cookie httpOnly + sameSite lax, hạn 30 ngày, token ngẫu nhiên 32 byte",
     "resetFlow": "OTP 6 số gửi qua email; băm bcrypt trước khi lưu, hạn 15 phút, sai 5 lần huỷ, gửi lại cách 60 giây",
     "antiEnumeration": "Đăng nhập và quên mật khẩu trả lời giống nhau dù tài khoản có tồn tại hay không",
-    "mailer": "nodemailer qua Gmail SMTP (lacvietmedia.agency@gmail.com). SMTP_PASS là App Password, để trống thì mã in ra cửa sổ máy chủ.",
+    "mailer": "nodemailer qua Gmail SMTP (lacvietmedia.agency@gmail.com), App Password trong .env.local. MAIL_DRY_RUN=true thì chỉ in mã ra màn hình, không gửi thư — bộ kiểm thử tài khoản phải chạy ở chế độ này.",
     "panelGuard": "CHƯA bật — các route khách vẫn xem được khi chưa đăng nhập"
+  },
+  "uiDecisions": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "featuredPlatformsOnHome": "8 nền tảng trong nước nhiều dịch vụ nhất, thay vì đổ hết 23 nền tảng",
+    "brandMark": "Chỉ dùng logo ngang brand.logoHorizontal; bỏ hẳn mark tròn brand.markCompact khỏi mọi khung",
+    "guestTopbar": "Chưa đăng nhập thì ẩn số dư, nút nạp tiền và chuông thông báo",
+    "filterBar": "Ô lọc có bề rộng cố định để cả hàng nằm gọn một dòng, không rơi mỗi ô một dòng",
+    "demoLabels": "Đã gỡ nhãn DEMO/mô phỏng trang trí khỏi giao diện theo yêu cầu. GIỮ LẠI câu báo khi đơn chưa thực sự đẩy sang nhà cung cấp — bỏ câu đó thì khách tưởng đã đặt hàng xong."
   }
 }

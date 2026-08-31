@@ -141,9 +141,11 @@ export function FilterBar({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    // Ô nhập rộng 100% nên nếu thả thẳng vào flex thì mỗi ô rơi xuống một dòng.
+    // Bọc từng ô lọc vào khung bề rộng cố định để cả hàng nằm gọn trên một dòng.
+    <div className="flex flex-wrap items-end gap-2.5">
       {onSearch ? (
-        <div className="min-w-[200px] flex-1">
+        <div className="min-w-[220px] flex-1 basis-[260px]">
           <Input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
@@ -153,7 +155,15 @@ export function FilterBar({
           />
         </div>
       ) : null}
-      {children}
+      {React.Children.map(children, (child, i) =>
+        React.isValidElement(child) ? (
+          <div key={i} className="w-[calc(50%-5px)] shrink-0 sm:w-[172px]">
+            {child}
+          </div>
+        ) : (
+          child
+        ),
+      )}
       {right ? <div className="ml-auto flex items-center gap-2">{right}</div> : null}
     </div>
   );

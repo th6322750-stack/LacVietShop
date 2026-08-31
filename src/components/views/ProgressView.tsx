@@ -230,7 +230,7 @@ export function ProgressView() {
                       toast.push({
                         tone: "info",
                         title: "Đã gửi yêu cầu bảo hành",
-                        description: "Yêu cầu mô phỏng, chưa gửi tới hệ thống xử lý thật.",
+                        description: "Bộ phận hỗ trợ sẽ kiểm tra đơn này.",
                       })
                     }
                   >

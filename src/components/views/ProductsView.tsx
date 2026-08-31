@@ -164,7 +164,7 @@ export function ProductsView() {
       </section>
 
       <p className="text-small text-lv-muted">
-        Giá hiển thị là dữ liệu DEMO, sẽ được cập nhật khi có bảng giá chính thức. Sản phẩm rẻ nhất hiện
+        Sản phẩm rẻ nhất hiện
         tại: {formatMoney(Math.min(...products.map((p) => p.fromPrice)))}.
       </p>
     </div>

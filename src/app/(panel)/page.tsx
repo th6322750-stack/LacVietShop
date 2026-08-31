@@ -44,6 +44,17 @@ const commitments = [
   },
 ];
 
+/**
+ * Nền tảng đưa lên trang chủ: ưu tiên dịch vụ trong nước, xếp theo số nhóm dịch
+ * vụ nhiều nhất. Đổ hết 23 nền tảng ra đây thì rối và tên bị cắt cụt.
+ */
+const featuredPlatforms = [...platforms]
+  .sort((a, b) => {
+    if (a.region !== b.region) return a.region === "vn" ? -1 : 1;
+    return b.services.length - a.services.length;
+  })
+  .slice(0, 8);
+
 export default function HomePage() {
   const featured = products.slice(0, 4);
 
@@ -113,18 +124,19 @@ export default function HomePage() {
         })}
       </section>
 
-      {/* Dịch vụ nổi bật theo nền tảng */}
+      {/* Dịch vụ nổi bật theo nền tảng — chỉ 8 nền tảng trong nước nhiều dịch vụ
+          nhất; xem đủ 23 nền tảng ở trang Dịch vụ. */}
       <SectionCard
         title="Dịch vụ nổi bật"
-        description="Chọn nền tảng để xem bảng giá và tạo đơn."
+        description={`${featuredPlatforms.length} nền tảng được đặt nhiều nhất · xem đủ ${platforms.length} nền tảng ở trang Dịch vụ.`}
         action={
           <LinkButton href="/services" variant="secondary" size="sm">
             Tất cả dịch vụ
           </LinkButton>
         }
       >
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-10">
-          {platforms.map((p) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+          {featuredPlatforms.map((p) => (
             <PlatformTile
               key={p.id}
               name={p.name}

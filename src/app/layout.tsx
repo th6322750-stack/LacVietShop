@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: `%s · ${demoBrand.name}`,
   },
   description:
-    "Nền tảng dịch vụ tăng trưởng số và tài khoản premium của Lạc Việt Media Agency. Bản dựng trình diễn giao diện.",
+    "Nền tảng dịch vụ tăng trưởng số và tài khoản premium của Lạc Việt Media Agency.",
   // Dùng lại compact mark làm favicon theo .webby/ASSET_PATCH.md §A
   icons: { icon: [{ url: "/assets/brand/lac-viet-mark.svg", type: "image/svg+xml" }] },
   robots: { index: false, follow: false },

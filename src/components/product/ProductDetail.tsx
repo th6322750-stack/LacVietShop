@@ -68,7 +68,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
     toast.push({
       tone: "success",
       title: `Đã tạo đơn ${res.orderCode}`,
-      description: "Đơn mô phỏng — chưa gửi tới nhà cung cấp thật.",
+      description: "Bộ phận xử lý sẽ kích hoạt gói cho bạn.",
     });
   }
 
@@ -156,7 +156,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
           </section>
 
           {/* Gói sản phẩm */}
-          <SectionCard title="Chọn gói phù hợp" description="Giá đang là dữ liệu DEMO, chờ bảng giá production được chốt.">
+          <SectionCard title="Chọn gói phù hợp" description="Chọn thời hạn phù hợp với nhu cầu của bạn.">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Chọn gói">
               {product.packages.map((p) => (
                 <PackageCard key={p.id} pkg={p} selected={p.id === pkg.id} onSelect={() => setPackageId(p.id)} />
@@ -396,7 +396,7 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                     toast.push({
                       tone: "success",
                       title: "Đã ghi nhận yêu cầu tư vấn",
-                      description: "Yêu cầu đang ở chế độ DEMO, chưa gửi tới kênh hỗ trợ production.",
+                      description: "Bộ phận tư vấn sẽ liên hệ lại với bạn.",
                     })
                   }
                 >

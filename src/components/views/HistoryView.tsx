@@ -145,20 +145,26 @@ export function HistoryView() {
 
       <SectionCard title="Nhật ký" description={`${filtered.length} hoạt động khớp bộ lọc`} padded={false}>
         <div className="px-5 py-4">
-          <FilterBar search={search} onSearch={setSearch} placeholder="Tìm theo nội dung hoạt động…">
+          <FilterBar
+            search={search}
+            onSearch={setSearch}
+            placeholder="Tìm theo nội dung hoạt động…"
+            right={
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearch("");
+                  setFrom("");
+                  setTo("");
+                  setKind("all");
+                }}
+              >
+                Xoá lọc
+              </Button>
+            }
+          >
             <Input type="date" aria-label="Từ ngày" value={from} onChange={(e) => setFrom(e.target.value)} />
             <Input type="date" aria-label="Đến ngày" value={to} onChange={(e) => setTo(e.target.value)} />
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setSearch("");
-                setFrom("");
-                setTo("");
-                setKind("all");
-              }}
-            >
-              Xoá lọc
-            </Button>
           </FilterBar>
         </div>
         <DataTable

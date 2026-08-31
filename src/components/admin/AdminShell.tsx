@@ -129,9 +129,8 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
     <div className="flex h-full flex-col">
       <div className="flex h-topbar shrink-0 items-center gap-2 border-b border-lv-border px-4">
         <Link href="/admin" className="flex min-w-0 items-center gap-2" aria-label="Lạc Việt Admin">
-          <AssetImage assetKey="brand.markCompact" className="h-9 w-9 shrink-0" rounded="control" />
-          <span className={cn("flex min-w-0 items-center gap-1.5", compact ? "hidden xl:flex" : "flex")}>
-            <span className="truncate text-card-title text-lv-text">Lạc Việt</span>
+          <AssetImage assetKey="brand.logoHorizontal" className="h-8 w-[132px] shrink-0" rounded="none" showLabel />
+          <span className={cn("min-w-0", compact ? "hidden xl:block" : "block")}>
             <Badge tone="navy">ADMIN</Badge>
           </span>
         </Link>
@@ -223,15 +222,6 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
           </li>
         </ul>
       </nav>
-
-      <div className={cn("shrink-0 border-t border-lv-border p-3", compact ? "hidden xl:block" : "block")}>
-        <div className="rounded-card border border-lv-warning/35 bg-lv-warning/[0.07] p-3">
-          <p className="text-small-strong text-lv-warning">Dữ liệu DEMO</p>
-          <p className="mt-1 text-small text-lv-muted">
-            Toàn bộ đơn hàng, người dùng và giao dịch là dữ liệu trình diễn, lưu trong trình duyệt.
-          </p>
-        </div>
-      </div>
 
       <ConfirmDialog
         open={confirmReset}

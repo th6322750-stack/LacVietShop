@@ -383,7 +383,7 @@ export function AdminProductsView() {
             <Input id="prd-stock" type="number" value={draft.stock} onChange={(e) => setDraft((d) => ({ ...d, stock: e.target.value }))} />
           </div>
           <p className="text-small text-lv-muted">
-            Giá ở đây là dữ liệu DEMO. Bảng giá production chưa được chốt (gap <code>catalog.pricing</code>).
+            Bảng giá bán ra chưa được chốt (gap <code>catalog.pricing</code>).
           </p>
         </div>
       </Modal>

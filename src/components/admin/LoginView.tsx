@@ -40,7 +40,7 @@ export function LoginView() {
       <div className="w-full max-w-md space-y-4">
         <div className="lv-panel p-6">
           <div className="flex flex-col items-center text-center">
-            <AssetImage assetKey="brand.markCompact" className="h-14 w-14" rounded="card" />
+            <AssetImage assetKey="brand.logoHorizontal" className="h-11 w-[190px]" rounded="none" showLabel />
             <h1 className="mt-3 text-h2 text-lv-text">
               Lạc Việt <span className="text-lv-gold-700">Admin</span>
             </h1>

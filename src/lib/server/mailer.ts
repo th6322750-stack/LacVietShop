@@ -11,6 +11,9 @@
  * Chưa cấu hình thì không im lặng nuốt: hàm trả về delivery "console" và mã được
  * in ra cửa sổ chạy máy chủ để vẫn kiểm thử được luồng.
  *
+ * MAIL_DRY_RUN=true thì không gửi thư thật, chỉ in mã ra màn hình. Dùng khi chạy
+ * kiểm thử tự động để không bắn thư ra ngoài và không đốt hạn mức Gmail.
+ *
  * Lưu ý khi chạy thật: Gmail thường giới hạn ~500 thư/ngày và người nhận thấy
  * địa chỉ @gmail.com. Đổi sang nhà cung cấp thư giao dịch với tên miền riêng chỉ
  * cần sửa mấy biến trên, code không phải đổi.
@@ -44,8 +47,10 @@ export async function sendResetCode(
   name: string,
   code: string,
 ): Promise<{ delivery: Delivery; error?: string }> {
-  if (!smtpConfigured()) {
-    console.log(`\n[Lạc Việt] SMTP chưa cấu hình. Mã đặt lại cho ${to}: ${code} (hạn 15 phút)\n`);
+  const dryRun = process.env.MAIL_DRY_RUN === "true";
+  if (!smtpConfigured() || dryRun) {
+    const why = dryRun ? "Chế độ chạy khô, không gửi thư" : "SMTP chưa cấu hình";
+    console.log(`\n[Lạc Việt] ${why}. Mã đặt lại cho ${to}: ${code} (hạn 15 phút)\n`);
     return { delivery: "console" };
   }
 

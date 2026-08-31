@@ -218,7 +218,7 @@ export function DepositView() {
               </div>
 
               <Button type="submit" size="lg" block loading={submitting} disabled={!method.available}>
-                {submitting ? "Đang ghi nhận…" : "Tạo lệnh nạp (DEMO)"}
+                {submitting ? "Đang ghi nhận…" : "Tạo lệnh nạp"}
               </Button>
             </form>
           </SectionCard>
