@@ -218,13 +218,8 @@ for (const p of productKeys) {
 
 /** Cổng thanh toán — 7 mark, CỐ Ý để trống tới khi duyệt cấu hình thanh toán thật (§D). */
 const paymentKeys: { key: string; label: string; src: string | null }[] = [
-  { key: "payment.vietcombank", label: "Vietcombank", src: null },
-  { key: "payment.techcombank", label: "Techcombank", src: null },
-  { key: "payment.mbbank", label: "MB Bank", src: null },
+  { key: "payment.bidv", label: "BIDV", src: null },
   { key: "payment.momo", label: "MoMo", src: null },
-  { key: "payment.zalopay", label: "ZaloPay", src: null },
-  { key: "payment.viettelmoney", label: "Viettel Money", src: null },
-  { key: "payment.usdt", label: "USDT (TRC20)", src: null },
 ];
 
 for (const p of paymentKeys) {

@@ -41,9 +41,12 @@ status: OPEN
 GAP
 key: payment.gateway
 area: payment
-needed: Hợp đồng cổng thanh toán (nhà cung cấp, khoá, webhook xác nhận, chính sách phí)
-current_demo_source: src/lib/demo/config.ts → commerceAdapter.submitDeposit (chỉ trả về mã tham chiếu giả)
-production_risk_if_unresolved: Lệnh nạp không được đối soát tự động; số dư hiển thị không phản ánh tiền thật
+needed: Đấu SePay để tự cộng số dư khi khách chuyển khoản — tài khoản SePay, liên kết ngân hàng,
+  webhook nhận biến động số dư, và cách sinh nội dung chuyển khoản để khớp đơn nạp
+current_demo_source: hướng đã chốt là SePay (USER, 2026-08-31): khách chọn số tiền, hệ thống sinh nội
+  dung chuyển khoản kèm mã, SePay bắn webhook khi tiền về và số dư cộng tự động. Chưa làm phần nào.
+  Trang Nạp tiền hiện chỉ ghi nhận lệnh, không có tiền thật đi đâu.
+production_risk_if_unresolved: Khách chuyển tiền mà số dư không cộng; phải đối soát tay từng giao dịch
 status: OPEN
 
 GAP

@@ -82,11 +82,6 @@ export interface ProductPackage {
   inStock: boolean;
 }
 
-export interface ProductFaq {
-  question: string;
-  answer: string;
-}
-
 export interface ProductVariant {
   slug: ProductSlug;
   name: string;
@@ -103,7 +98,6 @@ export interface ProductVariant {
   benefits: { title: string; detail: string }[];
   requirements: string[];
   warranty: string[];
-  faqs: ProductFaq[];
   fromPrice: number;
   sold: number;
   rating: number;

@@ -24,28 +24,6 @@ export function allServers() {
   );
 }
 
-const commonFaqs = [
-  {
-    question: "Sau khi thanh toán bao lâu thì nhận được tài khoản?",
-    answer:
-      "Đơn hàng được xử lý tự động ngay sau khi trừ số dư. Trong khung giờ hỗ trợ, các trường hợp cần thao tác tay thường hoàn tất trong vòng 15 phút.",
-  },
-  {
-    question: "Tài khoản có được bảo hành không?",
-    answer:
-      "Mọi gói đều kèm bảo hành theo thời hạn ghi trên thẻ gói. Trong thời gian bảo hành, lỗi đăng nhập được xử lý miễn phí.",
-  },
-  {
-    question: "Tôi có thể đổi gói sau khi mua không?",
-    answer:
-      "Có. Liên hệ hỗ trợ trước khi hết hạn, phần chênh lệch sẽ được cộng bù vào số dư tài khoản của bạn.",
-  },
-  {
-    question: "Thanh toán bằng cách nào?",
-    answer:
-      "Trừ trực tiếp vào số dư tài khoản Lạc Việt. Nạp số dư ở trang Nạp tiền trước khi đặt mua.",
-  },
-];
 
 export const products: ProductVariant[] = [
   {
@@ -109,7 +87,6 @@ export const products: ProductVariant[] = [
       "Lỗi rớt gói được nâng cấp lại miễn phí trong thời gian bảo hành",
       "Không hoàn tiền sau khi đã kích hoạt thành công, chỉ đổi/gia hạn",
     ],
-    faqs: commonFaqs,
   },
   {
     slug: "capcut",
@@ -170,7 +147,6 @@ export const products: ProductVariant[] = [
       "Cấp lại tài khoản mới nếu lỗi do nhà cung cấp",
       "Không bảo hành nếu tự ý đổi thông tin đăng nhập",
     ],
-    faqs: commonFaqs,
   },
   {
     slug: "canva",
@@ -249,7 +225,6 @@ export const products: ProductVariant[] = [
       "Mời lại miễn phí nếu bị rớt team",
       "Không hỗ trợ nếu tự rời team",
     ],
-    faqs: commonFaqs,
   },
   {
     slug: "veo3",
@@ -301,7 +276,6 @@ export const products: ProductVariant[] = [
     ],
     requirements: ["Cung cấp email Google", "Không chia sẻ tài khoản cho bên thứ ba"],
     warranty: ["Bảo hành theo thời hạn gói", "Bù hạn mức nếu hệ thống lỗi", "Không hoàn tiền phần hạn mức đã dùng"],
-    faqs: commonFaqs,
   },
   {
     slug: "gemini",
@@ -353,7 +327,6 @@ export const products: ProductVariant[] = [
     ],
     requirements: ["Email Google chưa có gói One trả phí", "Không đổi mật khẩu trong 24 giờ đầu"],
     warranty: ["Bảo hành theo thời hạn gói", "Nâng cấp lại miễn phí nếu rớt gói", "Không hoàn tiền sau khi kích hoạt"],
-    faqs: commonFaqs,
   },
   {
     slug: "chatgpt",
@@ -405,7 +378,6 @@ export const products: ProductVariant[] = [
     ],
     requirements: ["Không dùng chung tài khoản", "Không thay đổi email khôi phục"],
     warranty: ["Bảo hành 1-1 theo thời hạn", "Cấp tài khoản mới nếu lỗi nhà cung cấp", "Không bảo hành khi vi phạm điều khoản OpenAI"],
-    faqs: commonFaqs,
   },
   {
     slug: "netflix",
@@ -457,7 +429,6 @@ export const products: ProductVariant[] = [
     ],
     requirements: ["Không đổi mật khẩu hồ sơ", "Không thêm thiết bị vượt giới hạn gói"],
     warranty: ["Bảo hành trong toàn bộ thời hạn", "Đổi slot mới nếu lỗi", "Không bảo hành khi tự ý đổi thông tin"],
-    faqs: commonFaqs,
   },
   {
     slug: "vpn",
@@ -510,7 +481,6 @@ export const products: ProductVariant[] = [
     ],
     requirements: ["Không chia sẻ tài khoản ra ngoài", "Tuân thủ pháp luật khi sử dụng"],
     warranty: ["Bảo hành theo thời hạn gói", "Đổi tài khoản khi lỗi đăng nhập", "Không bảo hành khi vi phạm điều khoản nhà cung cấp"],
-    faqs: commonFaqs,
   },
 ];
 

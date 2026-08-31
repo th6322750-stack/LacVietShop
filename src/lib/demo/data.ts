@@ -34,10 +34,14 @@ export const account: AccountProfile = {
   apiTokenMasked: "lv_demo_••••••••••••4f2a",
 };
 
+/**
+ * Số liệu trên trang chủ, đặt ở mức của một đơn vị mới mở.
+ * Con số hàng chục nghìn khách nhìn là biết thổi phồng, phản tác dụng.
+ */
 export const homeMetrics = [
-  { key: "orders", label: "Đơn hàng đã xử lý", value: 3_425, suffix: "đơn", trend: 12.4 },
-  { key: "interactions", label: "Lượt tương tác đã giao", value: 128_760, suffix: "lượt", trend: 8.1 },
-  { key: "customers", label: "Khách hàng đồng hành", value: 52_318, suffix: "khách", trend: 5.6 },
+  { key: "orders", label: "Đơn hàng đã xử lý", value: 186, suffix: "đơn", trend: 12.4 },
+  { key: "interactions", label: "Lượt tương tác đã giao", value: 47_200, suffix: "lượt", trend: 8.1 },
+  { key: "customers", label: "Khách hàng đồng hành", value: 64, suffix: "khách", trend: 5.6 },
 ];
 
 /** Danh sách trạng thái đơn dùng cho seed và cho bộ lọc. */
@@ -138,30 +142,10 @@ export const spendingByCategory = [
 
 export const paymentMethods: PaymentMethod[] = [
   {
-    id: "vietcombank",
-    name: "Vietcombank",
+    id: "bidv",
+    name: "BIDV",
     kind: "bank",
-    assetKey: "payment.vietcombank",
-    detail: "Chuyển khoản 24/7",
-    processingTime: "1 – 5 phút",
-    feeNote: "Miễn phí",
-    available: true,
-  },
-  {
-    id: "techcombank",
-    name: "Techcombank",
-    kind: "bank",
-    assetKey: "payment.techcombank",
-    detail: "Chuyển khoản 24/7",
-    processingTime: "1 – 5 phút",
-    feeNote: "Miễn phí",
-    available: true,
-  },
-  {
-    id: "mbbank",
-    name: "MB Bank",
-    kind: "bank",
-    assetKey: "payment.mbbank",
+    assetKey: "payment.bidv",
     detail: "Chuyển khoản 24/7",
     processingTime: "1 – 5 phút",
     feeNote: "Miễn phí",
@@ -174,47 +158,17 @@ export const paymentMethods: PaymentMethod[] = [
     assetKey: "payment.momo",
     detail: "Ví điện tử",
     processingTime: "Tức thì",
-    feeNote: "Phí 1%",
-    available: true,
-  },
-  {
-    id: "zalopay",
-    name: "ZaloPay",
-    kind: "ewallet",
-    assetKey: "payment.zalopay",
-    detail: "Ví điện tử",
-    processingTime: "Tức thì",
-    feeNote: "Phí 1%",
-    available: true,
-  },
-  {
-    id: "viettelmoney",
-    name: "Viettel Money",
-    kind: "ewallet",
-    assetKey: "payment.viettelmoney",
-    detail: "Ví điện tử",
-    processingTime: "Tức thì",
-    feeNote: "Phí 1%",
-    available: false,
-  },
-  {
-    id: "usdt",
-    name: "USDT (TRC20)",
-    kind: "crypto",
-    assetKey: "payment.usdt",
-    detail: "Chuyển khoản tiền mã hoá",
-    processingTime: "5 – 30 phút",
-    feeNote: "Theo mạng lưới",
+    feeNote: "Miễn phí",
     available: true,
   },
 ];
 
 export const recentDeposits = [
-  { id: "DP-2201", method: "Vietcombank", amount: 2_000_000, status: "success", createdAt: "2026-08-30T08:02:00.000Z" },
+  { id: "DP-2201", method: "BIDV", amount: 2_000_000, status: "success", createdAt: "2026-08-30T08:02:00.000Z" },
   { id: "DP-2198", method: "MoMo", amount: 5_000_000, status: "success", createdAt: "2026-08-28T13:44:00.000Z" },
-  { id: "DP-2190", method: "Vietcombank", amount: 3_000_000, status: "success", createdAt: "2026-08-25T19:26:00.000Z" },
-  { id: "DP-2187", method: "ZaloPay", amount: 500_000, status: "pending", createdAt: "2026-08-24T10:12:00.000Z" },
-  { id: "DP-2180", method: "USDT (TRC20)", amount: 1_200_000, status: "failed", createdAt: "2026-08-22T21:03:00.000Z" },
+  { id: "DP-2190", method: "BIDV", amount: 3_000_000, status: "success", createdAt: "2026-08-25T19:26:00.000Z" },
+  { id: "DP-2187", method: "MoMo", amount: 500_000, status: "pending", createdAt: "2026-08-24T10:12:00.000Z" },
+  { id: "DP-2180", method: "BIDV", amount: 1_200_000, status: "failed", createdAt: "2026-08-22T21:03:00.000Z" },
 ] as const;
 
 export const activity: ActivityItem[] = [
@@ -230,7 +184,7 @@ export const activity: ActivityItem[] = [
     id: "AC-2",
     kind: "payment",
     title: "Nạp tiền thành công",
-    detail: "Chuyển khoản Vietcombank · 2.000.000 ₫",
+    detail: "Chuyển khoản BIDV · 2.000.000 ₫",
     createdAt: "2026-08-30T08:02:00.000Z",
     status: "success",
   },

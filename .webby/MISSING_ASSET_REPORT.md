@@ -6,9 +6,9 @@ Claude đã hoàn tất lượt dựng đầu tiên cho toàn bộ 20 route. M�
 
 Claude **không** tìm trên mạng, **không** tự vẽ, **không** mượn logo/ảnh thương hiệu khác.
 
-- Tổng số khoá còn thiếu: **11**
+- Tổng số khoá còn thiếu: **6**
 - Nguồn sự thật: `src/lib/assets.ts` (sinh báo cáo bằng `node tools/gen-reports.mjs`)
-- Kiểm chứng: kiểm thử Playwright thấy 10 khoá `data-todo-asset` render trong DOM khi duyệt hết 20 route;
+- Kiểm chứng: kiểm thử Playwright thấy 5 khoá `data-todo-asset` render trong DOM khi duyệt hết 20 route;
   khoá còn lại (`brand.favicon`) dùng ở tầng metadata nên không xuất hiện dưới dạng phần tử
 
 ## Cách ChatGPT bàn giao asset
@@ -74,41 +74,17 @@ reference_original: clone-thatim-vn: modules/images/platforms
 status: OPEN
 ```
 
-### Logo cổng thanh toán (7)
+### Logo cổng thanh toán (2)
 
 ```text
 NEED_ASSET
-key: payment.vietcombank
+key: payment.bidv
 route: /deposit,/cashflows
 section: Thẻ phương thức thanh toán
 role: PAYMENT_MARK
-needed: Logo chính thức Vietcombank đúng bản quyền
+needed: Logo chính thức BIDV đúng bản quyền
 ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.vietcombank" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.vietcombank")
-reference_target: references/ui-approved/08-deposit.webp
-reference_original: clone-thatim-vn: deposit_addfunds.html
-status: OPEN
-
-NEED_ASSET
-key: payment.techcombank
-route: /deposit,/cashflows
-section: Thẻ phương thức thanh toán
-role: PAYMENT_MARK
-needed: Logo chính thức Techcombank đúng bản quyền
-ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.techcombank" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.techcombank")
-reference_target: references/ui-approved/08-deposit.webp
-reference_original: clone-thatim-vn: deposit_addfunds.html
-status: OPEN
-
-NEED_ASSET
-key: payment.mbbank
-route: /deposit,/cashflows
-section: Thẻ phương thức thanh toán
-role: PAYMENT_MARK
-needed: Logo chính thức MB Bank đúng bản quyền
-ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.mbbank" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.mbbank")
+placeholder: <AssetImage assetKey="payment.bidv" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.bidv")
 reference_target: references/ui-approved/08-deposit.webp
 reference_original: clone-thatim-vn: deposit_addfunds.html
 status: OPEN
@@ -124,49 +100,13 @@ placeholder: <AssetImage assetKey="payment.momo" /> — src/components/blocks/As
 reference_target: references/ui-approved/08-deposit.webp
 reference_original: clone-thatim-vn: deposit_addfunds.html
 status: OPEN
-
-NEED_ASSET
-key: payment.zalopay
-route: /deposit,/cashflows
-section: Thẻ phương thức thanh toán
-role: PAYMENT_MARK
-needed: Logo chính thức ZaloPay đúng bản quyền
-ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.zalopay" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.zalopay")
-reference_target: references/ui-approved/08-deposit.webp
-reference_original: clone-thatim-vn: deposit_addfunds.html
-status: OPEN
-
-NEED_ASSET
-key: payment.viettelmoney
-route: /deposit,/cashflows
-section: Thẻ phương thức thanh toán
-role: PAYMENT_MARK
-needed: Logo chính thức Viettel Money đúng bản quyền
-ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.viettelmoney" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.viettelmoney")
-reference_target: references/ui-approved/08-deposit.webp
-reference_original: clone-thatim-vn: deposit_addfunds.html
-status: OPEN
-
-NEED_ASSET
-key: payment.usdt
-route: /deposit,/cashflows
-section: Thẻ phương thức thanh toán
-role: PAYMENT_MARK
-needed: Logo chính thức USDT (TRC20) đúng bản quyền
-ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.usdt" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.usdt")
-reference_target: references/ui-approved/08-deposit.webp
-reference_original: clone-thatim-vn: deposit_addfunds.html
-status: OPEN
 ```
 
 ## Ghi chú thêm
 
 - Lượt vá asset (`.webby/ASSET_PATCH.md`) đã áp dụng: 8 asset Lạc Việt do ChatGPT chuẩn bị +
   18 mark nền tảng/sản phẩm lấy đúng file nguồn đã khoá trong `clone-thatim-vn`.
-  Số khoá thiếu giảm từ 34 xuống 11.
+  Số khoá thiếu giảm từ 34 xuống 6.
 - 8 khoá còn lại đều thuộc nhóm thanh toán và **cố ý để trống** cho tới khi duyệt
   `payment.gateway` / `payment.receivingAccount` (`.webby/ASSET_PATCH.md §D`).
   Không dựng QR giả.

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 import { cn, formatPercent } from "@/lib/utils";
-import { Badge } from "@/components/ui/Badge";
 
 export function SectionCard({
   title,
@@ -161,14 +160,3 @@ export function SupportCard({
   );
 }
 
-export function DemoNotice({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-card border border-lv-warning/35 bg-lv-warning/[0.07] p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="warning">DEMO</Badge>
-        <p className="text-body-strong text-lv-warning">{title}</p>
-      </div>
-      <div className="mt-2 text-small text-lv-navy-700">{children}</div>
-    </div>
-  );
-}

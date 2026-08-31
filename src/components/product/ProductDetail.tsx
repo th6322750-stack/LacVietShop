@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   IconAlertTriangle,
   IconCheck,
-  IconChevronDown,
   IconHeadset,
   IconShieldCheck,
   IconShoppingCartPlus,
@@ -38,7 +37,6 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
   );
   const [tab, setTab] = React.useState("benefits");
   const [submitting, setSubmitting] = React.useState(false);
-  const [openFaq, setOpenFaq] = React.useState<string | null>(product.faqs[0]?.question ?? null);
 
   const pkg = product.packages.find((p) => p.id === packageId) ?? firstAvailable;
   const notEnoughBalance = pkg.price > account.balance;
@@ -225,30 +223,6 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                   <p className="mt-3 text-small text-lv-muted">{product.reviewSummary?.note}</p>
                 </SectionCard>
 
-                <SectionCard title="Câu hỏi thường gặp" className="lg:col-span-8">
-                  <div className="space-y-3">
-                    {product.faqs.map((f) => {
-                      const open = openFaq === f.question;
-                      return (
-                        <div key={f.question} className="rounded-card border border-lv-border">
-                          <button
-                            type="button"
-                            onClick={() => setOpenFaq(open ? null : f.question)}
-                            aria-expanded={open}
-                            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                          >
-                            <span className="text-body-strong text-lv-text">{f.question}</span>
-                            <IconChevronDown
-                              size={17}
-                              className={cn("shrink-0 text-lv-muted transition-transform duration-button", open && "rotate-180")}
-                            />
-                          </button>
-                          {open ? <p className="px-4 pb-3 text-small text-lv-muted">{f.answer}</p> : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </SectionCard>
               </div>
             </>
           ) : (
@@ -306,31 +280,6 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 </div>
               </SectionCard>
 
-              {/* FAQ */}
-              <SectionCard title="Câu hỏi thường gặp">
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {product.faqs.map((f) => {
-                    const open = openFaq === f.question;
-                    return (
-                      <div key={f.question} className="rounded-card border border-lv-border">
-                        <button
-                          type="button"
-                          onClick={() => setOpenFaq(open ? null : f.question)}
-                          aria-expanded={open}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                        >
-                          <span className="text-body-strong text-lv-text">{f.question}</span>
-                          <IconChevronDown
-                            size={17}
-                            className={cn("shrink-0 text-lv-muted transition-transform duration-button", open && "rotate-180")}
-                          />
-                        </button>
-                        {open ? <p className="px-4 pb-3 text-small text-lv-muted">{f.answer}</p> : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </SectionCard>
             </>
           )}
         </div>

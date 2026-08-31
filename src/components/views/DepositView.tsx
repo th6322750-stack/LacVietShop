@@ -13,7 +13,7 @@ import {
   IconWallet,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
-import { SectionCard, StatCard, SupportCard, DemoNotice, InfoCard } from "@/components/blocks/Cards";
+import { SectionCard, StatCard, SupportCard, InfoCard } from "@/components/blocks/Cards";
 import { QRCard } from "@/components/blocks/Media";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { Column, DataTable } from "@/components/blocks/DataTable";
@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label, RadioCard, Textarea } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { account, paymentMethods, recentDeposits } from "@/lib/demo/data";
-import { commerceAdapter, demoBrand, demoPaymentNotice } from "@/lib/demo/config";
+import { commerceAdapter, demoBrand } from "@/lib/demo/config";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 
 const quickAmounts = [100_000, 200_000, 500_000, 1_000_000, 2_000_000, 5_000_000];
@@ -110,8 +110,6 @@ export function DepositView() {
         <StatCard label="Tổng đã chi" value={formatMoney(account.totalSpent)} tone="info" icon={<IconReceipt size={20} />} />
         <StatCard label="Số dư sau chi tiêu" value={formatMoney(account.totalDeposited - account.totalSpent)} tone="success" icon={<IconCheck size={20} />} hint="Tổng nạp trừ tổng chi" />
       </div>
-
-      <DemoNotice title={demoPaymentNotice.headline}>{demoPaymentNotice.detail}</DemoNotice>
 
       <div className="grid gap-5 xl:grid-cols-12">
         <div className="min-w-0 space-y-5 xl:col-span-8">

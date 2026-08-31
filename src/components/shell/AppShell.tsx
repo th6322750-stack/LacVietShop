@@ -67,7 +67,13 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
     <div className="flex h-full flex-col">
       <div className="flex h-topbar shrink-0 items-center border-b border-lv-border px-4">
         <Link href="/" className="flex min-w-0 items-center" aria-label={demoBrand.name}>
-          <AssetImage assetKey="brand.logoHorizontal" className="h-9 w-[150px]" rounded="none" showLabel />
+          {/* Thanh bên hẹp thì logo tự co lại cho vừa, không tràn ra ngoài. */}
+          <AssetImage
+            assetKey="brand.logoHorizontal"
+            className={cn("h-9 w-full", compact ? "max-w-[150px]" : "max-w-[170px]")}
+            rounded="none"
+            showLabel
+          />
         </Link>
       </div>
 
