@@ -6,8 +6,8 @@
  * sang mình → mình khớp mã, cộng số dư.
  *
  * Cấu hình trong biến môi trường (Vercel: Settings → Environment Variables):
- *   SEPAY_WEBHOOK_KEY     khoá mình tự đặt, dán y hệt vào ô Bảo mật của webhook
- *                         bên SePay. Không có khoá thì mọi request đều bị từ chối.
+ *   SEPAY_WEBHOOK_KEY     Secret Key của webhook bên SePay (dạng whsec_…).
+ *                         Không có khoá thì mọi request đều bị từ chối.
  *   SEPAY_ACCOUNT_NUMBER  số tài khoản nhận tiền đã liên kết trong SePay
  *   SEPAY_BANK            mã ngân hàng cho ảnh QR, ví dụ VietinBank
  *   SEPAY_ACCOUNT_NAME    tên chủ tài khoản, chỉ để hiển thị
@@ -74,15 +74,54 @@ export interface SepayWebhook {
   description?: string;
 }
 
+/** So sánh theo thời gian cố định để không lộ dần khoá qua thời gian phản hồi. */
+function sameSecret(a: string, b: string) {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  if (x.length !== y.length) return false;
+  return crypto.timingSafeEqual(x, y);
+}
+
+/** Chữ ký cũ hơn ngần này thì từ chối, chống phát lại request đã bắt được. */
+const SIGNATURE_MAX_AGE_S = 300;
+
 /**
- * Kiểm tra khoá trong header. SePay gửi dạng `Authorization: Apikey <khoá>`.
- * So sánh theo thời gian cố định để không lộ dần khoá qua thời gian phản hồi.
+ * Xác thực webhook. Hỗ trợ cả hai kiểu SePay cho chọn:
+ *
+ *   HMAC-SHA256 (nên dùng) — header `X-SePay-Signature: sha256=<hex>` và
+ *     `X-SePay-Timestamp: <giây>`. Chuỗi ký là `{timestamp}.{body thô}`. Kiểu này
+ *     ký cả nội dung nên sửa một byte là phát hiện, lại chống được phát lại.
+ *
+ *   API Key — header `Authorization: Apikey <khoá>`. Chỉ chứng minh người gửi
+ *     biết khoá, không bảo vệ nội dung. Giữ lại phòng khi đổi cấu hình bên SePay.
+ *
+ * `rawBody` phải là chuỗi gốc chưa qua JSON.parse: ký lại từ object đã parse sẽ
+ * ra chữ ký khác vì thứ tự khoá và khoảng trắng không còn như cũ.
  */
-export function verifyWebhookKey(header: string | null) {
-  if (!sepayWebhookReady()) return false;
-  const given = (header ?? "").replace(/^Apikey\s+/i, "").trim();
-  const a = Buffer.from(given);
-  const b = Buffer.from(sepayConfig.webhookKey);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+export function verifyWebhook(headers: Headers, rawBody: string) {
+  if (!sepayWebhookReady()) return { ok: false as const, reason: "Chưa cấu hình SEPAY_WEBHOOK_KEY." };
+
+  const signature = headers.get("x-sepay-signature");
+  if (signature) {
+    const timestamp = (headers.get("x-sepay-timestamp") ?? "").trim();
+    const seconds = Number(timestamp);
+    if (!timestamp || !Number.isFinite(seconds)) {
+      return { ok: false as const, reason: "Thiếu X-SePay-Timestamp." };
+    }
+    if (Math.abs(Date.now() / 1000 - seconds) > SIGNATURE_MAX_AGE_S) {
+      return { ok: false as const, reason: "Chữ ký đã quá hạn." };
+    }
+    const expected =
+      "sha256=" +
+      crypto.createHmac("sha256", sepayConfig.webhookKey).update(`${timestamp}.${rawBody}`).digest("hex");
+    return sameSecret(signature.trim(), expected)
+      ? { ok: true as const, method: "hmac" as const }
+      : { ok: false as const, reason: "Chữ ký không khớp." };
+  }
+
+  const apiKey = (headers.get("authorization") ?? "").replace(/^Apikey\s+/i, "").trim();
+  if (apiKey && sameSecret(apiKey, sepayConfig.webhookKey)) {
+    return { ok: true as const, method: "apikey" as const };
+  }
+  return { ok: false as const, reason: "Không có chữ ký hoặc khoá hợp lệ." };
 }

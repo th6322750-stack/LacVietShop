@@ -14,7 +14,7 @@
  */
 import { NextResponse } from "next/server";
 import { addBalance, depositBySepayId, findPendingDepositByCode, markDepositPaid } from "@/lib/server/db";
-import { extractCode, sepayWebhookReady, verifyWebhookKey, type SepayWebhook } from "@/lib/server/sepay";
+import { extractCode, sepayWebhookReady, verifyWebhook, type SepayWebhook } from "@/lib/server/sepay";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +22,19 @@ export async function POST(request: Request) {
   if (!sepayWebhookReady()) {
     return NextResponse.json({ success: false, message: "Chưa cấu hình SEPAY_WEBHOOK_KEY." }, { status: 503 });
   }
-  if (!verifyWebhookKey(request.headers.get("authorization"))) {
-    return NextResponse.json({ success: false, message: "Khoá không hợp lệ." }, { status: 401 });
+  // Đọc body THÔ: chữ ký HMAC ký trên đúng chuỗi này, parse rồi dựng lại sẽ khác.
+  const rawBody = await request.text();
+  const auth = verifyWebhook(request.headers, rawBody);
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, message: auth.reason }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as SepayWebhook | null;
+  let body: SepayWebhook | null = null;
+  try {
+    body = JSON.parse(rawBody) as SepayWebhook;
+  } catch {
+    body = null;
+  }
   if (!body?.id) {
     return NextResponse.json({ success: false, message: "Thiếu dữ liệu giao dịch." }, { status: 400 });
   }

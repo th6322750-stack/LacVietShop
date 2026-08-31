@@ -1,9 +1,18 @@
 /**
- * Nạp danh mục dịch vụ sống từ API nhà cung cấp, nhớ tạm trong bộ nhớ tiến trình.
+ * Nạp danh mục dịch vụ sống từ API nhà cung cấp.
+ *
+ * Kết quả nhớ trong bộ đệm dữ liệu của Next, KHÔNG phải biến trong tiến trình.
+ * Lý do: trên Vercel mỗi lượt truy cập có thể rơi vào một tiến trình mới, biến
+ * nhớ tạm coi như vô dụng và lần nào cũng phải gọi lại API (mất 5–6 giây, khách
+ * ngồi nhìn khung xám). Bộ đệm dữ liệu dùng chung cho mọi tiến trình nên chỉ lượt
+ * đầu tiên chịu độ trễ đó.
+ *
+ * Đổi bảng giá thì gọi clearCatalogCache() để bỏ đệm, giá mới hiện ngay.
  *
  * API hỏng hoặc chưa cấu hình khoá → tự rơi về danh mục tĩnh dựng từ bản chụp
  * trang của họ, để trang đặt dịch vụ không bao giờ trắng.
  */
+import { revalidateTag, unstable_cache } from "next/cache";
 import type { Platform } from "@/types";
 import { getServices } from "./client";
 import { mapServicesToPlatforms } from "./map";
@@ -51,14 +60,20 @@ export function cachedCatalog() {
   return cache?.value ?? null;
 }
 
+const CATALOG_TAG = "thatim-catalog";
+
+/** Bỏ đệm để lượt lấy tiếp theo ra giá mới ngay. Gọi sau khi đổi bảng giá. */
 export function clearCatalogCache() {
   cache = null;
+  try {
+    revalidateTag(CATALOG_TAG);
+  } catch {
+    // Ngoài route handler thì gọi được cũng không sao, bỏ qua.
+  }
 }
 
-export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
-  if (!force && cache && Date.now() - cache.at < thatimConfig.cacheSeconds * 1000) {
-    return cache.value;
-  }
+/** Lấy thẳng từ API, không qua đệm. */
+async function loadFromApi(): Promise<LiveCatalog> {
   if (!isThatimConfigured()) {
     return fallbackCatalog("Chưa cấu hình THATIM_API_KEY.");
   }
@@ -85,4 +100,17 @@ export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
   };
   cache = { at: Date.now(), value };
   return value;
+}
+
+const loadCached = unstable_cache(loadFromApi, [CATALOG_TAG], {
+  revalidate: thatimConfig.cacheSeconds,
+  tags: [CATALOG_TAG],
+});
+
+export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
+  if (force) {
+    clearCatalogCache();
+    return loadFromApi();
+  }
+  return loadCached();
 }
