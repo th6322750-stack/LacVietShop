@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { adminAccounts, type AdminPermission } from "./data";
+import { type AdminPermission } from "./data";
 
 /**
  * Phiên đăng nhập quản trị.
@@ -61,7 +61,7 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
       .then((r) => r.json())
       .then((d) => {
         if (d?.admin) {
-          setSession(local);
+          setSession(d.profile?.permissions?.length ? { ...local, ...d.profile } : local);
         } else {
           try {
             window.localStorage.removeItem(KEY);
@@ -92,8 +92,13 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
 
     if (!server.ok) return { ok: false as const, error: String(server.error ?? "Đăng nhập không thành công.") };
 
-    const account = adminAccounts.find((a) => a.username === username.trim().toLowerCase());
-    if (!account) return { ok: false as const, error: "Không tìm thấy tài khoản này." };
+    // Bộ quyền do máy chủ trả về. Trước đây trình duyệt tự tra tên đăng nhập
+    // trong một danh sách cắm cứng, nên đổi tên tài khoản trong ADMIN_ACCOUNTS là
+    // đúng mật khẩu vẫn bị chặn — cái bẫy chỉ nổ trên bản chạy thật.
+    const account = server.profile;
+    if (!account || !Array.isArray(account.permissions) || account.permissions.length === 0) {
+      return { ok: false as const, error: "Tài khoản này chưa được gán quyền quản trị." };
+    }
 
     const next: AdminSession = {
       id: account.id,
