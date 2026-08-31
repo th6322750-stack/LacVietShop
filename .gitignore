@@ -11,3 +11,5 @@ next-env.d.ts
 
 # Dữ liệu chạy cục bộ: tài khoản khách, phiên, mã đặt lại mật khẩu.
 data/
+.vercel
+.env*
