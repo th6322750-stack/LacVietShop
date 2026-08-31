@@ -5,12 +5,12 @@
  * hệ thống. Phần phân quyền chi tiết trong giao diện vẫn nằm ở trình duyệt (tiện
  * cho việc ẩn/hiện nút), nhưng MỌI đường ghi đều phải qua chốt chặn ở đây.
  *
- * Mật khẩu quản trị đọc từ ADMIN_ACCOUNTS trong .env.local, dạng
+ * Mật khẩu quản trị đọc từ ADMIN_ACCOUNTS trong biến môi trường, dạng
  *   ADMIN_ACCOUNTS=admin:matkhau1,hotro:matkhau2
  * Chưa đặt thì dùng tài khoản trình diễn — chỉ hợp giai đoạn kiểm thử.
  */
 import crypto from "node:crypto";
-import { readDb, writeDb } from "./store";
+import { deleteSession, findSession, insertSession } from "./db";
 
 if (typeof window !== "undefined") {
   throw new Error("src/lib/server/admin.ts chỉ được dùng phía server.");
@@ -37,7 +37,7 @@ function adminAccounts(): Record<string, string> {
   return Object.keys(out).length ? out : DEMO_ADMINS;
 }
 
-/** So sánh chuỗi theo thời gian cố định, không để lộ độ dài khớp. */
+/** So sánh theo thời gian cố định, không để lộ độ dài khớp. */
 function sameSecret(a: string, b: string) {
   const x = Buffer.from(a);
   const y = Buffer.from(b);
@@ -45,35 +45,26 @@ function sameSecret(a: string, b: string) {
   return crypto.timingSafeEqual(x, y);
 }
 
-export function loginAdmin(username: string, password: string) {
+export async function loginAdmin(username: string, password: string) {
   const accounts = adminAccounts();
   const key = username.trim().toLowerCase();
   const expected = accounts[key];
   if (!expected || !sameSecret(password, expected)) return null;
 
   const token = crypto.randomBytes(32).toString("hex");
-  const db = readDb();
-  db.adminSessions = [
-    ...(db.adminSessions ?? []),
-    { token, accountId: key, expiresAt: Date.now() + ADMIN_DAYS * 86_400_000 },
-  ];
-  writeDb(db);
+  await insertSession({ token, accountId: key, kind: "admin", expiresAt: Date.now() + ADMIN_DAYS * 86_400_000 });
   return { token, username: key };
 }
 
 /** Tên quản trị viên của phiên, hoặc null nếu không hợp lệ. */
-export function adminForToken(token: string | undefined) {
+export async function adminForToken(token: string | undefined) {
   if (!token) return null;
-  const db = readDb();
-  const s = (db.adminSessions ?? []).find((x) => x.token === token && x.expiresAt > Date.now());
+  const s = await findSession(token, "admin");
   return s ? s.accountId : null;
 }
 
-export function logoutAdmin(token: string | undefined) {
-  if (!token) return;
-  const db = readDb();
-  db.adminSessions = (db.adminSessions ?? []).filter((s) => s.token !== token);
-  writeDb(db);
+export async function logoutAdmin(token: string | undefined) {
+  if (token) await deleteSession(token);
 }
 
 export const adminMaxAge = ADMIN_DAYS * 86_400;

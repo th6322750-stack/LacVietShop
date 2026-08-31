@@ -6,6 +6,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const jar = await cookies();
-  const account = accountForToken(jar.get(SESSION_COOKIE)?.value);
+  const account = await accountForToken(jar.get(SESSION_COOKIE)?.value);
   return NextResponse.json({ ok: true, account });
 }

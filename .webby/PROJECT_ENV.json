@@ -63,7 +63,7 @@
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
     "build": "pnpm build — PASS (39 route)",
-    "routeSmoke": "5 bộ Playwright — 139 PASS / 0 FAIL (khách 57, quản trị 18, thêm mới 6, API+popup 26, tài khoản 32)",
+    "routeSmoke": "6 bộ — 156 PASS / 0 FAIL (khách 57, quản trị 18, thêm mới 6, API+popup 26, tài khoản 32, nạp tiền SePay 17)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -71,7 +71,7 @@
     "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
     "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
-  "routesImplemented": 41,
+  "routesImplemented": 43,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
   "missingAssetKeys": 6,
   "openProductionGaps": 13,
@@ -212,5 +212,33 @@
     "guard": "Đọc và ghi bảng giá đều cần cookie phiên quản trị httpOnly do /api/admin/session cấp",
     "adminScreen": "/admin/services — hiện giá vốn, giá bán, chênh lệch, cảnh báo bán dưới vốn",
     "removed": "Thêm/xoá dịch vụ tay: danh mục nay lấy từ API, dịch vụ tự thêm không có mã nhà cung cấp nên không đẩy đơn được"
+  },
+  "dataLayer": {
+    "date": "2026-08-31",
+    "file": "src/lib/server/db.ts",
+    "modes": "Có DATABASE_URL → Postgres (Neon). Không có → tệp data/lacviet-db.json khi chạy ở máy nhà.",
+    "why": "Vercel không cho ghi tệp và mỗi lần deploy là mất sạch, nên lên Vercel bắt buộc phải có Postgres.",
+    "tables": [
+      "accounts",
+      "sessions",
+      "reset_codes",
+      "pricing",
+      "deposits"
+    ],
+    "note": "Bảng tự tạo ở lần gọi đầu tiên; số dư khách nằm ở accounts.balance"
+  },
+  "deposits": {
+    "date": "2026-08-31",
+    "decidedBy": "USER",
+    "provider": "SePay",
+    "flow": "Khách chọn số tiền → máy chủ sinh mã LV+8 ký tự → QR qr.sepay.vn → khách chuyển khoản → webhook khớp mã → cộng số dư",
+    "webhookRoute": "/api/webhooks/sepay",
+    "guards": [
+      "Đòi đúng SEPAY_WEBHOOK_KEY trong header Authorization, so sánh timing-safe",
+      "Chỉ nhận transferType = in",
+      "sepay_id là khoá duy nhất nên gửi lại cùng giao dịch không cộng tiền hai lần",
+      "Cộng đúng số tiền thực nhận, ghi chú lại nếu lệch với số khách bấm"
+    ],
+    "status": "Đã kiểm thử 17/17 bằng webhook giả; chưa chạy với tiền thật"
   }
 }

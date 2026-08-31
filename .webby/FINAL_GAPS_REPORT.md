@@ -41,13 +41,15 @@ status: OPEN
 GAP
 key: payment.gateway
 area: payment
-needed: Đấu SePay để tự cộng số dư khi khách chuyển khoản — tài khoản SePay, liên kết ngân hàng,
-  webhook nhận biến động số dư, và cách sinh nội dung chuyển khoản để khớp đơn nạp
-current_demo_source: hướng đã chốt là SePay (USER, 2026-08-31): khách chọn số tiền, hệ thống sinh nội
-  dung chuyển khoản kèm mã, SePay bắn webhook khi tiền về và số dư cộng tự động. Chưa làm phần nào.
-  Trang Nạp tiền hiện chỉ ghi nhận lệnh, không có tiền thật đi đâu.
-production_risk_if_unresolved: Khách chuyển tiền mà số dư không cộng; phải đối soát tay từng giao dịch
-status: OPEN
+needed: Tạo webhook bên my.sepay.vn trỏ về /api/webhooks/sepay, liên kết tài khoản ngân hàng,
+  rồi điền SEPAY_WEBHOOK_KEY, SEPAY_ACCOUNT_NUMBER, SEPAY_BANK, SEPAY_ACCOUNT_NAME
+current_demo_source: luồng nạp đã dựng xong — POST /api/deposits sinh mã riêng và ảnh QR
+  (qr.sepay.vn), /api/webhooks/sepay nhận biến động số dư, khớp mã trong nội dung chuyển khoản
+  rồi cộng số dư. Webhook đòi đúng khoá, bỏ qua giao dịch tiền ra, chống cộng trùng bằng mã giao
+  dịch SePay, và cộng đúng số tiền THỰC nhận chứ không phải số khách bấm. Đã kiểm thử 17/17 bằng
+  webhook giả. Chưa chạy với tiền thật vì chưa có tài khoản SePay.
+production_risk_if_unresolved: Khách chuyển tiền mà số dư không cộng
+status: PARTIAL
 
 GAP
 key: catalog.pricing

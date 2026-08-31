@@ -13,14 +13,14 @@ export const dynamic = "force-dynamic";
 
 async function requireAdmin() {
   const jar = await cookies();
-  return adminForToken(jar.get(ADMIN_COOKIE)?.value);
+  return await adminForToken(jar.get(ADMIN_COOKIE)?.value);
 }
 
 export async function GET() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ ok: false, error: "Chưa đăng nhập quản trị." }, { status: 401 });
   }
-  return NextResponse.json({ ok: true, rules: readRules() });
+  return NextResponse.json({ ok: true, rules: await readRules() });
 }
 
 const ruleSchema = z.union([
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Dữ liệu bảng giá không hợp lệ." }, { status: 400 });
   }
 
-  const rules = readRules();
+  const rules = await readRules();
   if (parsed.data.globalMarkup !== undefined) rules.globalMarkup = parsed.data.globalMarkup;
 
   for (const [id, rule] of Object.entries(parsed.data.overrides ?? {})) {
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
   rules.updatedAt = new Date().toISOString();
   rules.updatedBy = admin;
-  writeRules(rules);
+  await writeRules(rules);
 
   // Danh mục đang nhớ tạm giá cũ; xoá để lần lấy sau ra giá mới ngay.
   clearCatalogCache();

@@ -1,13 +1,31 @@
 /**
  * Nghiệp vụ tài khoản khách hàng — chạy phía máy chủ.
  *
- * Mật khẩu băm bằng bcrypt (thuật toán chậm có muối sẵn), phiên đăng nhập là
- * chuỗi ngẫu nhiên lưu trong cookie httpOnly nên JavaScript ở trình duyệt không
- * đọc được. Mã đặt lại mật khẩu cũng băm trước khi lưu.
+ * Mật khẩu băm bcrypt (thuật toán chậm có muối sẵn), phiên đăng nhập là chuỗi
+ * ngẫu nhiên lưu trong cookie httpOnly nên JavaScript ở trình duyệt không đọc
+ * được. Mã đặt lại mật khẩu cũng băm trước khi lưu.
+ *
+ * Kho dữ liệu do src/lib/server/db.ts lo: Postgres khi có DATABASE_URL, tệp JSON
+ * khi chạy ở máy nhà.
  */
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
-import { readDb, writeDb, type Account } from "./store";
+import {
+  addBalance,
+  bumpResetAttempts,
+  deleteResetCode,
+  deleteSession,
+  deleteSessionsOfAccount,
+  findAccount,
+  findAccountByLogin,
+  findSession,
+  getResetCode,
+  insertAccount,
+  insertSession,
+  putResetCode,
+  setAccountPassword,
+  type Account,
+} from "./db";
 
 if (typeof window !== "undefined") {
   throw new Error("src/lib/server/auth.ts chỉ được dùng phía server.");
@@ -28,6 +46,7 @@ export interface PublicAccount {
   username: string;
   email: string;
   phone: string;
+  balance: number;
 }
 
 const toPublic = (a: Account): PublicAccount => ({
@@ -36,9 +55,14 @@ const toPublic = (a: Account): PublicAccount => ({
   username: a.username,
   email: a.email,
   phone: a.phone,
+  balance: a.balance,
 });
 
 type Fail = { ok: false; error: string; field?: string };
+
+export function newToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
 
 // ---------------------------------------------------------------------------
 // Đăng ký / đăng nhập
@@ -50,14 +74,13 @@ export async function registerAccount(input: {
   phone: string;
   password: string;
 }): Promise<{ ok: true; account: PublicAccount; token: string } | Fail> {
-  const db = readDb();
   const username = input.username.trim().toLowerCase();
   const email = input.email.trim().toLowerCase();
 
-  if (db.accounts.some((a) => a.username === username)) {
+  if (await findAccount({ username })) {
     return { ok: false, error: "Tên đăng nhập này đã có người dùng.", field: "username" };
   }
-  if (db.accounts.some((a) => a.email === email)) {
+  if (await findAccount({ email })) {
     return { ok: false, error: "Email này đã được đăng ký.", field: "email" };
   }
 
@@ -68,13 +91,18 @@ export async function registerAccount(input: {
     email,
     phone: input.phone.trim(),
     passwordHash: await bcrypt.hash(input.password, BCRYPT_ROUNDS),
+    balance: 0,
     createdAt: new Date().toISOString(),
   };
+  await insertAccount(account);
 
-  const token = newSessionToken();
-  db.accounts.push(account);
-  db.sessions.push({ token, accountId: account.id, expiresAt: Date.now() + SESSION_DAYS * 86_400_000 });
-  writeDb(db);
+  const token = newToken();
+  await insertSession({
+    token,
+    accountId: account.id,
+    kind: "customer",
+    expiresAt: Date.now() + SESSION_DAYS * 86_400_000,
+  });
 
   return { ok: true, account: toPublic(account), token };
 }
@@ -83,9 +111,7 @@ export async function loginAccount(
   identifier: string,
   password: string,
 ): Promise<{ ok: true; account: PublicAccount; token: string } | Fail> {
-  const db = readDb();
-  const id = identifier.trim().toLowerCase();
-  const account = db.accounts.find((a) => a.username === id || a.email === id);
+  const account = await findAccountByLogin(identifier);
 
   // So sánh với một băm giả khi không tìm thấy tài khoản, để thời gian phản hồi
   // giống nhau — không cho dò xem email nào đã đăng ký qua tốc độ trả lời.
@@ -96,9 +122,13 @@ export async function loginAccount(
     return { ok: false, error: "Tên đăng nhập hoặc mật khẩu không đúng." };
   }
 
-  const token = newSessionToken();
-  db.sessions.push({ token, accountId: account.id, expiresAt: Date.now() + SESSION_DAYS * 86_400_000 });
-  writeDb(db);
+  const token = newToken();
+  await insertSession({
+    token,
+    accountId: account.id,
+    kind: "customer",
+    expiresAt: Date.now() + SESSION_DAYS * 86_400_000,
+  });
 
   return { ok: true, account: toPublic(account), token };
 }
@@ -106,24 +136,16 @@ export async function loginAccount(
 // ---------------------------------------------------------------------------
 // Phiên
 // ---------------------------------------------------------------------------
-function newSessionToken() {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-export function accountForToken(token: string | undefined): PublicAccount | null {
+export async function accountForToken(token: string | undefined): Promise<PublicAccount | null> {
   if (!token) return null;
-  const db = readDb();
-  const session = db.sessions.find((s) => s.token === token && s.expiresAt > Date.now());
+  const session = await findSession(token, "customer");
   if (!session) return null;
-  const account = db.accounts.find((a) => a.id === session.accountId);
+  const account = await findAccount({ id: session.accountId });
   return account ? toPublic(account) : null;
 }
 
-export function destroySession(token: string | undefined) {
-  if (!token) return;
-  const db = readDb();
-  db.sessions = db.sessions.filter((s) => s.token !== token);
-  writeDb(db);
+export async function destroySession(token: string | undefined) {
+  if (token) await deleteSession(token);
 }
 
 export const sessionMaxAge = SESSION_DAYS * 86_400;
@@ -133,30 +155,26 @@ export const sessionMaxAge = SESSION_DAYS * 86_400;
 // ---------------------------------------------------------------------------
 /**
  * Sinh mã đặt lại. Trả về mã gốc để gửi đi; chỉ bản băm được lưu.
- * `null` nghĩa là không có tài khoản nào khớp hoặc đang trong thời gian chờ gửi lại —
- * nơi gọi phải trả về cùng một thông điệp cho mọi trường hợp, không tiết lộ email
+ * `null` nghĩa là không có tài khoản khớp hoặc đang trong thời gian chờ gửi lại —
+ * nơi gọi phải trả cùng một thông điệp cho mọi trường hợp, không tiết lộ email
  * nào đã đăng ký.
  */
-export async function createResetCode(email: string): Promise<{ code: string; account: Account } | null> {
-  const db = readDb();
+export async function createResetCode(email: string) {
   const key = email.trim().toLowerCase();
-  const account = db.accounts.find((a) => a.email === key);
+  const account = await findAccount({ email: key });
   if (!account) return null;
 
-  const existing = db.resetCodes.find((c) => c.email === key);
+  const existing = await getResetCode(key);
   if (existing && Date.now() - existing.sentAt < CODE_RESEND_MS) return null;
 
   const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
-  const entry = {
+  await putResetCode({
     email: key,
     codeHash: await bcrypt.hash(code, BCRYPT_ROUNDS),
     expiresAt: Date.now() + CODE_TTL_MS,
     attempts: 0,
     sentAt: Date.now(),
-  };
-
-  db.resetCodes = [...db.resetCodes.filter((c) => c.email !== key), entry];
-  writeDb(db);
+  });
   return { code, account };
 }
 
@@ -165,9 +183,8 @@ export async function resetPassword(
   code: string,
   newPassword: string,
 ): Promise<{ ok: true } | Fail> {
-  const db = readDb();
   const key = email.trim().toLowerCase();
-  const entry = db.resetCodes.find((c) => c.email === key);
+  const entry = await getResetCode(key);
 
   if (!entry || entry.expiresAt <= Date.now()) {
     return { ok: false, error: "Mã đã hết hạn hoặc không tồn tại. Hãy yêu cầu mã mới." };
@@ -176,20 +193,20 @@ export async function resetPassword(
     return { ok: false, error: "Nhập sai quá nhiều lần. Hãy yêu cầu mã mới." };
   }
   if (!(await bcrypt.compare(code.trim(), entry.codeHash))) {
-    entry.attempts += 1;
-    writeDb(db);
-    const left = CODE_MAX_ATTEMPTS - entry.attempts;
+    await bumpResetAttempts(key);
+    const left = CODE_MAX_ATTEMPTS - (entry.attempts + 1);
     return { ok: false, error: `Mã không đúng. Còn ${left} lần thử.`, field: "code" };
   }
 
-  const account = db.accounts.find((a) => a.email === key);
+  const account = await findAccount({ email: key });
   if (!account) return { ok: false, error: "Không tìm thấy tài khoản." };
 
-  account.passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-  db.resetCodes = db.resetCodes.filter((c) => c.email !== key);
+  await setAccountPassword(account.id, await bcrypt.hash(newPassword, BCRYPT_ROUNDS));
+  await deleteResetCode(key);
   // Đổi mật khẩu thì đăng xuất mọi thiết bị đang đăng nhập tài khoản đó.
-  db.sessions = db.sessions.filter((s) => s.accountId !== account.id);
-  writeDb(db);
+  await deleteSessionsOfAccount(account.id);
 
   return { ok: true };
 }
+
+export { addBalance };

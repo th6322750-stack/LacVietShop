@@ -1,79 +1,149 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import Link from "next/link";
 import {
   IconAlertTriangle,
   IconArrowDownRight,
   IconCheck,
+  IconCopy,
   IconHeadset,
   IconReceipt,
+  IconRefresh,
   IconWallet,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard, SupportCard, InfoCard } from "@/components/blocks/Cards";
-import { QRCard } from "@/components/blocks/Media";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { Column, DataTable } from "@/components/blocks/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { FieldMessage, Input, Label, RadioCard, Textarea } from "@/components/ui/Field";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { FieldMessage, Input, Label, RadioCard } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
-import { account, paymentMethods, recentDeposits } from "@/lib/demo/data";
-import { commerceAdapter, demoBrand } from "@/lib/demo/config";
+import { paymentMethods } from "@/lib/demo/data";
+import { demoBrand } from "@/lib/demo/config";
+import { useCustomerAuth } from "@/lib/customer/auth";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 
+/**
+ * Nạp tiền qua SePay.
+ *
+ * Khách chọn số tiền → máy chủ tạo lệnh nạp kèm mã riêng → khách quét QR hoặc
+ * chuyển khoản với mã đó → SePay bắn webhook khi tiền về → số dư cộng tự động.
+ * Trang này hỏi lại trạng thái mỗi 5 giây trong lúc chờ.
+ */
+
 const quickAmounts = [100_000, 200_000, 500_000, 1_000_000, 2_000_000, 5_000_000];
+const MIN_AMOUNT = 10_000;
 
-const schema = z.object({
-  amount: z.coerce.number().min(10_000, "Số tiền tối thiểu 10.000 ₫.").max(500_000_000, "Số tiền quá lớn."),
-  reference: z.string().max(120).optional(),
-  note: z.string().max(300).optional(),
-});
+interface Deposit {
+  id: string;
+  code: string;
+  amount: number;
+  status: "pending" | "success" | "canceled";
+  method: string;
+  createdAt: string;
+  paidAt?: string | null;
+}
 
-type FormValues = z.input<typeof schema>;
-type Deposit = (typeof recentDeposits)[number];
+interface Transfer {
+  bank: string;
+  accountNumber: string;
+  accountName: string;
+  content: string;
+  amount: number;
+  qrUrl: string | null;
+}
 
 export function DepositView() {
   const toast = useToast();
+  const { session, ready } = useCustomerAuth();
+
   const [methodId, setMethodId] = React.useState(paymentMethods[0].id);
-  const [submitting, setSubmitting] = React.useState(false);
   const method = paymentMethods.find((m) => m.id === methodId) ?? paymentMethods[0];
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { amount: 500_000, reference: "", note: "" },
-    mode: "onBlur",
-  });
+  const [amount, setAmount] = React.useState(500_000);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [transfer, setTransfer] = React.useState<Transfer | null>(null);
+  const [pendingCode, setPendingCode] = React.useState<string | null>(null);
 
-  const amount = Number(watch("amount") || 0);
-  const fee = method.kind === "ewallet" ? Math.round(amount * 0.01) : 0;
+  const [deposits, setDeposits] = React.useState<Deposit[]>([]);
+  const [balance, setBalance] = React.useState<number | null>(null);
+  const [configError, setConfigError] = React.useState<string | null>(null);
 
-  async function onSubmit(values: FormValues) {
+  const refresh = React.useCallback(async () => {
+    if (!session) return;
+    const res = await fetch("/api/deposits")
+      .then((r) => r.json())
+      .catch(() => null);
+    if (res?.ok) {
+      setDeposits(res.deposits ?? []);
+      setBalance(res.balance ?? 0);
+    }
+  }, [session]);
+
+  React.useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  // Chờ tiền về: hỏi lại mỗi 5 giây cho tới khi lệnh chuyển sang thành công.
+  React.useEffect(() => {
+    if (!pendingCode) return;
+    const timer = setInterval(() => void refresh(), 5000);
+    return () => clearInterval(timer);
+  }, [pendingCode, refresh]);
+
+  React.useEffect(() => {
+    if (!pendingCode) return;
+    const paid = deposits.find((d) => d.code === pendingCode && d.status === "success");
+    if (paid) {
+      setPendingCode(null);
+      setTransfer(null);
+      toast.push({
+        tone: "success",
+        title: `Đã nhận ${formatMoney(paid.amount)}`,
+        description: "Số dư của bạn đã được cộng.",
+      });
+    }
+  }, [deposits, pendingCode, toast]);
+
+  const amountError = amount < MIN_AMOUNT ? `Nạp tối thiểu ${formatMoney(MIN_AMOUNT)}.` : null;
+
+  async function createDeposit(e: React.FormEvent) {
+    e.preventDefault();
+    if (amountError) return;
+
     setSubmitting(true);
-    const res = await commerceAdapter.submitDeposit({ methodId, amount: Number(values.amount) });
+    setConfigError(null);
+    const res = await fetch("/api/deposits", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ amount, method: method.name }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
     setSubmitting(false);
+
     if (!res.ok) {
-      toast.push({ tone: "error", title: "Không tạo được lệnh nạp", description: res.error });
+      setConfigError(String(res.error));
+      toast.push({ tone: "error", title: "Không tạo được lệnh nạp", description: String(res.error) });
       return;
     }
-    toast.push({
-      tone: "success",
-      title: `Đã ghi nhận lệnh nạp ${res.reference}`,
-      description: "Đây là lệnh mô phỏng. Không có giao dịch tiền thật nào được thực hiện.",
-    });
+
+    setTransfer(res.transfer);
+    setPendingCode(res.deposit.code);
+    void refresh();
   }
 
-  const columns: Column<Deposit & { id: string }>[] = [
-    { key: "id", header: "Mã lệnh", cell: (d) => <span className="text-body-strong text-lv-text">{d.id}</span> },
+  function copy(value: string, label: string) {
+    navigator.clipboard
+      ?.writeText(value)
+      .then(() => toast.push({ tone: "success", title: `Đã sao chép ${label}` }))
+      .catch(() => toast.push({ tone: "warning", title: "Trình duyệt không cho sao chép" }));
+  }
+
+  const columns: Column<Deposit>[] = [
+    { key: "code", header: "Mã lệnh", cell: (d) => <span className="lv-price text-body-strong text-lv-text">{d.code}</span> },
     { key: "method", header: "Phương thức", cell: (d) => d.method },
     {
       key: "amount",
@@ -86,147 +156,214 @@ export function DepositView() {
       header: "Trạng thái",
       cell: (d) =>
         d.status === "success" ? (
-          <Badge tone="success">Thành công</Badge>
+          <Badge tone="success">Đã nhận</Badge>
         ) : d.status === "pending" ? (
-          <Badge tone="warning">Đang xử lý</Badge>
+          <Badge tone="warning">Chờ chuyển khoản</Badge>
         ) : (
-          <Badge tone="danger">Thất bại</Badge>
+          <Badge tone="danger">Đã huỷ</Badge>
         ),
     },
     { key: "createdAt", header: "Thời gian", align: "right", cell: (d) => formatDateTime(d.createdAt) },
   ];
 
+  // Chưa đăng nhập thì không có gì để nạp vào.
+  if (ready && !session) {
+    return (
+      <div className="space-y-5">
+        <PageHeader
+          title="Nạp tiền"
+          description="Nạp số dư để sử dụng dịch vụ và mua tài khoản premium."
+          breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Nạp tiền" }]}
+        />
+        <SectionCard title="Cần đăng nhập">
+          <p className="text-body text-lv-navy-700">
+            Số dư gắn với tài khoản của bạn, nên phải đăng nhập trước khi tạo lệnh nạp.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <LinkButton href="/login?next=/deposit">Đăng nhập</LinkButton>
+            <LinkButton href="/register?next=/deposit" variant="secondary">
+              Tạo tài khoản
+            </LinkButton>
+          </div>
+        </SectionCard>
+      </div>
+    );
+  }
+
+  const totalIn = deposits.filter((d) => d.status === "success").reduce((s, d) => s + d.amount, 0);
+
   return (
     <div className="space-y-5">
       <PageHeader
         title="Nạp tiền"
-        description="Nạp số dư để sử dụng dịch vụ và mua tài khoản premium."
+        description="Chuyển khoản đúng nội dung, số dư cộng tự động trong ít phút."
         breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Nạp tiền" }]}
+        action={
+          <Button variant="secondary" icon={<IconRefresh size={17} />} onClick={() => void refresh()}>
+            Làm mới
+          </Button>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Số dư hiện tại" value={formatMoney(account.balance)} tone="gold" icon={<IconWallet size={20} />} />
-        <StatCard label="Tổng đã nạp" value={formatMoney(account.totalDeposited)} tone="navy" icon={<IconArrowDownRight size={20} />} />
-        <StatCard label="Tổng đã chi" value={formatMoney(account.totalSpent)} tone="info" icon={<IconReceipt size={20} />} />
-        <StatCard label="Số dư sau chi tiêu" value={formatMoney(account.totalDeposited - account.totalSpent)} tone="success" icon={<IconCheck size={20} />} hint="Tổng nạp trừ tổng chi" />
+        <StatCard
+          label="Số dư hiện tại"
+          value={balance === null ? "…" : formatMoney(balance)}
+          tone="gold"
+          icon={<IconWallet size={20} />}
+        />
+        <StatCard label="Tổng đã nạp" value={formatMoney(totalIn)} tone="navy" icon={<IconArrowDownRight size={20} />} />
+        <StatCard
+          label="Lệnh đang chờ"
+          value={String(deposits.filter((d) => d.status === "pending").length)}
+          suffix="lệnh"
+          tone="info"
+          icon={<IconReceipt size={20} />}
+        />
+        <StatCard
+          label="Lệnh đã nhận"
+          value={String(deposits.filter((d) => d.status === "success").length)}
+          suffix="lệnh"
+          tone="success"
+          icon={<IconCheck size={20} />}
+        />
       </div>
+
+      {configError ? (
+        <InfoCard title="Chưa nạp được" tone="danger" icon={<IconAlertTriangle size={16} />}>
+          {configError}
+        </InfoCard>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-12">
         <div className="min-w-0 space-y-5 xl:col-span-8">
-          <SectionCard title="Chọn phương thức nạp" description="Phí và thời gian xử lý khác nhau theo từng cổng.">
-            <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Phương thức thanh toán">
-              {paymentMethods.map((m) => (
-                <RadioCard
-                  key={m.id}
-                  checked={m.id === methodId}
-                  onSelect={() => setMethodId(m.id)}
-                  disabled={!m.available}
-                  title={
-                    <span className="flex items-center gap-2">
-                      <AssetImage assetKey={m.assetKey} className="h-6 w-10" rounded="control" />
-                      {m.name}
-                    </span>
-                  }
-                  subtitle={`${m.detail} · ${m.processingTime}`}
-                  right={
-                    m.available ? (
-                      <span className="text-small text-lv-muted">{m.feeNote}</span>
-                    ) : (
-                      <Badge tone="neutral">Tạm dừng</Badge>
-                    )
-                  }
-                />
-              ))}
-            </div>
-          </SectionCard>
+          {transfer ? (
+            <SectionCard
+              title="Chuyển khoản để hoàn tất"
+              description="Quét mã hoặc chuyển thủ công. Giữ nguyên nội dung để hệ thống tự khớp."
+              action={<Badge tone="warning">Đang chờ tiền về</Badge>}
+            >
+              <div className="grid gap-4 sm:grid-cols-[200px_1fr]">
+                {transfer.qrUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={transfer.qrUrl}
+                    alt={`Mã QR chuyển khoản ${formatMoney(transfer.amount)}`}
+                    className="h-[200px] w-[200px] rounded-card border border-lv-border bg-white object-contain"
+                  />
+                ) : null}
 
-          <SectionCard title="Thông tin chuyển khoản" description={`${method.name} · ${method.processingTime}`}>
-            <QRCard
-              assetKey="deposit.realQr"
-              title="Mã QR chuyển khoản"
-              lines={[
-                { label: "Ngân hàng / Ví", value: method.name },
-                { label: "Chủ tài khoản", value: "Chưa cấu hình" },
-                { label: "Số tài khoản", value: "Chưa cấu hình" },
-                { label: "Nội dung chuyển khoản", value: `LV ${account.username}`, copyable: true },
-              ]}
-              notice={
-                <InfoCard title="Chưa có tài khoản nhận tiền chính thức" tone="warning" icon={<IconAlertTriangle size={16} />}>
-                  Thông tin ở trên là chỗ dành sẵn cho cấu hình thật. Không chuyển tiền theo nội dung này.
-                  Gap: <code className="text-small">payment.receivingAccount</code>,{" "}
-                  <code className="text-small">payment.gateway</code>.
-                </InfoCard>
-              }
-            />
-          </SectionCard>
+                <div className="min-w-0 space-y-2">
+                  <TransferRow label="Ngân hàng" value={transfer.bank} />
+                  <TransferRow label="Số tài khoản" value={transfer.accountNumber} onCopy={copy} />
+                  {transfer.accountName ? <TransferRow label="Chủ tài khoản" value={transfer.accountName} /> : null}
+                  <TransferRow label="Số tiền" value={formatMoney(transfer.amount)} />
+                  <TransferRow label="Nội dung chuyển khoản" value={transfer.content} onCopy={copy} highlight />
+                </div>
+              </div>
 
-          <SectionCard title="Tạo lệnh nạp" description="Nhập số tiền và mã giao dịch để đối soát.">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="amount" required>
-                  Số tiền nạp
-                </Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  inputMode="numeric"
-                  step={10_000}
-                  tone={errors.amount ? "invalid" : "default"}
-                  aria-invalid={!!errors.amount}
-                  {...register("amount")}
-                />
-                <FieldMessage>{errors.amount?.message}</FieldMessage>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {quickAmounts.map((a) => (
-                    <button
-                      key={a}
-                      type="button"
-                      onClick={() => setValue("amount", a, { shouldValidate: true })}
-                      className="rounded-pill border border-lv-border px-3 py-1 text-small-strong text-lv-navy-700 transition-colors duration-button hover:border-lv-border-gold hover:bg-lv-gold-50"
-                    >
-                      {formatMoney(a)}
-                    </button>
+              <InfoCard title="Nội dung phải giữ nguyên" tone="warning" icon={<IconAlertTriangle size={16} />}>
+                Thiếu hoặc sai mã <strong>{transfer.content}</strong> thì hệ thống không biết tiền của ai và số dư sẽ
+                không tự cộng. Trang này tự kiểm tra mỗi vài giây, chuyển xong cứ để mở.
+              </InfoCard>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={() => void refresh()} icon={<IconRefresh size={16} />}>
+                  Kiểm tra ngay
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setTransfer(null);
+                    setPendingCode(null);
+                  }}
+                >
+                  Tạo lệnh khác
+                </Button>
+              </div>
+            </SectionCard>
+          ) : (
+            <>
+              <SectionCard title="Chọn phương thức nạp" description="Tiền về tài khoản nào cũng được cộng tự động.">
+                <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Phương thức thanh toán">
+                  {paymentMethods.map((m) => (
+                    <RadioCard
+                      key={m.id}
+                      checked={m.id === methodId}
+                      onSelect={() => setMethodId(m.id)}
+                      disabled={!m.available}
+                      title={
+                        <span className="flex items-center gap-2">
+                          <AssetImage assetKey={m.assetKey} className="h-6 w-10" rounded="control" />
+                          {m.name}
+                        </span>
+                      }
+                      subtitle={`${m.detail} · ${m.processingTime}`}
+                      right={
+                        m.available ? (
+                          <span className="text-small text-lv-muted">{m.feeNote}</span>
+                        ) : (
+                          <Badge tone="neutral">Tạm dừng</Badge>
+                        )
+                      }
+                    />
                   ))}
                 </div>
-              </div>
+              </SectionCard>
 
-              <div>
-                <Label htmlFor="reference">Mã giao dịch / nội dung đã chuyển</Label>
-                <Input id="reference" placeholder="Ví dụ: FT26083012345678" {...register("reference")} />
-              </div>
+              <SectionCard title="Số tiền nạp" description="Chọn nhanh hoặc nhập số bất kỳ.">
+                <form onSubmit={createDeposit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="amount" required hint={`tối thiểu ${formatMoney(MIN_AMOUNT)}`}>
+                      Số tiền
+                    </Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      inputMode="numeric"
+                      step={10_000}
+                      min={MIN_AMOUNT}
+                      value={amount}
+                      onChange={(e) => setAmount(Math.round(Number(e.target.value) || 0))}
+                      tone={amountError ? "invalid" : "default"}
+                      aria-invalid={!!amountError}
+                    />
+                    <FieldMessage>{amountError}</FieldMessage>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {quickAmounts.map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => setAmount(a)}
+                          className="rounded-pill border border-lv-border px-3 py-1 text-small-strong text-lv-navy-700 transition-colors duration-button hover:border-lv-border-gold hover:bg-lv-gold-50"
+                        >
+                          {formatMoney(a)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              <div>
-                <Label htmlFor="note">Ghi chú</Label>
-                <Textarea id="note" placeholder="Thông tin thêm cho bộ phận đối soát" {...register("note")} />
-              </div>
+                  <div className="flex items-center justify-between rounded-card border border-lv-border-gold bg-lv-gold-50 px-3 py-2">
+                    <span className="text-small text-lv-gold-700">Số dư nhận được</span>
+                    <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(amount)}</span>
+                  </div>
 
-              <div className="rounded-card border border-lv-border bg-lv-bg p-4">
-                <div className="flex items-center justify-between text-small text-lv-muted">
-                  <span>Số tiền nạp</span>
-                  <span className="lv-price text-body-strong text-lv-text">{formatMoney(amount)}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-small text-lv-muted">
-                  <span>Phí cổng thanh toán</span>
-                  <span className="lv-price">{fee > 0 ? `- ${formatMoney(fee)}` : "Miễn phí"}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between border-t border-lv-border pt-2">
-                  <span className="text-body-strong text-lv-text">Số dư nhận được</span>
-                  <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(Math.max(0, amount - fee))}</span>
-                </div>
-              </div>
-
-              <Button type="submit" size="lg" block loading={submitting} disabled={!method.available}>
-                {submitting ? "Đang ghi nhận…" : "Tạo lệnh nạp"}
-              </Button>
-            </form>
-          </SectionCard>
+                  <Button type="submit" size="lg" block loading={submitting} disabled={!!amountError || !method.available}>
+                    {submitting ? "Đang tạo lệnh…" : "Lấy thông tin chuyển khoản"}
+                  </Button>
+                </form>
+              </SectionCard>
+            </>
+          )}
 
           <SectionCard title="Lệnh nạp gần đây" padded={false}>
             <DataTable
               caption="Danh sách lệnh nạp gần đây"
               columns={columns}
-              rows={recentDeposits.map((d) => ({ ...d }))}
+              rows={deposits}
+              rowKey={(d) => d.id}
               emptyTitle="Chưa có lệnh nạp nào"
+              emptyDescription="Tạo lệnh nạp ở trên để lấy thông tin chuyển khoản."
             />
           </SectionCard>
         </div>
@@ -235,6 +372,7 @@ export function DepositView() {
           <InfoCard title="Lưu ý khi nạp tiền" tone="warning" icon={<IconAlertTriangle size={16} />}>
             <ul className="space-y-1.5">
               <li>· Chuyển đúng nội dung để hệ thống tự đối soát.</li>
+              <li>· Mỗi lệnh nạp có mã riêng, không dùng lại mã của lệnh cũ.</li>
               <li>· Nạp sai nội dung cần liên hệ hỗ trợ kèm ảnh chụp giao dịch.</li>
               <li>· Không chuyển tiền cho bất kỳ tài khoản cá nhân nào tự xưng là nhân viên.</li>
             </ul>
@@ -250,8 +388,57 @@ export function DepositView() {
               </Button>
             }
           />
+
+          <div className="rounded-card border border-lv-border bg-lv-surface p-4 text-small text-lv-muted">
+            <p className="text-card-title text-lv-text">Bao lâu thì nhận được?</p>
+            <p className="mt-2">
+              Tiền về tài khoản là hệ thống cộng ngay, thường trong vòng một phút. Nếu quá 10 phút chưa thấy, gửi
+              yêu cầu đối soát kèm mã lệnh.
+            </p>
+            <p className="mt-2">
+              Cần giúp gấp? <Link href="/history" className="font-semibold text-lv-gold-700 hover:underline">Xem lịch sử hoạt động</Link>{" "}
+              để đối chiếu.
+            </p>
+          </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function TransferRow({
+  label,
+  value,
+  onCopy,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  onCopy?: (value: string, label: string) => void;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-between gap-3 rounded-control border px-3 py-2 ${
+        highlight ? "border-lv-border-gold bg-lv-gold-50" : "border-lv-border bg-lv-bg"
+      }`}
+    >
+      <span className="shrink-0 text-small text-lv-muted">{label}</span>
+      <span className="flex min-w-0 items-center gap-2">
+        <span className={`lv-price truncate text-body-strong ${highlight ? "text-lv-gold-700" : "text-lv-text"}`}>
+          {value}
+        </span>
+        {onCopy ? (
+          <button
+            type="button"
+            onClick={() => onCopy(value, label.toLowerCase())}
+            aria-label={`Sao chép ${label}`}
+            className="shrink-0 rounded-control p-1 text-lv-muted transition-colors duration-button hover:bg-lv-surface hover:text-lv-gold-700"
+          >
+            <IconCopy size={16} />
+          </button>
+        ) : null}
+      </span>
     </div>
   );
 }

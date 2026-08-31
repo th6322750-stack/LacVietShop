@@ -10,7 +10,7 @@ const schema = z.object({ username: z.string().min(1).max(64), password: z.strin
 
 export async function GET() {
   const jar = await cookies();
-  return NextResponse.json({ ok: true, admin: adminForToken(jar.get(ADMIN_COOKIE)?.value) });
+  return NextResponse.json({ ok: true, admin: await adminForToken(jar.get(ADMIN_COOKIE)?.value) });
 }
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Thiếu tài khoản hoặc mật khẩu." }, { status: 400 });
   }
 
-  const session = loginAdmin(parsed.data.username, parsed.data.password);
+  const session = await loginAdmin(parsed.data.username, parsed.data.password);
   if (!session) {
     return NextResponse.json({ ok: false, error: "Tài khoản hoặc mật khẩu không đúng." }, { status: 401 });
   }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   const jar = await cookies();
-  logoutAdmin(jar.get(ADMIN_COOKIE)?.value);
+  await logoutAdmin(jar.get(ADMIN_COOKIE)?.value);
   const out = NextResponse.json({ ok: true });
   out.cookies.set(ADMIN_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
   return out;

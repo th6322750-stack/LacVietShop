@@ -70,7 +70,7 @@ export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
     return fallbackCatalog(res.error);
   }
 
-  const rules = readRules();
+  const rules = await readRules();
   const platforms = mapServicesToPlatforms(res.data, {
     usdToVnd: thatimConfig.usdToVnd,
     tierMultipliers,
