@@ -57,7 +57,7 @@ export function LoginView() {
               <Input
                 id="username"
                 autoComplete="username"
-                placeholder="admin"
+                placeholder="tên đăng nhập"
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);

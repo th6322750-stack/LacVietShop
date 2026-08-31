@@ -196,6 +196,20 @@ export interface ServiceOrder {
   note?: string | null;
 }
 
+/**
+ * Công tắc vận hành do quản trị bật/tắt.
+ *
+ * Phải nằm ở cơ sở dữ liệu chứ không phải biến môi trường: đổi biến môi trường
+ * là phải sửa tệp rồi khởi động lại máy chủ, quản trị không tự làm được, mà lúc
+ * ví nhà cung cấp hết tiền thì cần tắt ngay trong một cái bấm.
+ */
+export interface OpsSettings {
+  /** Bật: đơn dịch vụ tự đẩy sang nhà cung cấp. Tắt: đơn về hàng đợi chạy tay. */
+  autoPushOrders: boolean;
+  updatedAt: string;
+  updatedBy?: string;
+}
+
 export interface Deposit {
   id: string;
   accountId: string | null;
@@ -229,10 +243,12 @@ interface FileDb {
   productContent: ProductContent[];
   serviceOrders: ServiceOrder[];
   announcement: Announcement | null;
+  ops: OpsSettings | null;
 }
 
 const emptyFile = (): FileDb => ({
   announcement: null,
+  ops: null,
   serviceOrders: [],
   accounts: [],
   sessions: [],
@@ -388,6 +404,11 @@ function ensureSchema() {
       note text
     )`;
     await sql`create index if not exists service_orders_account on service_orders (account_id, created_at desc)`;
+    await sql`create table if not exists ops_settings (
+      id int primary key,
+      data jsonb not null,
+      updated_at timestamptz not null default now()
+    )`;
     await sql`create table if not exists announcement (
       id int primary key,
       data jsonb not null,
@@ -1072,6 +1093,30 @@ export async function updateServiceOrder(
   Object.assign(o, patch, { updatedAt: now });
   writeFile(db);
   return o;
+}
+
+// ---------------------------------------------------------------------------
+// Công tắc vận hành
+// ---------------------------------------------------------------------------
+export async function getOps(): Promise<OpsSettings | null> {
+  if (sql) {
+    await ensureSchema();
+    const rows = await sql`select data from ops_settings where id = 1`;
+    return rows[0] ? (rows[0].data as OpsSettings) : null;
+  }
+  return readFile().ops;
+}
+
+export async function putOps(o: OpsSettings) {
+  if (sql) {
+    await ensureSchema();
+    await sql`insert into ops_settings (id, data, updated_at) values (1, ${JSON.stringify(o)}::jsonb, now())
+      on conflict (id) do update set data = excluded.data, updated_at = now()`;
+    return;
+  }
+  const db = readFile();
+  db.ops = o;
+  writeFile(db);
 }
 
 // ---------------------------------------------------------------------------

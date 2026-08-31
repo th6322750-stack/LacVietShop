@@ -12,7 +12,6 @@ import {
   IconMenu2,
   IconPackage,
   IconPlugConnected,
-  IconRefresh,
   IconUsers,
   type Icon,
 } from "@tabler/icons-react";
@@ -22,7 +21,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Drawer, ConfirmDialog } from "@/components/ui/Overlay";
 import { Tooltip } from "@/components/ui/Popover";
-import { useToast } from "@/components/ui/Toast";
 import { useAdminSession, useRequireAdmin } from "@/lib/admin/session";
 import { useAdminStore } from "@/lib/admin/store";
 import { InfoCard } from "@/components/blocks/Cards";
@@ -117,10 +115,7 @@ function StorageWarning() {
 }
 
 function SidebarContent({ pathname, compact }: { pathname: string; compact: boolean }) {
-  const { can, logout } = useAdminSession();
-  const { reset } = useAdminStore();
-  const toast = useToast();
-  const [confirmReset, setConfirmReset] = React.useState(false);
+  const { logout } = useAdminSession();
   const [confirmLogout, setConfirmLogout] = React.useState(false);
 
   return (
@@ -196,18 +191,6 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
               <span className={cn("truncate", compact ? "hidden xl:inline" : "inline")}>Về trang khách hàng</span>
             </Link>
           </li>
-          {can("data.reset") ? (
-            <li>
-              <button
-                type="button"
-                onClick={() => setConfirmReset(true)}
-                className="flex w-full items-center gap-2.5 rounded-control px-2.5 py-2 text-left text-body text-lv-navy-700 transition-colors duration-button hover:bg-lv-bg hover:text-lv-text"
-              >
-                <IconRefresh size={19} className="shrink-0" />
-                <span className={cn("truncate", compact ? "hidden xl:inline" : "inline")}>Nạp lại dữ liệu gốc</span>
-              </button>
-            </li>
-          ) : null}
           <li>
             <button
               type="button"
@@ -222,18 +205,6 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
       </nav>
 
       <ConfirmDialog
-        open={confirmReset}
-        onClose={() => setConfirmReset(false)}
-        onConfirm={() => {
-          reset();
-          setConfirmReset(false);
-          toast.push({ tone: "success", title: "Đã nạp lại dữ liệu gốc" });
-        }}
-        title="Nạp lại dữ liệu gốc?"
-        message="Mọi thay đổi bạn đã thực hiện (trạng thái đơn, giá, số dư…) sẽ bị xoá và trả về bộ dữ liệu ban đầu."
-        confirmLabel="Nạp lại"
-      />
-      <ConfirmDialog
         open={confirmLogout}
         onClose={() => setConfirmLogout(false)}
         onConfirm={logout}
@@ -247,7 +218,6 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
 
 function AdminTopbar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { session } = useAdminSession();
-  const { hydrated } = useAdminStore();
 
   return (
     <header className="sticky top-0 z-20 h-topbar border-b border-lv-border bg-lv-surface/95 backdrop-blur">
@@ -267,9 +237,6 @@ function AdminTopbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Badge tone={hydrated ? "success" : "neutral"} className="hidden md:inline-flex">
-            {hydrated ? "localStorage" : "đang nạp"}
-          </Badge>
           <span className="flex items-center gap-2 rounded-control px-1.5 py-1">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lv-gold-100 text-small-strong text-lv-gold-700">
               {initialsOf(session?.name ?? "AD")}

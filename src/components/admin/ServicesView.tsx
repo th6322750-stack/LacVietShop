@@ -19,7 +19,7 @@ import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/compo
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { FieldMessage, Input, Label, Select } from "@/components/ui/Field";
+import { FieldMessage, Input, Label, Select, Switch } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Overlay";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminSession } from "@/lib/admin/session";
@@ -329,6 +329,8 @@ export function AdminServicesView({ embedded = false }: { embedded?: boolean } =
         />
       </div>
 
+      <OpsSwitch editable={editable} />
+
       <SectionCard
         title="Hệ số bán chung"
         description="Cộng thêm bao nhiêu phần trăm so với giá vốn, cho mọi dịch vụ chưa đặt giá riêng."
@@ -600,5 +602,124 @@ function PriceModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+/**
+ * Công tắc tự đẩy đơn sang nhà cung cấp.
+ *
+ * Tắt KHÔNG phải là ngừng bán: khách vẫn đặt được và vẫn bị trừ tiền, đơn rơi
+ * vào hàng đợi ở tab Đơn hàng để người trực chạy tay. Phải nói rõ điều này ngay
+ * cạnh công tắc, không thì có ngày tắt xong tưởng đã đóng cửa hàng.
+ */
+function OpsSwitch({ editable }: { editable: boolean }) {
+  const toast = useToast();
+  const [state, setState] = React.useState<{
+    on: boolean;
+    pending: number;
+    supplier: { balance?: number; currency?: string; error?: string };
+    updatedBy?: string;
+    updatedAt?: string;
+  } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    const res = await fetch("/api/admin/ops")
+      .then((r) => r.json())
+      .catch(() => null);
+    if (res?.ok) {
+      setState({
+        on: res.ops.autoPushOrders,
+        pending: res.pending ?? 0,
+        supplier: res.supplier ?? {},
+        updatedBy: res.ops.updatedBy,
+        updatedAt: res.ops.updatedAt,
+      });
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function doi(next: boolean) {
+    setBusy(true);
+    const res = await fetch("/api/admin/ops", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ autoPushOrders: next }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setBusy(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không đổi được", description: String(res.error) });
+      return;
+    }
+    await load();
+    toast.push({
+      tone: next ? "success" : "warning",
+      title: next ? "Đã bật tự đẩy đơn" : "Đã tắt tự đẩy đơn",
+      description: next
+        ? "Đơn mới sẽ chạy thẳng sang nhà cung cấp."
+        : "Đơn mới vẫn nhận nhưng nằm chờ ở tab Đơn hàng để chạy tay.",
+    });
+  }
+
+  const supplier = state?.supplier;
+
+  return (
+    <SectionCard
+      title="Nhận đơn dịch vụ"
+      description="Đơn khách đặt có tự đẩy sang nhà cung cấp hay nằm chờ để chạy tay."
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <Switch
+            id="ops-autopush"
+            checked={state?.on ?? false}
+            disabled={!editable || busy || state === null}
+            onCheckedChange={(v) => void doi(v)}
+            label="Tự đẩy đơn sang nhà cung cấp"
+            description={
+              state === null
+                ? "Đang đọc trạng thái…"
+                : state.on
+                  ? "Đơn mới chạy thẳng sang nhà cung cấp và tiêu tiền trong ví bên đó."
+                  : "Đơn mới vẫn nhận và vẫn trừ tiền khách, nhưng nằm chờ ở tab Đơn hàng."
+            }
+          />
+          {state?.updatedBy ? (
+            <p className="mt-2 text-small text-lv-muted">
+              Đổi lần cuối bởi {state.updatedBy}
+              {state.updatedAt ? ` · ${new Date(state.updatedAt).toLocaleString("vi-VN")}` : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="w-[220px] shrink-0 rounded-card border border-lv-border bg-lv-bg p-3">
+          <p className="text-small text-lv-muted">Ví nhà cung cấp</p>
+          <p className="lv-price text-body-strong text-lv-text">
+            {supplier?.error
+              ? "—"
+              : supplier?.balance !== undefined
+                ? `${supplier.balance} ${supplier.currency ?? ""}`.trim()
+                : "…"}
+          </p>
+          {supplier?.error ? <p className="mt-1 text-small text-lv-danger">{supplier.error}</p> : null}
+          <p className="mt-2 text-small text-lv-muted">
+            {state ? `${state.pending} đơn đang chờ xử lý` : ""}
+          </p>
+        </div>
+      </div>
+
+      {state && !state.on && state.pending > 0 ? (
+        <FieldMessage tone="warning">
+          Đang có {state.pending} đơn nằm chờ. Nạp tiền vào ví nhà cung cấp rồi bật công tắc, sau đó vào tab Đơn
+          hàng bấm “Đẩy lại” cho từng đơn.
+        </FieldMessage>
+      ) : null}
+    </SectionCard>
   );
 }

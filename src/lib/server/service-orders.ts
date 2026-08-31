@@ -11,7 +11,8 @@
  */
 import { addBalance, findServiceOrder, listServiceOrders, updateServiceOrder, type ServiceOrder } from "./db";
 import { addOrder, getOrderStatus } from "@/lib/thatim/client";
-import { isThatimConfigured, thatimConfig } from "@/lib/thatim/config";
+import { isThatimConfigured } from "@/lib/thatim/config";
+import { autoPushEnabled } from "./ops";
 
 if (typeof window !== "undefined") {
   throw new Error("src/lib/server/service-orders.ts chỉ được dùng phía server.");
@@ -42,8 +43,8 @@ export async function pushServiceOrder(id: string): Promise<{ ok: true; order: S
   if (order.providerOrderId) return { ok: true, order };
   if (FINAL.includes(order.status)) return { ok: false, error: "Đơn đã chốt, không đẩy được nữa.", order };
 
-  if (!isThatimConfigured() || !thatimConfig.allowOrders) {
-    const why = !isThatimConfigured() ? "Chưa cấu hình khoá API." : "Đẩy đơn thật đang tắt.";
+  if (!isThatimConfigured() || !(await autoPushEnabled())) {
+    const why = !isThatimConfigured() ? "Chưa cấu hình khoá API." : "Quản trị đang tắt tự đẩy đơn.";
     const next = await updateServiceOrder(id, { status: "pending", note: `Chờ xử lý tay: ${why}` });
     return { ok: false, error: why, order: next };
   }

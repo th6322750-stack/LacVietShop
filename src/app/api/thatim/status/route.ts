@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { getBalance } from "@/lib/thatim/client";
 import { getLiveCatalog } from "@/lib/thatim/catalog";
 import { isThatimConfigured, maskKey, thatimConfig } from "@/lib/thatim/config";
+import { autoPushEnabled } from "@/lib/server/ops";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
     keyMasked: maskKey(thatimConfig.key),
     usdToVnd: thatimConfig.usdToVnd,
     markup: thatimConfig.markup,
-    allowOrders: thatimConfig.allowOrders,
+    allowOrders: await autoPushEnabled(),
     cacheSeconds: thatimConfig.cacheSeconds,
   };
 
