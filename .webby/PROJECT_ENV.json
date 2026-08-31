@@ -67,7 +67,7 @@
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
-    "assets": "6 TODO_ASSET: payment.bidv, payment.momo, deposit.realQr, 3 logo nền tảng chỉ có trong API (LinkedIn/Bigo/Discord)",
+    "assets": "6 TODO_ASSET: payment.vietinbank, payment.momo, deposit.realQr, 3 logo nền tảng chỉ có trong API (LinkedIn/Bigo/Discord)",
     "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
     "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
@@ -199,7 +199,7 @@
     "demoLabels": "Đã gỡ nhãn DEMO/mô phỏng trang trí khỏi giao diện theo yêu cầu. GIỮ LẠI câu báo khi đơn chưa thực sự đẩy sang nhà cung cấp — bỏ câu đó thì khách tưởng đã đặt hàng xong.",
     "homeMetrics": "Số liệu trang chủ hạ về mức đơn vị mới mở (186 đơn / 47.200 lượt / 64 khách)",
     "removedSections": "Bỏ khối Câu hỏi thường gặp ở trang sản phẩm và dải DEMO ở trang Nạp tiền",
-    "paymentMethods": "Chỉ còn BIDV (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT"
+    "paymentMethods": "Chỉ còn VietinBank (chuyển khoản) và MoMo (ví); bỏ Vietcombank, Techcombank, MB Bank, ZaloPay, Viettel Money, USDT"
   },
   "plannedPaymentGateway": "SePay — tự cộng số dư qua webhook biến động số dư ngân hàng (USER chốt 2026-08-31, chưa làm)"
 }

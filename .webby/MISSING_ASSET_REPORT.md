@@ -78,13 +78,13 @@ status: OPEN
 
 ```text
 NEED_ASSET
-key: payment.bidv
+key: payment.vietinbank
 route: /deposit,/cashflows
 section: Thẻ phương thức thanh toán
 role: PAYMENT_MARK
-needed: Logo chính thức BIDV đúng bản quyền
+needed: Logo chính thức VietinBank đúng bản quyền
 ratio/size: ~2:1 (cao 24px)
-placeholder: <AssetImage assetKey="payment.bidv" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.bidv")
+placeholder: <AssetImage assetKey="payment.vietinbank" /> — src/components/blocks/AssetImage.tsx (ô nét đứt, data-todo-asset="payment.vietinbank")
 reference_target: references/ui-approved/08-deposit.webp
 reference_original: clone-thatim-vn: deposit_addfunds.html
 status: OPEN

@@ -218,7 +218,7 @@ for (const p of productKeys) {
 
 /** Cổng thanh toán — 7 mark, CỐ Ý để trống tới khi duyệt cấu hình thanh toán thật (§D). */
 const paymentKeys: { key: string; label: string; src: string | null }[] = [
-  { key: "payment.bidv", label: "BIDV", src: null },
+  { key: "payment.vietinbank", label: "VietinBank", src: null },
   { key: "payment.momo", label: "MoMo", src: null },
 ];
 

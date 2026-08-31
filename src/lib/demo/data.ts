@@ -142,10 +142,10 @@ export const spendingByCategory = [
 
 export const paymentMethods: PaymentMethod[] = [
   {
-    id: "bidv",
-    name: "BIDV",
+    id: "vietinbank",
+    name: "VietinBank",
     kind: "bank",
-    assetKey: "payment.bidv",
+    assetKey: "payment.vietinbank",
     detail: "Chuyển khoản 24/7",
     processingTime: "1 – 5 phút",
     feeNote: "Miễn phí",
@@ -164,11 +164,11 @@ export const paymentMethods: PaymentMethod[] = [
 ];
 
 export const recentDeposits = [
-  { id: "DP-2201", method: "BIDV", amount: 2_000_000, status: "success", createdAt: "2026-08-30T08:02:00.000Z" },
+  { id: "DP-2201", method: "VietinBank", amount: 2_000_000, status: "success", createdAt: "2026-08-30T08:02:00.000Z" },
   { id: "DP-2198", method: "MoMo", amount: 5_000_000, status: "success", createdAt: "2026-08-28T13:44:00.000Z" },
-  { id: "DP-2190", method: "BIDV", amount: 3_000_000, status: "success", createdAt: "2026-08-25T19:26:00.000Z" },
+  { id: "DP-2190", method: "VietinBank", amount: 3_000_000, status: "success", createdAt: "2026-08-25T19:26:00.000Z" },
   { id: "DP-2187", method: "MoMo", amount: 500_000, status: "pending", createdAt: "2026-08-24T10:12:00.000Z" },
-  { id: "DP-2180", method: "BIDV", amount: 1_200_000, status: "failed", createdAt: "2026-08-22T21:03:00.000Z" },
+  { id: "DP-2180", method: "VietinBank", amount: 1_200_000, status: "failed", createdAt: "2026-08-22T21:03:00.000Z" },
 ] as const;
 
 export const activity: ActivityItem[] = [
@@ -184,7 +184,7 @@ export const activity: ActivityItem[] = [
     id: "AC-2",
     kind: "payment",
     title: "Nạp tiền thành công",
-    detail: "Chuyển khoản BIDV · 2.000.000 ₫",
+    detail: "Chuyển khoản VietinBank · 2.000.000 ₫",
     createdAt: "2026-08-30T08:02:00.000Z",
     status: "success",
   },
