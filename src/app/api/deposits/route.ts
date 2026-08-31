@@ -10,7 +10,7 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import { accountForToken, SESSION_COOKIE } from "@/lib/server/auth";
 import { insertDeposit, listDeposits } from "@/lib/server/db";
-import { newDepositCode, qrImageUrl, sepayConfig, sepayReady } from "@/lib/server/sepay";
+import { newDepositCode, qrImageUrl, sepayConfig, sepayReady, transferContent } from "@/lib/server/sepay";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       bank: sepayConfig.bank,
       accountNumber: sepayConfig.accountNumber,
       accountName: sepayConfig.accountName,
-      content: code,
+      content: transferContent(code),
       amount: parsed.data.amount,
       qrUrl: qrImageUrl(parsed.data.amount, code),
     },

@@ -11,6 +11,8 @@
  *   SEPAY_ACCOUNT_NUMBER  số tài khoản nhận tiền đã liên kết trong SePay
  *   SEPAY_BANK            mã ngân hàng cho ảnh QR, ví dụ VietinBank
  *   SEPAY_ACCOUNT_NAME    tên chủ tài khoản, chỉ để hiển thị
+ *   SEPAY_CONTENT_PREFIX  tiền tố bắt buộc trong nội dung chuyển khoản, mặc định
+ *                         SEVQR (VietinBank yêu cầu). Ngân hàng khác không cần thì để trống.
  */
 import crypto from "node:crypto";
 
@@ -23,7 +25,22 @@ export const sepayConfig = {
   accountNumber: process.env.SEPAY_ACCOUNT_NUMBER?.trim() ?? "",
   bank: process.env.SEPAY_BANK?.trim() || "VietinBank",
   accountName: process.env.SEPAY_ACCOUNT_NAME?.trim() ?? "",
+  /**
+   * Tiền tố bắt buộc trong nội dung chuyển khoản.
+   *
+   * VietinBank chỉ đẩy biến động số dư sang SePay khi nội dung BẮT ĐẦU bằng
+   * "SEVQR". Thiếu tiền tố này thì tiền vẫn về tài khoản nhưng SePay không hề
+   * biết, webhook không bắn, số dư trên web không cộng.
+   *
+   * Ngân hàng khác không đòi thì để trống bằng SEPAY_CONTENT_PREFIX="".
+   */
+  contentPrefix: (process.env.SEPAY_CONTENT_PREFIX ?? "SEVQR").trim(),
 };
+
+/** Nội dung chuyển khoản đầy đủ mà khách phải giữ nguyên. */
+export function transferContent(code: string) {
+  return sepayConfig.contentPrefix ? `${sepayConfig.contentPrefix} ${code}` : code;
+}
 
 export const sepayReady = () => Boolean(sepayConfig.accountNumber);
 export const sepayWebhookReady = () => Boolean(sepayConfig.webhookKey);
@@ -55,7 +72,8 @@ export function qrImageUrl(amount: number, code: string) {
     acc: sepayConfig.accountNumber,
     bank: sepayConfig.bank,
     amount: String(Math.round(amount)),
-    des: code,
+    // Phải là nội dung ĐẦY ĐỦ kèm tiền tố, không phải mỗi mã.
+    des: transferContent(code),
     template: "compact",
   });
   return `https://qr.sepay.vn/img?${params.toString()}`;

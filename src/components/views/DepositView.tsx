@@ -262,9 +262,10 @@ export function DepositView() {
                 </div>
               </div>
 
-              <InfoCard title="Nội dung phải giữ nguyên" tone="warning" icon={<IconAlertTriangle size={16} />}>
-                Thiếu hoặc sai mã <strong>{transfer.content}</strong> thì hệ thống không biết tiền của ai và số dư sẽ
-                không tự cộng. Trang này tự kiểm tra mỗi vài giây, chuyển xong cứ để mở.
+              <InfoCard title="Nội dung phải giữ nguyên cả dòng" tone="warning" icon={<IconAlertTriangle size={16} />}>
+                Chép đúng <strong>{transfer.content}</strong>, đừng bỏ chữ nào. Ngân hàng chỉ báo giao dịch về hệ
+                thống khi nội dung còn nguyên phần đầu, và phần mã phía sau mới cho biết tiền của ai — thiếu một
+                trong hai thì số dư không tự cộng. Trang này tự kiểm tra mỗi vài giây, chuyển xong cứ để mở.
               </InfoCard>
 
               <div className="mt-3 flex flex-wrap gap-2">
