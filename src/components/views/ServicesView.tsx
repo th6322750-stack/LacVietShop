@@ -344,41 +344,30 @@ export function ServicesView({
               </p>
             </div>
 
-            {/* Thông số máy chủ — chỉ hiện trường mà nguồn có ghi */}
-            <div className="mt-4 grid gap-3 rounded-card border border-lv-border bg-lv-bg p-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Thông số máy chủ — một dải gọn, chỉ hiện trường mà nguồn có ghi */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-card border border-lv-border bg-lv-bg px-3 py-2 text-small">
+              <ServerFact icon={<IconWallet size={14} />} label="Đơn giá" value={`${formatUnitPrice(unitPrice)}/tương tác`} />
               <ServerFact
-                icon={<IconWallet size={16} />}
-                label="Đơn giá"
-                value={`${formatUnitPrice(unitPrice)}/tương tác`}
-              />
-              <ServerFact
-                icon={<IconInfoCircle size={16} />}
+                icon={<IconInfoCircle size={14} />}
                 label="Giới hạn"
                 value={`${formatNumber(server.min)} – ${formatNumber(server.max)}`}
               />
-              {server.speed ? <ServerFact icon={<IconRefresh size={16} />} label="Tốc độ" value={server.speed} /> : null}
+              {server.speed ? <ServerFact icon={<IconRefresh size={14} />} label="Tốc độ" value={server.speed} /> : null}
               {server.refill ? (
-                <ServerFact icon={<IconShieldCheck size={16} />} label="Bảo hành" value={server.refill} />
+                <ServerFact icon={<IconShieldCheck size={14} />} label="Bảo hành" value={server.refill} />
               ) : null}
               {server.sourceNote ? (
-                <ServerFact icon={<IconServer2 size={16} />} label="Nguồn tài nguyên" value={server.sourceNote} />
+                <ServerFact icon={<IconServer2 size={14} />} label="Nguồn" value={server.sourceNote} />
               ) : null}
               {server.startTime ? (
-                <ServerFact icon={<IconClockHour4 size={16} />} label="Bắt đầu" value={server.startTime} />
+                <ServerFact icon={<IconClockHour4 size={14} />} label="Bắt đầu" value={server.startTime} />
               ) : null}
-              {server.tags.length > 0 ? (
-                <div className="min-w-0 sm:col-span-2 lg:col-span-4">
-                  <p className="text-small text-lv-muted">Ghi chú máy chủ</p>
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {server.tags.map((t) => (
-                      <Badge key={t} tone="gold">
-                        {t}
-                      </Badge>
-                    ))}
-                    {!server.available ? <Badge tone="danger">Đang bảo trì</Badge> : null}
-                  </div>
-                </div>
-              ) : null}
+              {server.tags.map((t) => (
+                <Badge key={t} tone="gold">
+                  {t}
+                </Badge>
+              ))}
+              {!server.available ? <Badge tone="danger">Đang bảo trì</Badge> : null}
             </div>
 
             {/* Cảnh báo pháp lý — luôn giữ màu đỏ theo §8 */}
@@ -630,12 +619,12 @@ function ServerOption({
 
 function ServerFact({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="min-w-0">
-      <p className="flex items-center gap-1.5 text-small text-lv-muted">
+    <span className="flex min-w-0 items-center gap-1.5">
+      <span className="flex shrink-0 items-center gap-1 text-lv-muted">
         {icon}
         {label}
-      </p>
-      <p className="mt-0.5 break-words text-body-strong text-lv-text">{value}</p>
-    </div>
+      </span>
+      <span className="min-w-0 break-words font-semibold text-lv-text">{value}</span>
+    </span>
   );
 }
