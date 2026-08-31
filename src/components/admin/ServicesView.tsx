@@ -1,7 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { IconCheck, IconCoins, IconEdit, IconFileExport, IconLayoutGrid, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import {
+  IconArrowsHorizontal,
+  IconCheck,
+  IconCoins,
+  IconEdit,
+  IconFileExport,
+  IconHash,
+  IconLayoutGrid,
+  IconPlus,
+  IconServer2,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/components/blocks/DataTable";
@@ -138,14 +150,31 @@ export function AdminServicesView() {
       key: "service",
       header: "Dịch vụ",
       cell: (s) => (
-        <div className="flex min-w-0 items-center gap-2">
-          <AssetImage assetKey={s.platformAssetKey} className="h-8 w-8 shrink-0" rounded="control" />
-          <div className="min-w-0 max-w-[280px]">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <AssetImage assetKey={s.platformAssetKey} className="mt-0.5 h-9 w-9 shrink-0" rounded="control" />
+          <div className="min-w-0 max-w-[420px] space-y-1">
             <p className="truncate text-body-strong text-lv-text">{s.serviceName}</p>
-            <p className="truncate text-small text-lv-muted">
-              {s.platformName} · {s.code}
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-small text-lv-muted">
+              <span className="flex items-center gap-1">
+                <IconLayoutGrid size={13} className="shrink-0" />
+                {s.platformName}
+              </span>
+              <span className="flex items-center gap-1">
+                <IconHash size={13} className="shrink-0" />
+                {s.code}
+              </span>
+              <span className="flex items-center gap-1">
+                <IconArrowsHorizontal size={13} className="shrink-0" />
+                {formatNumber(s.min)} – {formatNumber(s.max)}
+              </span>
             </p>
-            <p className="truncate text-small text-lv-muted">{s.serverName}</p>
+            {/* Tên đầy đủ mới là chỗ phân biệt các máy chủ cùng nhóm dịch vụ. */}
+            {s.serverFullName ? (
+              <p className="flex items-start gap-1 text-small text-lv-muted" title={s.serverFullName}>
+                <IconServer2 size={13} className="mt-0.5 shrink-0" />
+                <span className="truncate">{s.serverFullName}</span>
+              </p>
+            ) : null}
           </div>
         </div>
       ),
@@ -160,18 +189,6 @@ export function AdminServicesView() {
         </span>
       ),
     })),
-    {
-      key: "limits",
-      header: "MIN / MAX",
-      align: "right",
-      cell: (s) => (
-        <span className="text-small text-lv-muted">
-          {formatNumber(s.min)}
-          <br />
-          {formatNumber(s.max)}
-        </span>
-      ),
-    },
     {
       key: "active",
       header: "Bật",
