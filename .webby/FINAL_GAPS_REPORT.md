@@ -6,7 +6,7 @@ Lượt dựng đầu tiên cho 20 route đã hoàn tất. Toàn bộ giao diệ
 Không có hiệu ứng phụ thật nào được thực hiện: không chuyển tiền, không tạo tài khoản,
 không gọi API bên ngoài, không tạo tên miền/DNS.
 
-- Tổng số gap còn mở: **13** (1 đã chuyển sang PARTIAL: backend.orderApi)
+- Tổng số gap còn mở: **13** (2 đã chuyển sang PARTIAL: backend.orderApi, auth.provider)
 - Ranh giới adapter: `src/lib/demo/config.ts` (`commerceAdapter`, `demoBrand`, `demoPaymentNotice`)
 - Dữ liệu trình diễn: `src/lib/demo/data.ts`, `src/lib/demo/catalog.ts`
 - Biến môi trường dự kiến: `.env.example` (chưa có giá trị thật nào được commit)
@@ -58,11 +58,17 @@ status: OPEN
 
 GAP
 key: auth.provider
-area: auth
-needed: Cơ chế đăng nhập/đăng ký, quản lý phiên và luồng khôi phục mật khẩu
-current_demo_source: Chưa có màn đăng nhập; toàn app giả định một tài khoản DEMO trong src/lib/demo/data.ts
-production_risk_if_unresolved: Mọi người truy cập đều thấy cùng một dữ liệu; không có ranh giới bảo mật giữa các tài khoản
-status: OPEN
+area: backend
+needed: Backend xác thực thật: lưu tài khoản phía máy chủ, băm mật khẩu bằng thuật toán chậm
+  (bcrypt/argon2), xác minh email + số điện thoại, khôi phục mật khẩu, phiên có hạn và 2FA
+current_demo_source: đã có ba màn /register, /login, /forgot-password (src/components/views/auth/*)
+  chạy trên src/lib/customer/auth.tsx — tài khoản nằm trong localStorage của TỪNG trình duyệt,
+  mật khẩu băm SHA-256 ở phía client. Đây là luồng giao diện hoàn chỉnh, KHÔNG phải bảo mật:
+  ai mở DevTools cũng sửa được. Trang /forgot-password nói thẳng là chưa gửi được email.
+  Các route khách hiện vẫn xem được khi chưa đăng nhập (chưa bật chặn).
+production_risk_if_unresolved: Tài khoản không dùng được liên máy, mật khẩu không được bảo vệ đúng cách,
+  không khôi phục được truy cập, và ai cũng vào thẳng được panel khách
+status: PARTIAL
 
 GAP
 key: backend.orderApi

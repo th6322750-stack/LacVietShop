@@ -60,8 +60,8 @@
   "checksRun": {
     "typecheck": "pnpm typecheck — PASS",
     "lint": "pnpm lint — PASS (0 warning, 0 error)",
-    "build": "pnpm build — PASS (30 route, gồm 3 route API proxy)",
-    "routeSmoke": "4 bộ Playwright — 104 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25)",
+    "build": "pnpm build — PASS (33 route)",
+    "routeSmoke": "5 bộ Playwright — 128 PASS / 0 FAIL (khách 57, quản trị 16, thêm mới 6, API+popup 25, đăng ký/đăng nhập 24)",
     "responsive": "390/576/768/992/1200/1440 — không route nào tràn ngang",
     "a11y": "liên kết bỏ qua điều hướng, điều hướng tab bằng bàn phím, focus-visible toàn cục",
     "secretScan": "0 chuỗi bí mật/nhận dạng nào bị sao chép từ repo tham chiếu",
@@ -69,7 +69,7 @@
     "favicon": "trình duyệt dùng icon SVG đã khai báo, không còn yêu cầu /favicon.ico",
     "supplierApi": "action=balance và action=services gọi thật thành công; 423 dịch vụ, quy đổi giá khớp 25/25 máy chủ đối chiếu"
   },
-  "routesImplemented": 30,
+  "routesImplemented": 33,
   "productTemplate": "src/components/product/ProductDetail.tsx — 1 template cho 8 biến thể",
   "missingAssetKeys": 11,
   "openProductionGaps": 13,
@@ -161,5 +161,19 @@
     "/admin/users",
     "/admin/announcement",
     "/admin/api"
-  ]
+  ],
+  "customerAuth": {
+    "date": "2026-08-31",
+    "requestedBy": "USER",
+    "routes": [
+      "/register",
+      "/login",
+      "/forgot-password"
+    ],
+    "store": "src/lib/customer/auth.tsx — localStorage theo từng trình duyệt",
+    "passwordHandling": "SHA-256(muối + mật khẩu) phía client, muối ngẫu nhiên 16 byte mỗi tài khoản",
+    "notSecurity": "Băm phía trình duyệt KHÔNG phải bảo mật; chỉ để không lưu mật khẩu dạng đọc được. Xác thực thật phải ở server (gap auth.provider).",
+    "panelGuard": "CHƯA bật — các route khách vẫn xem được khi chưa đăng nhập, để bản trình diễn duyệt được ngay",
+    "topbar": "Chưa đăng nhập hiện nút Đăng nhập/Đăng ký; đã đăng nhập hiện tên phiên + nút đăng xuất"
+  }
 }

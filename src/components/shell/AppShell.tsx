@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   IconBell,
   IconHeadset,
+  IconLogout,
   IconMenu2,
   IconPlus,
   IconSearch,
@@ -19,6 +20,7 @@ import { Button, LinkButton } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Overlay";
 import { Tooltip } from "@/components/ui/Popover";
 import { Badge } from "@/components/ui/Badge";
+import { useCustomerAuth } from "@/lib/customer/auth";
 import { isActivePath, navGroups, navItems } from "./nav-items";
 
 /**
@@ -204,21 +206,59 @@ function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
             <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-lv-danger" aria-hidden />
           </Button>
 
-          <Link
-            href="/account"
-            className="flex items-center gap-2 rounded-control px-1.5 py-1 transition-colors duration-button hover:bg-lv-bg"
-          >
-            <AssetImage assetKey="account.defaultAvatar" className="h-8 w-8" rounded="full" label={account.displayName} />
-            <span className="hidden min-w-0 text-left lg:block">
-              <span className="block truncate text-body-strong leading-tight text-lv-text">
-                {account.displayName}
-              </span>
-              <span className="block text-small text-lv-muted">{account.emailMasked}</span>
-            </span>
-          </Link>
+          <AccountCorner />
         </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * Góc tài khoản trên topbar.
+ * Chưa đăng nhập -> hai nút Đăng nhập / Đăng ký.
+ * Đã đăng nhập  -> tên thật của phiên, kèm nút đăng xuất.
+ */
+function AccountCorner() {
+  const { session, ready, logout } = useCustomerAuth();
+
+  // Chưa đọc xong localStorage thì giữ chỗ, tránh nháy từ nút sang tên rồi ngược lại.
+  if (!ready) return <span className="lv-skeleton h-10 w-24 rounded-control" />;
+
+  if (!session) {
+    return (
+      <span className="flex items-center gap-2">
+        <LinkButton href="/login" variant="secondary" size="sm">
+          Đăng nhập
+        </LinkButton>
+        <LinkButton href="/register" size="sm" className="hidden sm:inline-flex">
+          Đăng ký
+        </LinkButton>
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-1">
+      <Link
+        href="/account"
+        className="flex items-center gap-2 rounded-control px-1.5 py-1 transition-colors duration-button hover:bg-lv-bg"
+      >
+        <AssetImage assetKey="account.defaultAvatar" className="h-8 w-8" rounded="full" label={session.name} />
+        <span className="hidden min-w-0 text-left lg:block">
+          <span className="block truncate text-body-strong leading-tight text-lv-text">{session.name}</span>
+          <span className="block truncate text-small text-lv-muted">{session.email}</span>
+        </span>
+      </Link>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Đăng xuất"
+        title="Đăng xuất"
+        className="h-10 w-10 p-0"
+        icon={<IconLogout size={18} />}
+        onClick={logout}
+      />
+    </span>
   );
 }
 
