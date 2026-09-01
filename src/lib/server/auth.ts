@@ -71,10 +71,8 @@ export function newToken() {
 // Đăng ký / đăng nhập
 // ---------------------------------------------------------------------------
 export async function registerAccount(input: {
-  name: string;
   username: string;
   email: string;
-  phone: string;
   password: string;
 }): Promise<{ ok: true; account: PublicAccount; token: string } | Fail> {
   const username = input.username.trim().toLowerCase();
@@ -89,10 +87,13 @@ export async function registerAccount(input: {
 
   const account: Account = {
     id: `kh-${crypto.randomBytes(8).toString("hex")}`,
-    name: input.name.trim(),
+    // Chưa hỏi họ tên lúc đăng ký nên tạm lấy tên đăng nhập làm tên hiển thị;
+    // khách đổi được ở trang Tài khoản.
+    name: username,
     username,
     email,
-    phone: input.phone.trim(),
+    // Số điện thoại để trống, khách bổ sung ở trang Tài khoản nếu muốn.
+    phone: "",
     passwordHash: await bcrypt.hash(input.password, BCRYPT_ROUNDS),
     balance: 0,
     createdAt: new Date().toISOString(),

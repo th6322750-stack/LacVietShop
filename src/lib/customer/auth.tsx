@@ -25,10 +25,8 @@ export interface CustomerSession {
 }
 
 export interface RegisterInput {
-  name: string;
   username: string;
   email: string;
-  phone: string;
   password: string;
 }
 

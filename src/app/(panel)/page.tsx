@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   IconArrowRight,
-  IconBolt,
-  IconCoins,
-  IconShieldCheck,
   IconSparkles,
-  IconUsers,
-  IconClipboardCheck,
 } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
@@ -22,23 +18,31 @@ export const metadata: Metadata = {
   description: demoBrand.tagline,
 };
 
-const metricIcons = [IconClipboardCheck, IconBolt, IconUsers];
+/**
+ * Icon riêng của Lạc Việt (bộ Mẫu 10). Ảnh đã có nền pastel sẵn nên thẻ KPI
+ * không bọc thêm khung nữa, tránh hai lớp nền chồng nhau.
+ */
+const metricIcons = [
+  "/assets/icons/nen_tang_phuc_vu.webp",
+  "/assets/icons/dich_vu_dang_ban.webp",
+  "/assets/icons/san_pham_premium.webp",
+];
 
 const commitments = [
   {
     title: "Nguồn tương tác thật",
     detail: "Ưu tiên nguồn người dùng Việt, hạn chế tụt và có bảo hành rõ ràng theo từng máy chủ.",
-    icon: IconShieldCheck,
+    icon: "/assets/icons/nguon_tuong_tac_that.webp",
   },
   {
     title: "Xử lý tự động",
     detail: "Đơn được đẩy vào hàng đợi ngay sau khi tạo, theo dõi tiến độ theo thời gian thực.",
-    icon: IconBolt,
+    icon: "/assets/icons/xu_ly_tu_dong.webp",
   },
   {
     title: "Giá minh bạch",
     detail: "Đơn giá và giới hạn hiển thị rõ trước khi đặt, không phát sinh phí ẩn.",
-    icon: IconCoins,
+    icon: "/assets/icons/gia_minh_bach.webp",
   },
 ];
 
@@ -102,7 +106,7 @@ export default function HomePage() {
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
               {commitments.map((c) => (
                 <div key={c.title} className="flex items-center gap-2">
-                  <c.icon size={18} className="text-lv-gold-600" aria-hidden />
+                  <Image src={c.icon} alt="" width={26} height={26} className="h-[26px] w-[26px] shrink-0" />
                   <dt className="text-body-strong text-lv-navy-700">{c.title}</dt>
                 </div>
               ))}
@@ -113,19 +117,16 @@ export default function HomePage() {
 
       {/* Quy mô danh mục — đếm thẳng từ danh mục đang bán, không phải số ước lượng. */}
       <section aria-label="Quy mô danh mục" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {catalogMetrics.map((m, i) => {
-          const Icon = metricIcons[i];
-          return (
-            <StatCard
-              key={m.key}
-              label={m.label}
-              value={formatNumber(m.value)}
-              suffix={m.suffix}
-              icon={<Icon size={20} />}
-              tone={i % 2 === 0 ? "gold" : "navy"}
-            />
-          );
-        })}
+        {catalogMetrics.map((m, i) => (
+          <StatCard
+            key={m.key}
+            label={m.label}
+            value={formatNumber(m.value)}
+            suffix={m.suffix}
+            iconBare
+            icon={<Image src={metricIcons[i]} alt="" width={48} height={48} className="h-12 w-12" />}
+          />
+        ))}
       </section>
 
       {/* Dịch vụ nổi bật theo nền tảng — chỉ 8 nền tảng trong nước nhiều dịch vụ

@@ -1,11 +1,14 @@
 import { z } from "zod";
 
-/** Cùng bộ luật với form ở trình duyệt — trình duyệt kiểm cho nhanh, server kiểm để chắc. */
+/**
+ * Đăng ký chỉ hỏi ba thứ: tên đăng nhập, email, mật khẩu.
+ *
+ * Bỏ họ tên và số điện thoại vì mỗi ô thêm là thêm một cớ để khách bỏ dở.
+ * Ai muốn điền thì vào trang Tài khoản bổ sung sau.
+ */
 export const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80),
   username: z.string().trim().min(4).max(24).regex(/^[a-zA-Z0-9_]+$/),
   email: z.string().trim().email().max(160),
-  phone: z.string().trim().regex(/^0\d{9}$/),
   password: z.string().min(8).max(128),
 });
 

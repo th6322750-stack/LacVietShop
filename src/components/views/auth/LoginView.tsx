@@ -61,7 +61,7 @@ export function CustomerLoginView() {
           <Input
             id="identifier"
             autoComplete="username"
-            placeholder="nguyenvana"
+            placeholder="camonquykhach"
             value={identifier}
             onChange={(e) => {
               setIdentifier(e.target.value);

@@ -14,7 +14,12 @@ export const dynamic = "force-dynamic";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Tên hiển thị tối thiểu 2 ký tự.").max(60, "Tên hiển thị tối đa 60 ký tự."),
-  phone: z.string().trim().regex(/^0\d{9}$/u, "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0."),
+  // Để trống được: khách đăng ký không phải nhập số, ai muốn thì bổ sung sau.
+  phone: z
+    .string()
+    .trim()
+    .max(15)
+    .refine((v) => v === "" || /^0[0-9]{9}$/.test(v), "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0."),
 });
 
 export async function POST(request: Request) {

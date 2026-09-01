@@ -105,7 +105,7 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
           {/* Thanh bên hẹp thì logo tự co lại cho vừa, không tràn ra ngoài. */}
           <AssetImage
             assetKey="brand.logoHorizontal"
-            className={cn("h-9 w-full", compact ? "max-w-[150px]" : "max-w-[170px]")}
+            className={cn("h-12 w-full", compact ? "max-w-[168px]" : "max-w-[190px]")}
             rounded="none"
             showLabel
           />
@@ -319,7 +319,7 @@ function Footer() {
       <div className="mx-auto flex max-w-shell flex-wrap items-center justify-between gap-3 px-gutter-m py-5 xl:px-gutter">
         <div className="flex items-center gap-3">
           <span className="lv-logo rounded-control">
-            <AssetImage assetKey="brand.logoHorizontal" className="h-7 w-[132px]" rounded="none" showLabel />
+            <AssetImage assetKey="brand.logoHorizontal" className="h-9 w-[168px]" rounded="none" showLabel />
           </span>
         </div>
         <p className="text-small text-lv-muted">

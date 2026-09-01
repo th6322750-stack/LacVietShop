@@ -42,6 +42,7 @@ export function StatCard({
   value,
   suffix,
   icon,
+  iconBare = false,
   trend,
   tone = "gold",
   hint,
@@ -50,6 +51,11 @@ export function StatCard({
   value: React.ReactNode;
   suffix?: string;
   icon?: React.ReactNode;
+  /**
+   * Icon đã có nền riêng (ảnh minh hoạ) thì bỏ khung nền của thẻ đi, không thì
+   * hai lớp nền chồng nhau trông rất bẩn.
+   */
+  iconBare?: boolean;
   trend?: number;
   tone?: "gold" | "navy" | "success" | "info" | "danger";
   hint?: string;
@@ -74,7 +80,12 @@ export function StatCard({
           {hint ? <p className="mt-1 text-small text-lv-muted">{hint}</p> : null}
         </div>
         {icon ? (
-          <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-card border", toneClass)}>
+          <span
+            className={cn(
+              "flex shrink-0 items-center justify-center",
+              iconBare ? "h-12 w-12" : cn("h-11 w-11 rounded-card border", toneClass),
+            )}
+          >
             {icon}
           </span>
         ) : null}

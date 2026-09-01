@@ -27,7 +27,11 @@ import { formatDate, formatDateTime, formatMoney } from "@/lib/utils";
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Tên hiển thị tối thiểu 2 ký tự.").max(60),
-  phone: z.string().trim().regex(/^0\d{9}$/u, "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0."),
+  // Để trống được: đăng ký không hỏi số nữa, ai muốn thì bổ sung sau.
+  phone: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^0[0-9]{9}$/.test(v), "Số điện thoại gồm 10 chữ số, bắt đầu bằng 0."),
 });
 
 const passwordSchema = z
@@ -172,7 +176,7 @@ export function AccountView() {
 
               <dl className="mt-4 w-full space-y-2 text-left">
                 <Row label="Email" value={maskEmail(session.email)} />
-                <Row label="Số điện thoại" value={maskPhone(session.phone)} />
+                {session.phone ? <Row label="Số điện thoại" value={maskPhone(session.phone)} /> : null}
                 <Row label="Tham gia" value={formatDate(session.createdAt)} />
                 <Row label="Tổng đã chi" value={formatMoney(totalSpent)} />
               </dl>
@@ -213,7 +217,7 @@ export function AccountView() {
                 <FieldMessage>{profileForm.formState.errors.name?.message}</FieldMessage>
               </div>
               <div>
-                <Label htmlFor="phone" required>
+                <Label htmlFor="phone" hint="không bắt buộc">
                   Số điện thoại
                 </Label>
                 <Input

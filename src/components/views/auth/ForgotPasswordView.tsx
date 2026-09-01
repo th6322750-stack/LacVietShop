@@ -103,7 +103,7 @@ export function ForgotPasswordView() {
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="ban@vidu.com"
+              placeholder="camonquykhach@gmail.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
