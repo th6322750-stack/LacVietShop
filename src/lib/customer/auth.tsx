@@ -19,13 +19,14 @@ export interface CustomerSession {
   username: string;
   email: string;
   phone: string;
+  /** Số dư thật, do máy chủ trả về. Đừng bao giờ đọc số dư từ dữ liệu mẫu. */
+  balance: number;
+  createdAt: string;
 }
 
 export interface RegisterInput {
-  name: string;
   username: string;
   email: string;
-  phone: string;
   password: string;
 }
 
@@ -63,6 +64,8 @@ interface AuthContextValue {
   register: (input: RegisterInput) => Promise<AuthResult>;
   login: (identifier: string, password: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  /** Hỏi lại máy chủ, chủ yếu để số dư trên thanh trên cùng khớp sau khi mua/nạp. */
+  refresh: () => Promise<void>;
   requestResetCode: (email: string) => Promise<{ ok: true; delivery: Delivery } | { ok: false; error: string }>;
   resetPassword: (
     email: string,
@@ -120,6 +123,13 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     return { ok: true as const, delivery: res.delivery ?? ("smtp" as Delivery) };
   }, []);
 
+  const refresh = React.useCallback(async () => {
+    const d = await fetch("/api/auth/me")
+      .then((r) => r.json())
+      .catch(() => null);
+    if (d) setSession(d.account ?? null);
+  }, []);
+
   const resetPassword = React.useCallback(async (email: string, code: string, password: string) => {
     const res = await post("/api/auth/reset", { email, code, password });
     if (!res.ok) return { ok: false as const, error: res.error ?? "Không đặt lại được mật khẩu.", field: res.field };
@@ -127,8 +137,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const value = React.useMemo(
-    () => ({ session, ready, register, login, logout, requestResetCode, resetPassword }),
-    [session, ready, register, login, logout, requestResetCode, resetPassword],
+    () => ({ session, ready, register, login, logout, refresh, requestResetCode, resetPassword }),
+    [session, ready, register, login, logout, refresh, requestResetCode, resetPassword],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

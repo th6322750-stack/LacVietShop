@@ -7,7 +7,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { addOrder, getOrderStatus } from "@/lib/thatim/client";
-import { isThatimConfigured, thatimConfig } from "@/lib/thatim/config";
+import { isThatimConfigured } from "@/lib/thatim/config";
+import { autoPushEnabled } from "@/lib/server/ops";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +22,11 @@ export async function POST(request: Request) {
   if (!isThatimConfigured()) {
     return NextResponse.json({ ok: false, error: "Chưa cấu hình khoá API." }, { status: 503 });
   }
-  if (!thatimConfig.allowOrders) {
+  if (!(await autoPushEnabled())) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Đẩy đơn thật đang tắt. Bật THATIM_ALLOW_ORDERS=true trong .env.local để cho phép.",
+        error: "Tự đẩy đơn đang tắt. Bật lại ở trang quản trị › Dịch vụ & bảng giá.",
       },
       { status: 503 },
     );

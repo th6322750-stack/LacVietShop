@@ -15,7 +15,6 @@ import { AuthShell } from "./AuthShell";
 
 const schema = z
   .object({
-    name: z.string().trim().min(2, "Nhập họ tên đầy đủ."),
     username: z
       .string()
       .trim()
@@ -23,10 +22,6 @@ const schema = z
       .max(24, "Tên đăng nhập tối đa 24 ký tự.")
       .regex(/^[a-zA-Z0-9_]+$/, "Chỉ dùng chữ không dấu, số và dấu gạch dưới."),
     email: z.string().trim().email("Email không hợp lệ."),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^0\d{9}$/, "Số điện thoại gồm 10 số, bắt đầu bằng 0."),
     password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự."),
     confirm: z.string(),
     terms: z.literal(true, { errorMap: () => ({ message: "Bạn cần đồng ý điều khoản sử dụng." }) }),
@@ -62,10 +57,8 @@ export function RegisterView() {
   async function onSubmit(values: FormValues) {
     setSubmitting(true);
     const res = await createAccount({
-      name: values.name,
       username: values.username,
       email: values.email,
-      phone: values.phone,
       password: values.password,
     });
     setSubmitting(false);
@@ -96,28 +89,13 @@ export function RegisterView() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-4" noValidate>
         <div>
-          <Label htmlFor="name" required>
-            Họ và tên
-          </Label>
-          <Input
-            id="name"
-            autoComplete="name"
-            placeholder="Nguyễn Văn A"
-            tone={errors.name ? "invalid" : "default"}
-            aria-invalid={!!errors.name}
-            {...register("name")}
-          />
-          <FieldMessage>{errors.name?.message}</FieldMessage>
-        </div>
-
-        <div>
           <Label htmlFor="username" required hint="dùng để đăng nhập">
             Tên đăng nhập
           </Label>
           <Input
             id="username"
             autoComplete="username"
-            placeholder="nguyenvana"
+            placeholder="camonquykhach"
             tone={errors.username ? "invalid" : "default"}
             aria-invalid={!!errors.username}
             {...register("username")}
@@ -133,29 +111,12 @@ export function RegisterView() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="ban@vidu.com"
+            placeholder="camonquykhach@gmail.com"
             tone={errors.email ? "invalid" : "default"}
             aria-invalid={!!errors.email}
             {...register("email")}
           />
           <FieldMessage>{errors.email?.message}</FieldMessage>
-        </div>
-
-        <div>
-          <Label htmlFor="phone" required>
-            Số điện thoại
-          </Label>
-          <Input
-            id="phone"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel"
-            placeholder="0912345678"
-            tone={errors.phone ? "invalid" : "default"}
-            aria-invalid={!!errors.phone}
-            {...register("phone")}
-          />
-          <FieldMessage>{errors.phone?.message}</FieldMessage>
         </div>
 
         <div>

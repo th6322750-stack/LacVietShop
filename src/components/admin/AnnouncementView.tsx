@@ -7,7 +7,6 @@ import { SectionCard, InfoCard } from "@/components/blocks/Cards";
 import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label, Select, Switch, Textarea } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
-import { useAdminStore } from "@/lib/admin/store";
 import { useAdminSession } from "@/lib/admin/session";
 import { formatBytes, readProductImage } from "@/lib/admin/image";
 import { AnnouncementCard, clearAnnouncementSeen } from "@/components/blocks/AnnouncementPopup";
@@ -29,23 +28,47 @@ const frequencies: { id: AdminAnnouncement["frequency"]; label: string; hint: st
 /** Thời lượng cho nút "Ẩn trong N giờ" trên popup; 0 là không hiện nút đó. */
 const snoozeOptions = [0, 1, 2, 4, 8, 12, 24];
 
+/** Chưa ai đặt thông báo thì để trống và tắt — không hiện gì cho khách. */
+const emptyAnnouncement: AdminAnnouncement = {
+  enabled: false,
+  title: "",
+  body: "",
+  tone: "info",
+  ctaLabel: "",
+  ctaHref: "",
+  frequency: "daily",
+  version: 1,
+  snoozeHours: 1,
+};
+
 export function AdminAnnouncementView() {
   const toast = useToast();
   const { can } = useAdminSession();
-  const { announcement, setAnnouncement, hydrated } = useAdminStore();
   const editable = can("announce.edit");
 
-  const [draft, setDraft] = React.useState<AdminAnnouncement>(announcement);
+  // Thông báo nằm ở máy chủ nên khách máy nào cũng thấy; trước đây lưu trong
+  // localStorage của máy quản trị nên soạn xong chỉ mình mình thấy.
+  const [saved, setSaved] = React.useState<AdminAnnouncement | null>(null);
+  const [draft, setDraft] = React.useState<AdminAnnouncement>(emptyAnnouncement);
+  const [busy, setBusy] = React.useState(false);
   const [imageError, setImageError] = React.useState<string | null>(null);
   const [imageBytes, setImageBytes] = React.useState<number | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
-  // Kho dữ liệu nạp từ localStorage sau khi mount; đồng bộ lại bản nháp một lần.
-  React.useEffect(() => {
-    if (hydrated) setDraft(announcement);
-  }, [hydrated, announcement]);
+  const load = React.useCallback(async () => {
+    const res = await fetch("/api/announcement")
+      .then((r) => r.json())
+      .catch(() => null);
+    const a = (res?.announcement as AdminAnnouncement | undefined) ?? emptyAnnouncement;
+    setSaved(a);
+    setDraft(a);
+  }, []);
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(announcement);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  const dirty = saved !== null && JSON.stringify(draft) !== JSON.stringify(saved);
 
   function patch(next: Partial<AdminAnnouncement>) {
     setDraft((d) => ({ ...d, ...next }));
@@ -63,25 +86,54 @@ export function AdminAnnouncementView() {
     setImageBytes(res.bytes);
   }
 
-  function save() {
-    if (!draft.title.trim()) {
+  async function push(next: AdminAnnouncement, done: string, extra?: string) {
+    setBusy(true);
+    const res = await fetch("/api/announcement", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(next),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setBusy(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không lưu được", description: String(res.error) });
+      return false;
+    }
+    setSaved(res.announcement as AdminAnnouncement);
+    setDraft(res.announcement as AdminAnnouncement);
+    toast.push({ tone: "success", title: done, description: extra });
+    return true;
+  }
+
+  async function save() {
+    if (draft.enabled && !draft.title.trim()) {
       toast.push({ tone: "warning", title: "Chưa có tiêu đề" });
       return;
     }
-    setAnnouncement(draft);
-    toast.push({ tone: "success", title: "Đã lưu thông báo" });
+    await push(draft, "Đã lưu thông báo", "Khách thấy ngay ở lượt truy cập tới.");
   }
 
-  function republish() {
-    const next = { ...draft, version: draft.version + 1 };
-    setDraft(next);
-    setAnnouncement(next);
-    clearAnnouncementSeen();
-    toast.push({
-      tone: "success",
-      title: "Đã phát lại thông báo",
-      description: "Mọi khách đều thấy popup ở lượt truy cập tới.",
-    });
+  async function republish() {
+    const ok = await push({ ...draft, version: draft.version + 1 }, "Đã phát lại thông báo", "Mọi khách đều thấy lại popup.");
+    // Xoá dấu đã-xem trên chính máy này để quản trị tự kiểm chứng được.
+    if (ok) clearAnnouncementSeen();
+  }
+
+  if (saved === null) {
+    return (
+      <div className="space-y-5">
+        <PageHeader
+          title="Popup thông báo"
+          description="Nội dung hiện lên khi khách vào trang."
+          breadcrumb={[{ label: "Quản trị", href: "/admin" }, { label: "Popup thông báo" }]}
+        />
+        <SectionCard title="Đang tải thông báo…">
+          <p className="text-small text-lv-muted">Đang đọc cấu hình từ máy chủ.</p>
+        </SectionCard>
+      </div>
+    );
   }
 
   return (
@@ -93,10 +145,10 @@ export function AdminAnnouncementView() {
         action={
           editable ? (
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" icon={<IconRefreshAlert size={17} />} onClick={republish}>
+              <Button variant="secondary" loading={busy} icon={<IconRefreshAlert size={17} />} onClick={republish}>
                 Phát lại cho tất cả
               </Button>
-              <Button icon={<IconDeviceFloppy size={17} />} onClick={save} disabled={!dirty}>
+              <Button icon={<IconDeviceFloppy size={17} />} loading={busy} onClick={save} disabled={!dirty}>
                 {dirty ? "Lưu thay đổi" : "Đã lưu"}
               </Button>
             </div>
@@ -234,14 +286,19 @@ export function AdminAnnouncementView() {
             </div>
           </SectionCard>
 
-          <SectionCard title="Ảnh minh hoạ" description="Không bắt buộc. Ảnh được thu nhỏ trước khi lưu.">
+          <ContactCard editable={editable} />
+
+          <SectionCard
+            title="Ảnh minh hoạ"
+            description="Không bắt buộc. Ảnh thu về tối đa 1280px, đủ để khách đọc chữ trên banner."
+          >
             <div className="flex flex-wrap items-center gap-3">
               {draft.imageSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={draft.imageSrc}
                   alt="Ảnh thông báo"
-                  className="h-24 w-24 rounded-card border border-lv-border object-contain"
+                  className="h-28 w-48 rounded-card border border-lv-border bg-lv-bg object-contain"
                 />
               ) : (
                 <span className="flex h-24 w-24 items-center justify-center rounded-card border border-dashed border-lv-border text-lv-muted">
@@ -337,5 +394,109 @@ export function AdminAnnouncementView() {
         </aside>
       </div>
     </div>
+  );
+}
+
+/**
+ * Kênh liên hệ hiện ở thanh bên cho khách.
+ *
+ * Để trống ô nào thì kênh đó không hiện. Trước đây thanh bên ghi cứng câu "kênh
+ * liên hệ chưa được cấu hình" — khách đọc xong chẳng biết gọi ai.
+ */
+function ContactCard({ editable }: { editable: boolean }) {
+  const toast = useToast();
+  const [form, setForm] = React.useState<{
+    hours: string;
+    zalo: string;
+    facebook: string;
+    messenger: string;
+    telegram: string;
+  } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    const res = await fetch("/api/admin/ops")
+      .then((r) => r.json())
+      .catch(() => null);
+    const c = res?.ops?.contact ?? {};
+    setForm({
+      hours: c.hours ?? "",
+      zalo: c.zalo ?? "",
+      facebook: c.facebook ?? "",
+      messenger: c.messenger ?? "",
+      telegram: c.telegram ?? "",
+    });
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function luu() {
+    if (!form) return;
+    setBusy(true);
+    const res = await fetch("/api/admin/ops", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ contact: form }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setBusy(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không lưu được", description: String(res.error) });
+      return;
+    }
+    toast.push({ tone: "success", title: "Đã lưu kênh liên hệ", description: "Khách thấy ngay ở thanh bên." });
+  }
+
+  if (!form) {
+    return (
+      <SectionCard title="Kênh liên hệ">
+        <p className="text-small text-lv-muted">Đang đọc cấu hình…</p>
+      </SectionCard>
+    );
+  }
+
+  const o = (
+    khoa: "hours" | "zalo" | "facebook" | "messenger" | "telegram",
+    nhan: string,
+    goiY: string,
+    hint?: string,
+  ) => (
+    <div>
+      <Label htmlFor={`lh-${khoa}`} hint={hint}>
+        {nhan}
+      </Label>
+      <Input
+        id={`lh-${khoa}`}
+        value={form[khoa]}
+        placeholder={goiY}
+        maxLength={300}
+        disabled={!editable}
+        onChange={(e) => setForm({ ...form, [khoa]: e.target.value })}
+      />
+    </div>
+  );
+
+  return (
+    <SectionCard
+      title="Kênh liên hệ"
+      description="Hiện thành cụm nút nổi ở góc màn hình khách. Ô nào để trống thì kênh đó không hiện."
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        {o("hours", "Giờ hỗ trợ", "08:00 – 22:00 hằng ngày")}
+        {o("zalo", "Zalo", "https://zalo.me/...", "link đầy đủ")}
+        {o("messenger", "Messenger", "https://m.me/...", "link đầy đủ")}
+        {o("telegram", "Telegram", "https://t.me/...", "link đầy đủ")}
+        {o("facebook", "Facebook", "https://facebook.com/...", "link đầy đủ")}
+      </div>
+      {editable ? (
+        <Button className="mt-4" loading={busy} icon={<IconDeviceFloppy size={17} />} onClick={luu}>
+          Lưu kênh liên hệ
+        </Button>
+      ) : null}
+    </SectionCard>
   );
 }

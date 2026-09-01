@@ -3,12 +3,10 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { IconArrowBackUp, IconLock } from "@tabler/icons-react";
+import { IconLock } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label } from "@/components/ui/Field";
-import { adminAccounts } from "@/lib/admin/data";
 import { useAdminSession } from "@/lib/admin/session";
 
 export function LoginView() {
@@ -59,7 +57,7 @@ export function LoginView() {
               <Input
                 id="username"
                 autoComplete="username"
-                placeholder="admin"
+                placeholder="tên đăng nhập"
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);
@@ -91,42 +89,6 @@ export function LoginView() {
               {submitting ? "Đang đăng nhập…" : "Đăng nhập"}
             </Button>
           </form>
-        </div>
-
-        <div className="lv-card p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-body-strong text-lv-text">Tài khoản dùng thử</p>
-            <Badge tone="gold">bấm để điền</Badge>
-          </div>
-          <div className="mt-2 space-y-2">
-            {adminAccounts.map((a) => (
-              <button
-                key={a.username}
-                type="button"
-                onClick={() => {
-                  setUsername(a.username);
-                  setPassword(a.password);
-                  setError(null);
-                }}
-                className="flex w-full items-center justify-between gap-3 rounded-card border border-lv-border px-3 py-2 text-left transition-colors duration-button hover:border-lv-border-gold hover:bg-lv-gold-50"
-              >
-                <span>
-                  <span className="block text-body-strong text-lv-text">
-                    {a.username} / {a.password}
-                  </span>
-                  <span className="block text-small text-lv-muted">
-                    {a.role} · {a.permissions.length} quyền
-                  </span>
-                </span>
-                <IconArrowBackUp size={16} className="shrink-0 -scale-x-100 text-lv-muted" />
-              </button>
-            ))}
-          </div>
-          <p className="mt-3 text-small text-lv-muted">
-            Bản dựng này chưa có backend xác thực: phiên đăng nhập chỉ nằm trong trình duyệt và mật khẩu
-            nằm trong mã nguồn. Đây là lớp phân vai trò khi thao tác, không phải bảo mật thật
-            (gap <code>auth.provider</code>).
-          </p>
         </div>
 
         <p className="text-center">

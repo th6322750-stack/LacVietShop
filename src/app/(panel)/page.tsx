@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
 import {
   IconArrowRight,
-  IconBolt,
-  IconCoins,
-  IconShieldCheck,
   IconSparkles,
-  IconUsers,
-  IconClipboardCheck,
 } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
@@ -15,32 +10,39 @@ import { PlatformTile, ProductCard } from "@/components/blocks/Commerce";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { platforms, products } from "@/lib/demo/catalog";
-import { homeMetrics, notices } from "@/lib/demo/data";
 import { demoBrand } from "@/lib/demo/config";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Trang chủ",
   description: demoBrand.tagline,
 };
 
-const metricIcons = [IconClipboardCheck, IconBolt, IconUsers];
+/**
+ * Icon riêng của Lạc Việt (bộ Mẫu 10). Ảnh đã có nền pastel sẵn nên thẻ KPI
+ * không bọc thêm khung nữa, tránh hai lớp nền chồng nhau.
+ */
+const metricIcons = [
+  "/assets/icons/nen_tang_phuc_vu.webp",
+  "/assets/icons/dich_vu_dang_ban.webp",
+  "/assets/icons/san_pham_premium.webp",
+];
 
 const commitments = [
   {
     title: "Nguồn tương tác thật",
     detail: "Ưu tiên nguồn người dùng Việt, hạn chế tụt và có bảo hành rõ ràng theo từng máy chủ.",
-    icon: IconShieldCheck,
+    icon: "/assets/icons/nguon_tuong_tac_that.webp",
   },
   {
     title: "Xử lý tự động",
     detail: "Đơn được đẩy vào hàng đợi ngay sau khi tạo, theo dõi tiến độ theo thời gian thực.",
-    icon: IconBolt,
+    icon: "/assets/icons/xu_ly_tu_dong.webp",
   },
   {
     title: "Giá minh bạch",
     detail: "Đơn giá và giới hạn hiển thị rõ trước khi đặt, không phát sinh phí ẩn.",
-    icon: IconCoins,
+    icon: "/assets/icons/gia_minh_bach.webp",
   },
 ];
 
@@ -55,6 +57,21 @@ const featuredPlatforms = [...platforms]
   })
   .slice(0, 8);
 
+/**
+ * Ba con số trên trang chủ. Đếm thẳng từ danh mục đang bán nên luôn đúng —
+ * trước đây là số lượt/đơn/khách nghĩ ra, mà bịa số với khách thì không được.
+ */
+const catalogMetrics = [
+  { key: "platforms", label: "Nền tảng phục vụ", value: platforms.length, suffix: "nền tảng" },
+  {
+    key: "services",
+    label: "Dịch vụ đang bán",
+    value: platforms.reduce((n, x) => n + x.services.length, 0),
+    suffix: "dịch vụ",
+  },
+  { key: "products", label: "Sản phẩm premium", value: products.length, suffix: "sản phẩm" },
+];
+
 export default function HomePage() {
   const featured = products.slice(0, 4);
 
@@ -68,8 +85,8 @@ export default function HomePage() {
           rounded="none"
           className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent !object-cover opacity-[0.06]"
         />
-        <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-12 lg:items-center xl:p-10">
-          <div className="lg:col-span-7">
+        <div className="relative p-6 sm:p-8 xl:p-10">
+          <div className="max-w-3xl">
             <Badge tone="gold" icon={<IconSparkles size={14} />}>
               {demoBrand.name}
             </Badge>
@@ -89,39 +106,27 @@ export default function HomePage() {
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
               {commitments.map((c) => (
                 <div key={c.title} className="flex items-center gap-2">
-                  <c.icon size={18} className="text-lv-gold-600" aria-hidden />
+                  <Image src={c.icon} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
                   <dt className="text-body-strong text-lv-navy-700">{c.title}</dt>
                 </div>
               ))}
             </dl>
           </div>
-          <div className="lg:col-span-5">
-            <AssetImage
-              assetKey="home.hero.brandVisual"
-              className="h-48 w-full sm:h-60 lg:h-64"
-              rounded="panel"
-              showLabel
-            />
-          </div>
         </div>
       </section>
 
-      {/* 4 chỉ số */}
-      <section aria-label="Chỉ số hoạt động" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {homeMetrics.map((m, i) => {
-          const Icon = metricIcons[i];
-          return (
-            <StatCard
-              key={m.key}
-              label={m.label}
-              value={formatNumber(m.value)}
-              suffix={m.suffix}
-              icon={<Icon size={20} />}
-              trend={m.trend}
-              tone={i % 2 === 0 ? "gold" : "navy"}
-            />
-          );
-        })}
+      {/* Quy mô danh mục — đếm thẳng từ danh mục đang bán, không phải số ước lượng. */}
+      <section aria-label="Quy mô danh mục" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {catalogMetrics.map((m, i) => (
+          <StatCard
+            key={m.key}
+            label={m.label}
+            value={formatNumber(m.value)}
+            suffix={m.suffix}
+            iconBare
+            icon={<Image src={metricIcons[i]} alt="" width={56} height={56} className="h-14 w-14" />}
+          />
+        ))}
       </section>
 
       {/* Dịch vụ nổi bật theo nền tảng — chỉ 8 nền tảng trong nước nhiều dịch vụ
@@ -165,63 +170,6 @@ export default function HomePage() {
         </div>
       </SectionCard>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* Giới thiệu */}
-        <SectionCard
-          title={`Về ${demoBrand.name}`}
-          className="lg:col-span-7"
-          description="Đối tác truyền thông số đồng hành cùng thương hiệu Việt."
-        >
-          <p className="text-body text-lv-navy-700">
-            Lạc Việt Media Agency cung cấp giải pháp tăng trưởng cho doanh nghiệp và nhà sáng tạo nội dung:
-            từ tăng tương tác mạng xã hội, kho tài khoản premium chính hãng, tới theo dõi đơn hàng và
-            dòng tiền theo thời gian thực.
-          </p>
-          <ul className="mt-4 space-y-3">
-            {commitments.map((c) => (
-              <li key={c.title} className="flex gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-card border border-lv-border-gold bg-lv-gold-50 text-lv-gold-700">
-                  <c.icon size={18} />
-                </span>
-                <span>
-                  <span className="block text-body-strong text-lv-text">{c.title}</span>
-                  <span className="block text-small text-lv-muted">{c.detail}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
-
-        {/* Thông báo mới nhất */}
-        <SectionCard
-          title="Thông báo mới nhất"
-          className="lg:col-span-5"
-          description="Cập nhật vận hành và chính sách."
-        >
-          <ul className="space-y-3">
-            {notices.map((n) => (
-              <li key={n.id} className="rounded-card border border-lv-border p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={n.tone === "success" ? "success" : n.tone === "warning" ? "warning" : "info"}>
-                    {n.tone === "success" ? "Vận hành" : n.tone === "warning" ? "Lưu ý" : "Ưu đãi"}
-                  </Badge>
-                  {n.pinned ? <Badge tone="gold">Ghim</Badge> : null}
-                  <span className="ml-auto text-small text-lv-muted">{formatDate(n.publishedAt)}</span>
-                </div>
-                <p className="mt-2 text-body-strong text-lv-text">{n.title}</p>
-                <p className="mt-1 text-small text-lv-muted">{n.body}</p>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/history"
-            className="mt-3 inline-flex items-center gap-1 text-small-strong text-lv-gold-700 hover:underline"
-          >
-            Xem lịch sử hoạt động
-            <IconArrowRight size={15} />
-          </Link>
-        </SectionCard>
-      </div>
     </div>
   );
 }

@@ -28,14 +28,6 @@ export function AuthShell({
 
         {footer}
 
-        <div className="lv-card p-4">
-          <p className="text-body-strong text-lv-text">Bản dựng đang kiểm thử</p>
-          <p className="mt-1 text-small text-lv-muted">
-            Tài khoản lưu trên máy chủ chạy cục bộ, chưa có xác minh email hay số điện thoại. Đừng dùng lại mật
-            khẩu bạn đang dùng ở nơi khác.
-          </p>
-        </div>
-
         <p className="text-center">
           <Link href="/" className="text-small text-lv-muted transition-colors duration-button hover:text-lv-gold-700">
             ← Về trang chủ

@@ -1,125 +1,258 @@
 "use client";
 
 import * as React from "react";
-import {
-  IconClipboardList,
-  IconClockHour4,
-  IconExternalLink,
-  IconHeadset,
-  IconRefresh,
-  IconRotateClockwise,
-} from "@tabler/icons-react";
+import { IconClipboardList, IconClockHour4, IconHeadset, IconRefresh } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard, SupportCard } from "@/components/blocks/Cards";
-import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/components/blocks/DataTable";
+import { SignInGate } from "@/components/blocks/SignInGate";
+import { Column, DataTable, FilterBar } from "@/components/blocks/DataTable";
 import { OrderSummaryRow, ProgressBar } from "@/components/blocks/Commerce";
-import { StatusBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
-import { useToast } from "@/components/ui/Toast";
-import { orders as demoOrders, orderStatusLabels } from "@/lib/demo/data";
 import { demoBrand } from "@/lib/demo/config";
+import { useLedger, type PurchaseOrder, type ServiceOrder } from "@/lib/customer/ledger";
 import { formatDateTime, formatMoney, formatNumber } from "@/lib/utils";
-import type { Order, OrderStatus } from "@/types";
+
+/**
+ * Tiến độ đơn hàng.
+ *
+ * Gộp hai loại đơn của tài khoản đang đăng nhập:
+ *   - đơn dịch vụ tương tác (/api/orders), có tiến độ chạy,
+ *   - đơn mua tài khoản premium (/api/products/orders), có trạng thái giao hàng.
+ * Chỉ dữ liệu thật; trang này từng hiện một danh sách đơn dựng sẵn cho cả khách
+ * chưa đăng nhập, đã bỏ hẳn.
+ */
+
+type Kind = "service" | "premium";
+
+interface Row {
+  kind: Kind;
+  id: string;
+  title: string;
+  subtitle: string;
+  detail: string;
+  amount: number;
+  createdAt: string;
+  statusLabel: string;
+  tone: "gold" | "info" | "success" | "warning" | "danger" | "neutral";
+  /** Chỉ đơn dịch vụ mới có tiến độ chạy. */
+  progress?: { done: number; total: number };
+  note?: string | null;
+  done: boolean;
+  waiting: boolean;
+  service?: ServiceOrder;
+  premium?: PurchaseOrder;
+}
+
+const serviceLabels: Record<ServiceOrder["status"], string> = {
+  pending: "Chờ xử lý",
+  processing: "Đã tiếp nhận",
+  running: "Đang chạy",
+  completed: "Hoàn thành",
+  partial: "Chạy một phần",
+  canceled: "Đã huỷ",
+  refunded: "Đã hoàn tiền",
+};
+
+const serviceTones: Record<ServiceOrder["status"], Row["tone"]> = {
+  pending: "gold",
+  processing: "info",
+  running: "info",
+  completed: "success",
+  partial: "warning",
+  canceled: "neutral",
+  refunded: "danger",
+};
+
+const premiumLabels: Record<PurchaseOrder["status"], string> = {
+  pending: "Chờ giao",
+  delivered: "Đã giao",
+  canceled: "Đã huỷ",
+};
+
+const premiumTones: Record<PurchaseOrder["status"], Row["tone"]> = {
+  pending: "gold",
+  delivered: "success",
+  canceled: "danger",
+};
+
+const FILTERS = [
+  { id: "waiting", label: "Đang chờ / đang chạy" },
+  { id: "done", label: "Hoàn thành" },
+  { id: "service", label: "Đơn dịch vụ" },
+  { id: "premium", label: "Đơn premium" },
+];
 
 export function ProgressView() {
-  const toast = useToast();
+  const { ready, signedIn, loading, orders, services, reload } = useLedger();
   const [search, setSearch] = React.useState("");
-  const [status, setStatus] = React.useState<OrderStatus | "">("");
+  const [filter, setFilter] = React.useState("");
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
-  const [selected, setSelected] = React.useState<Order | null>(demoOrders[0] ?? null);
-  const [state, setState] = React.useState<"ready" | "loading">("ready");
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+
+  const rows = React.useMemo<Row[]>(() => {
+    const out: Row[] = [];
+
+    for (const o of services) {
+      const done = o.status === "completed" || o.status === "refunded" || o.status === "canceled";
+      out.push({
+        kind: "service",
+        id: o.id,
+        title: o.serviceName,
+        subtitle: `${o.platformName} · ${o.serverName}`,
+        detail: o.link,
+        amount: o.amount,
+        createdAt: o.createdAt,
+        statusLabel: serviceLabels[o.status],
+        tone: serviceTones[o.status],
+        progress: { done: Math.max(0, o.quantity - o.remains), total: o.quantity },
+        note: o.note,
+        done,
+        waiting: !done,
+        service: o,
+      });
+    }
+
+    for (const o of orders) {
+      out.push({
+        kind: "premium",
+        id: o.id,
+        title: o.productName,
+        subtitle: o.packageName,
+        detail: "Tài khoản premium",
+        amount: o.amount,
+        createdAt: o.createdAt,
+        statusLabel: premiumLabels[o.status],
+        tone: premiumTones[o.status],
+        note: o.note,
+        done: o.status !== "pending",
+        waiting: o.status === "pending",
+        premium: o,
+      });
+    }
+
+    return out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  }, [orders, services]);
+
+  // Còn đơn đang chờ thì hỏi lại định kỳ, kèm hỏi nhà cung cấp cho tiến độ mới.
+  const hasWaiting = rows.some((r) => r.waiting);
+  React.useEffect(() => {
+    if (!hasWaiting) return;
+    const t = window.setInterval(() => void reload(true), 30_000);
+    return () => window.clearInterval(t);
+  }, [hasWaiting, reload]);
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
-    return demoOrders.filter((o) => {
-      if (status && o.status !== status) return false;
-      const day = o.createdAt.slice(0, 10);
+    return rows.filter((r) => {
+      if (filter === "waiting" && !r.waiting) return false;
+      if (filter === "done" && !r.done) return false;
+      if (filter === "service" && r.kind !== "service") return false;
+      if (filter === "premium" && r.kind !== "premium") return false;
+      const day = r.createdAt.slice(0, 10);
       if (from && day < from) return false;
       if (to && day > to) return false;
-      if (q && !`${o.id} ${o.code} ${o.serviceName} ${o.platformName} ${o.target}`.toLowerCase().includes(q))
-        return false;
+      if (q && !`${r.id} ${r.title} ${r.subtitle} ${r.detail}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [search, status, from, to]);
+  }, [rows, search, filter, from, to]);
 
-  const { page, pageCount, slice, setPage, total, pageSize } = usePagination(filtered, 8);
+  const selected = rows.find((r) => r.id === selectedId) ?? null;
 
-  const metrics = React.useMemo(() => {
-    const by = (s: OrderStatus) => demoOrders.filter((o) => o.status === s).length;
-    return [
-      { label: "Đang chạy", value: by("running"), tone: "info" as const },
-      { label: "Đang chờ / xử lý", value: by("pending") + by("processing"), tone: "gold" as const },
-      { label: "Hoàn thành", value: by("completed"), tone: "success" as const },
-      { label: "Hoàn tiền / huỷ", value: by("refunded") + by("canceled"), tone: "danger" as const },
-    ];
-  }, []);
+  const metrics = React.useMemo(
+    () => [
+      { label: "Đang chờ / đang chạy", value: rows.filter((r) => r.waiting).length, tone: "gold" as const },
+      {
+        label: "Hoàn thành",
+        value: rows.filter((r) => r.statusLabel === "Hoàn thành" || r.statusLabel === "Đã giao").length,
+        tone: "success" as const,
+      },
+      {
+        label: "Hoàn tiền / huỷ",
+        value: rows.filter((r) => r.tone === "danger" || r.tone === "neutral").length,
+        tone: "danger" as const,
+      },
+      { label: "Tổng đơn", value: rows.length, tone: "info" as const },
+    ],
+    [rows],
+  );
 
-  function refresh() {
-    setState("loading");
-    window.setTimeout(() => {
-      setState("ready");
-      toast.push({ tone: "info", title: "Đã làm mới danh sách đơn" });
-    }, 700);
-  }
-
-  const columns: Column<Order>[] = [
+  const columns: Column<Row>[] = [
     {
       key: "order",
       header: "Đơn hàng",
-      cell: (o) => (
+      cell: (r) => (
         <div className="min-w-0">
-          <p className="text-body-strong text-lv-text">#{o.id}</p>
-          <p className="text-small text-lv-muted">{o.code}</p>
-          <p className="text-small text-lv-muted">{formatDateTime(o.createdAt)}</p>
+          <p className="text-body-strong text-lv-text">{r.id}</p>
+          <p className="text-small text-lv-muted">{formatDateTime(r.createdAt)}</p>
         </div>
       ),
     },
     {
-      key: "service",
-      header: "Dịch vụ",
-      cell: (o) => (
-        <div className="min-w-0 max-w-[260px]">
-          <p className="truncate text-body-strong text-lv-text">{o.serviceName}</p>
-          <p className="truncate text-small text-lv-muted">{o.platformName}</p>
-          <p className="truncate text-small text-lv-muted" title={o.target}>
-            {o.target}
+      key: "what",
+      header: "Nội dung",
+      cell: (r) => (
+        <div className="min-w-0 max-w-[280px]">
+          <p className="truncate text-body-strong text-lv-text">{r.title}</p>
+          <p className="truncate text-small text-lv-muted">{r.subtitle}</p>
+          <p className="truncate text-small text-lv-muted" title={r.detail}>
+            {r.detail}
           </p>
         </div>
       ),
     },
     {
-      key: "quantity",
+      key: "progress",
       header: "Tiến độ",
       align: "right",
-      cell: (o) => (
-        <div className="min-w-[140px]">
-          <ProgressBar value={o.delivered} max={o.quantity} showValue tone={o.status === "completed" ? "success" : "gold"} />
-        </div>
-      ),
+      cell: (r) =>
+        r.progress ? (
+          <div className="min-w-[140px]">
+            <ProgressBar
+              value={r.progress.done}
+              max={r.progress.total}
+              showValue
+              tone={r.statusLabel === "Hoàn thành" ? "success" : "gold"}
+            />
+          </div>
+        ) : (
+          <span className="text-small text-lv-muted">—</span>
+        ),
     },
     {
       key: "amount",
       header: "Thanh toán",
       align: "right",
-      cell: (o) => <span className="lv-price text-body-strong text-lv-text">{formatMoney(o.amount)}</span>,
+      cell: (r) => <span className="lv-price text-body-strong text-lv-text">{formatMoney(r.amount)}</span>,
     },
     {
       key: "status",
       header: "Trạng thái",
-      cell: (o) => <StatusBadge status={o.status} />,
+      cell: (r) => <Badge tone={r.tone}>{r.statusLabel}</Badge>,
     },
   ];
+
+  if (ready && !signedIn) {
+    return (
+      <SignInGate
+        title="Tiến độ đơn hàng"
+        description="Theo dõi trạng thái xử lý của từng đơn."
+        next="/progress"
+        reason="Đơn hàng gắn với tài khoản của bạn, đăng nhập để xem."
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">
       <PageHeader
         title="Tiến độ đơn hàng"
-        description="Theo dõi trạng thái xử lý của từng đơn theo thời gian thực."
+        description="Theo dõi trạng thái xử lý của từng đơn."
         breadcrumb={[{ label: "Trang chủ", href: "/" }, { label: "Tiến độ đơn hàng" }]}
         action={
-          <Button variant="secondary" onClick={refresh} icon={<IconRefresh size={16} />}>
+          <Button variant="secondary" onClick={() => void reload(true)} icon={<IconRefresh size={16} />}>
             Làm mới
           </Button>
         }
@@ -127,18 +260,25 @@ export function ProgressView() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((m) => (
-          <StatCard key={m.label} label={m.label} value={formatNumber(m.value)} suffix="đơn" tone={m.tone} icon={<IconClipboardList size={20} />} />
+          <StatCard
+            key={m.label}
+            label={m.label}
+            value={formatNumber(m.value)}
+            suffix="đơn"
+            tone={m.tone}
+            icon={<IconClipboardList size={20} />}
+          />
         ))}
       </div>
 
       <SectionCard title="Bộ lọc" padded>
         <FilterBar search={search} onSearch={setSearch} placeholder="Mã đơn, dịch vụ, liên kết…">
           <div>
-            <Select aria-label="Trạng thái" value={status} onChange={(e) => setStatus(e.target.value as OrderStatus | "")}>
-              <option value="">Tất cả trạng thái</option>
-              {Object.entries(orderStatusLabels).map(([k, label]) => (
-                <option key={k} value={k}>
-                  {label}
+            <Select aria-label="Lọc đơn" value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="">Tất cả đơn</option>
+              {FILTERS.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
                 </option>
               ))}
             </Select>
@@ -153,7 +293,7 @@ export function ProgressView() {
             variant="secondary"
             onClick={() => {
               setSearch("");
-              setStatus("");
+              setFilter("");
               setFrom("");
               setTo("");
             }}
@@ -166,23 +306,24 @@ export function ProgressView() {
       <div className="grid gap-5 xl:grid-cols-12">
         <SectionCard
           title="Danh sách đơn"
-          description={`${filtered.length} đơn khớp bộ lọc`}
+          description={rows.length ? `${filtered.length} đơn khớp bộ lọc` : undefined}
           className="min-w-0 xl:col-span-8"
           padded={false}
         >
           <DataTable
-            caption="Danh sách đơn hàng đã tạo"
+            caption="Đơn hàng của tài khoản"
             columns={columns}
-            rows={slice}
-            state={state}
-            selectedId={selected?.id ?? null}
-            onSelect={setSelected}
-            emptyTitle="Không có đơn nào khớp bộ lọc"
-            emptyDescription="Thử bỏ bớt điều kiện lọc hoặc chọn khoảng ngày rộng hơn."
+            rows={filtered}
+            state={loading && rows.length === 0 ? "loading" : "ready"}
+            selectedId={selectedId}
+            onSelect={(r) => setSelectedId(r.id)}
+            emptyTitle={rows.length === 0 ? "Bạn chưa có đơn hàng nào" : "Không có đơn nào khớp bộ lọc"}
+            emptyDescription={
+              rows.length === 0
+                ? "Đơn sẽ hiện ở đây ngay sau khi bạn đặt dịch vụ hoặc mua hàng."
+                : "Thử bỏ bớt điều kiện lọc hoặc chọn khoảng ngày rộng hơn."
+            }
           />
-          <div className="border-t border-lv-border px-5 py-3">
-            <Pagination page={page} pageCount={pageCount} onChange={setPage} total={total} pageSize={pageSize} />
-          </div>
         </SectionCard>
 
         <div className="min-w-0 space-y-4 xl:col-span-4">
@@ -190,31 +331,40 @@ export function ProgressView() {
             {selected ? (
               <div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-body-strong text-lv-text">#{selected.id}</p>
-                    <p className="text-small text-lv-muted">{selected.code}</p>
-                  </div>
-                  <StatusBadge status={selected.status} />
+                  <p className="min-w-0 truncate text-body-strong text-lv-text">{selected.id}</p>
+                  <Badge tone={selected.tone}>{selected.statusLabel}</Badge>
                 </div>
 
                 <div className="mt-3 divide-y divide-lv-border">
-                  <OrderSummaryRow label="Nền tảng" value={selected.platformName} />
-                  <OrderSummaryRow label="Dịch vụ" value={selected.serviceName} />
-                  <OrderSummaryRow label="Số lượng" value={formatNumber(selected.quantity)} />
-                  <OrderSummaryRow label="Bắt đầu" value={formatNumber(selected.startCount)} />
-                  <OrderSummaryRow label="Đã tăng" value={formatNumber(selected.delivered)} />
+                  <OrderSummaryRow label={selected.kind === "service" ? "Dịch vụ" : "Sản phẩm"} value={selected.title} />
+                  <OrderSummaryRow label={selected.kind === "service" ? "Máy chủ" : "Gói"} value={selected.subtitle} />
+                  {selected.service ? (
+                    <>
+                      <OrderSummaryRow label="Số lượng" value={formatNumber(selected.service.quantity)} />
+                      <OrderSummaryRow label="Bắt đầu" value={formatNumber(selected.service.startCount)} />
+                      <OrderSummaryRow label="Còn lại" value={formatNumber(selected.service.remains)} />
+                    </>
+                  ) : null}
                   <OrderSummaryRow label="Thanh toán" value={formatMoney(selected.amount)} strong tone="gold" />
-                  <OrderSummaryRow label="Tạo lúc" value={formatDateTime(selected.createdAt)} />
+                  <OrderSummaryRow label="Đặt lúc" value={formatDateTime(selected.createdAt)} />
                 </div>
 
-                <div className="mt-3">
-                  <ProgressBar
-                    label="Tiến độ giao"
-                    value={selected.delivered}
-                    max={selected.quantity}
-                    tone={selected.status === "completed" ? "success" : "gold"}
-                  />
-                </div>
+                {selected.progress ? (
+                  <div className="mt-3">
+                    <ProgressBar
+                      label="Tiến độ giao"
+                      value={selected.progress.done}
+                      max={selected.progress.total}
+                      tone={selected.statusLabel === "Hoàn thành" ? "success" : "gold"}
+                    />
+                  </div>
+                ) : null}
+
+                {selected.service?.status === "pending" ? (
+                  <p className="mt-3 rounded-control border border-lv-border-gold bg-lv-gold-50 px-3 py-2 text-small text-lv-gold-700">
+                    Đơn đã nhận và đang xếp hàng chờ xử lý. Bộ phận vận hành sẽ chạy trong giờ làm việc.
+                  </p>
+                ) : null}
 
                 {selected.note ? (
                   <p className="mt-3 rounded-control border border-lv-border bg-lv-bg px-3 py-2 text-small text-lv-muted">
@@ -222,33 +372,16 @@ export function ProgressView() {
                   </p>
                 ) : null}
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <Button
-                    variant="secondary"
-                    icon={<IconRotateClockwise size={16} />}
-                    onClick={() =>
-                      toast.push({
-                        tone: "info",
-                        title: "Đã gửi yêu cầu bảo hành",
-                        description: "Bộ phận hỗ trợ sẽ kiểm tra đơn này.",
-                      })
-                    }
-                  >
-                    Yêu cầu bù hụt
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    icon={<IconExternalLink size={16} />}
-                    onClick={() =>
-                      toast.push({ tone: "info", title: "Liên kết mục tiêu", description: selected.target })
-                    }
-                  >
-                    Xem mục tiêu
-                  </Button>
-                </div>
+                {selected.premium?.status === "delivered" ? (
+                  <LinkButton href="/purchased" variant="secondary" block className="mt-4">
+                    Xem thông tin tài khoản đã nhận
+                  </LinkButton>
+                ) : null}
               </div>
             ) : (
-              <p className="text-small text-lv-muted">Chọn một đơn trong danh sách để xem chi tiết.</p>
+              <p className="text-small text-lv-muted">
+                {rows.length ? "Chọn một đơn trong danh sách để xem chi tiết." : "Chưa có đơn nào để xem."}
+              </p>
             )}
           </SectionCard>
 
@@ -267,7 +400,8 @@ export function ProgressView() {
               Thời gian xử lý
             </p>
             <p className="mt-1 text-small text-lv-muted">
-              Đơn thường bắt đầu chạy trong 0–30 phút. Đơn số lượng lớn có thể chia nhiều đợt trong ngày.
+              Đơn dịch vụ thường bắt đầu chạy trong 0–30 phút. Gói premium có sẵn trong kho được giao ngay khi
+              thanh toán.
             </p>
           </div>
         </div>

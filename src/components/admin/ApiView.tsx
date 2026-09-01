@@ -238,7 +238,7 @@ export function AdminApiView() {
           value={!status ? "…" : status.allowOrders ? "Đang bật" : "Đang tắt"}
           tone={!status ? "info" : status.allowOrders ? "success" : "info"}
           icon={<IconShieldLock size={18} />}
-          hint={status ? (status.allowOrders ? "Đơn sẽ tiêu tiền thật" : "THATIM_ALLOW_ORDERS=true để bật") : undefined}
+          hint={status ? (status.allowOrders ? "Đơn sẽ tiêu tiền thật" : "Bật ở trang Dịch vụ & bảng giá") : undefined}
         />
       </div>
 

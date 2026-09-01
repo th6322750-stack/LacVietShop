@@ -19,7 +19,7 @@ import { Column, DataTable, FilterBar, Pagination, usePagination } from "@/compo
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { FieldMessage, Input, Label, Select } from "@/components/ui/Field";
+import { FieldMessage, Input, Label, Select, Switch } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Overlay";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminSession } from "@/lib/admin/session";
@@ -62,7 +62,7 @@ interface Row {
 
 const pct = (v: number) => `${Math.round((v - 1) * 1000) / 10}%`;
 
-export function AdminServicesView() {
+export function AdminServicesView({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const { can } = useAdminSession();
   const editable = can("services.edit");
@@ -92,7 +92,9 @@ export function AdminServicesView() {
         setSource(cat.source ?? null);
         if (pr.ok) {
           setRules(pr.rules);
-          setMarkupDraft(String(Math.round((pr.rules.globalMarkup - 1) * 1000) / 10));
+          // Chỉ điền ô hệ số ở lần nạp đầu. Nạp lại sau mỗi thao tác mà vẫn ghi
+          // đè thì con số quản trị đang gõ dở bị xoá mất giữa chừng.
+          setMarkupDraft((cur) => (cur === "" ? String(Math.round((pr.rules.globalMarkup - 1) * 1000) / 10) : cur));
         } else {
           setFailed(String(pr.error ?? "Không đọc được bảng giá."));
         }
@@ -254,16 +256,24 @@ export function AdminServicesView() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Dịch vụ & bảng giá"
-        description="Giá vốn lấy từ nhà cung cấp, giá bán do bạn đặt. Áp cho toàn hệ thống."
-        breadcrumb={[{ label: "Quản trị", href: "/admin" }, { label: "Dịch vụ & bảng giá" }]}
-        action={
+      {embedded ? (
+        <div className="flex justify-end">
           <Button variant="secondary" icon={<IconRefresh size={17} />} onClick={() => void load(true)} loading={loading}>
             Nạp lại
           </Button>
-        }
-      />
+        </div>
+      ) : (
+        <PageHeader
+          title="Dịch vụ & bảng giá"
+          description="Giá vốn lấy từ nhà cung cấp, giá bán do bạn đặt. Áp cho toàn hệ thống."
+          breadcrumb={[{ label: "Quản trị", href: "/admin" }, { label: "Dịch vụ & bảng giá" }]}
+          action={
+            <Button variant="secondary" icon={<IconRefresh size={17} />} onClick={() => void load(true)} loading={loading}>
+              Nạp lại
+            </Button>
+          }
+        />
+      )}
 
       {failed ? (
         <InfoCard title="Không đọc được bảng giá" tone="danger" icon={<IconAlertTriangle size={16} />}>
@@ -319,6 +329,8 @@ export function AdminServicesView() {
         />
       </div>
 
+      <OpsSwitch editable={editable} />
+
       <SectionCard
         title="Hệ số bán chung"
         description="Cộng thêm bao nhiêu phần trăm so với giá vốn, cho mọi dịch vụ chưa đặt giá riêng."
@@ -351,10 +363,22 @@ export function AdminServicesView() {
           >
             Lưu hệ số
           </Button>
-          <p className="text-small text-lv-muted">
-            Ví dụ giá vốn 2,3 đ → bán{" "}
-            {formatUnitPrice(Math.round(2.3 * (1 + (Number(markupDraft) || 0) / 100) * 1e5) / 1e5)}
-          </p>
+          <div className="text-small text-lv-muted">
+            <p>
+              Ví dụ giá vốn 2,3 đ → bán{" "}
+              {formatUnitPrice(Math.round(2.3 * (1 + (Number(markupDraft) || 0) / 100) * 1e5) / 1e5)}
+            </p>
+            {/* Cộng 20% lên giá vốn KHÔNG phải lãi 20% trên tiền khách trả:
+                vốn 100 → bán 120 → lãi 20, tức 16,7% của 120. Ghi rõ cả hai con
+                số ở đây để không ai tính nhầm lãi. */}
+            <p className="mt-0.5">
+              Lãi {Number(markupDraft) || 0}% trên giá vốn ={" "}
+              <span className="text-body-strong text-lv-text">
+                {(((Number(markupDraft) || 0) / (100 + (Number(markupDraft) || 0))) * 100).toFixed(1)}% tiền khách trả
+              </span>
+              . Muốn lãi 20% tiền khách trả thì nhập 25.
+            </p>
+          </div>
         </div>
         {rules?.updatedBy ? (
           <p className="mt-3 text-small text-lv-muted">
@@ -578,5 +602,124 @@ function PriceModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+/**
+ * Công tắc tự đẩy đơn sang nhà cung cấp.
+ *
+ * Tắt KHÔNG phải là ngừng bán: khách vẫn đặt được và vẫn bị trừ tiền, đơn rơi
+ * vào hàng đợi ở tab Đơn hàng để người trực chạy tay. Phải nói rõ điều này ngay
+ * cạnh công tắc, không thì có ngày tắt xong tưởng đã đóng cửa hàng.
+ */
+function OpsSwitch({ editable }: { editable: boolean }) {
+  const toast = useToast();
+  const [state, setState] = React.useState<{
+    on: boolean;
+    pending: number;
+    supplier: { balance?: number; currency?: string; error?: string };
+    updatedBy?: string;
+    updatedAt?: string;
+  } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    const res = await fetch("/api/admin/ops")
+      .then((r) => r.json())
+      .catch(() => null);
+    if (res?.ok) {
+      setState({
+        on: res.ops.autoPushOrders,
+        pending: res.pending ?? 0,
+        supplier: res.supplier ?? {},
+        updatedBy: res.ops.updatedBy,
+        updatedAt: res.ops.updatedAt,
+      });
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function doi(next: boolean) {
+    setBusy(true);
+    const res = await fetch("/api/admin/ops", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ autoPushOrders: next }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setBusy(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không đổi được", description: String(res.error) });
+      return;
+    }
+    await load();
+    toast.push({
+      tone: next ? "success" : "warning",
+      title: next ? "Đã bật tự đẩy đơn" : "Đã tắt tự đẩy đơn",
+      description: next
+        ? "Đơn mới sẽ chạy thẳng sang nhà cung cấp."
+        : "Đơn mới vẫn nhận nhưng nằm chờ ở tab Đơn hàng để chạy tay.",
+    });
+  }
+
+  const supplier = state?.supplier;
+
+  return (
+    <SectionCard
+      title="Nhận đơn dịch vụ"
+      description="Đơn khách đặt có tự đẩy sang nhà cung cấp hay nằm chờ để chạy tay."
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <Switch
+            id="ops-autopush"
+            checked={state?.on ?? false}
+            disabled={!editable || busy || state === null}
+            onCheckedChange={(v) => void doi(v)}
+            label="Tự đẩy đơn sang nhà cung cấp"
+            description={
+              state === null
+                ? "Đang đọc trạng thái…"
+                : state.on
+                  ? "Đơn mới chạy thẳng sang nhà cung cấp và tiêu tiền trong ví bên đó."
+                  : "Đơn mới vẫn nhận và vẫn trừ tiền khách, nhưng nằm chờ ở tab Đơn hàng."
+            }
+          />
+          {state?.updatedBy ? (
+            <p className="mt-2 text-small text-lv-muted">
+              Đổi lần cuối bởi {state.updatedBy}
+              {state.updatedAt ? ` · ${new Date(state.updatedAt).toLocaleString("vi-VN")}` : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="w-[220px] shrink-0 rounded-card border border-lv-border bg-lv-bg p-3">
+          <p className="text-small text-lv-muted">Ví nhà cung cấp</p>
+          <p className="lv-price text-body-strong text-lv-text">
+            {supplier?.error
+              ? "—"
+              : supplier?.balance !== undefined
+                ? `${supplier.balance} ${supplier.currency ?? ""}`.trim()
+                : "…"}
+          </p>
+          {supplier?.error ? <p className="mt-1 text-small text-lv-danger">{supplier.error}</p> : null}
+          <p className="mt-2 text-small text-lv-muted">
+            {state ? `${state.pending} đơn đang chờ xử lý` : ""}
+          </p>
+        </div>
+      </div>
+
+      {state && !state.on && state.pending > 0 ? (
+        <FieldMessage tone="warning">
+          Đang có {state.pending} đơn nằm chờ. Nạp tiền vào ví nhà cung cấp rồi bật công tắc, sau đó vào tab Đơn
+          hàng bấm “Đẩy lại” cho từng đơn.
+        </FieldMessage>
+      ) : null}
+    </SectionCard>
   );
 }

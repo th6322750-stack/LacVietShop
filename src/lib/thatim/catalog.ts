@@ -1,13 +1,14 @@
 /**
  * Nạp danh mục dịch vụ sống từ API nhà cung cấp.
  *
- * Kết quả nhớ trong bộ đệm dữ liệu của Next, KHÔNG phải biến trong tiến trình.
- * Lý do: trên Vercel mỗi lượt truy cập có thể rơi vào một tiến trình mới, biến
- * nhớ tạm coi như vô dụng và lần nào cũng phải gọi lại API (mất 5–6 giây, khách
- * ngồi nhìn khung xám). Bộ đệm dữ liệu dùng chung cho mọi tiến trình nên chỉ lượt
- * đầu tiên chịu độ trễ đó.
+ * Chỉ đệm phần CHẬM là lời gọi API nhà cung cấp, dùng bộ đệm dữ liệu của Next
+ * (chung cho mọi tiến trình). Trên Vercel mỗi lượt truy cập có thể rơi vào một
+ * tiến trình mới nên biến nhớ trong tiến trình coi như vô dụng — không đệm thì
+ * lần nào cũng mất 5–6 giây, khách ngồi nhìn khung xám.
  *
- * Đổi bảng giá thì gọi clearCatalogCache() để bỏ đệm, giá mới hiện ngay.
+ * Bảng giá thì KHÔNG đệm: đọc lại mỗi lượt rồi áp lên danh mục. Đọc bảng giá là
+ * một truy vấn nhỏ, còn đệm nó thì đổi giá xong vẫn có lượt thấy giá cũ — với
+ * tiền bạc thì sai đó không chấp nhận được.
  *
  * API hỏng hoặc chưa cấu hình khoá → tự rơi về danh mục tĩnh dựng từ bản chụp
  * trang của họ, để trang đặt dịch vụ không bao giờ trắng.
@@ -62,7 +63,7 @@ export function cachedCatalog() {
 
 const CATALOG_TAG = "thatim-catalog";
 
-/** Bỏ đệm để lượt lấy tiếp theo ra giá mới ngay. Gọi sau khi đổi bảng giá. */
+/** Bỏ đệm danh mục nhà cung cấp. Chỉ cần khi bên họ đổi dịch vụ, không phải khi đổi giá. */
 export function clearCatalogCache() {
   cache = null;
   try {
@@ -72,19 +73,31 @@ export function clearCatalogCache() {
   }
 }
 
-/** Lấy thẳng từ API, không qua đệm. */
-async function loadFromApi(): Promise<LiveCatalog> {
+/** Danh sách dịch vụ thô từ nhà cung cấp — đây mới là phần chậm cần đệm. */
+async function fetchServices() {
+  const res = await getServices();
+  return res.ok ? { ok: true as const, data: res.data } : { ok: false as const, error: res.error };
+}
+
+const fetchServicesCached = unstable_cache(fetchServices, [CATALOG_TAG], {
+  revalidate: thatimConfig.cacheSeconds,
+  tags: [CATALOG_TAG],
+});
+
+export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
   if (!isThatimConfigured()) {
     return fallbackCatalog("Chưa cấu hình THATIM_API_KEY.");
   }
+  if (force) clearCatalogCache();
 
-  const res = await getServices();
+  const res = force ? await fetchServices() : await fetchServicesCached();
   if (!res.ok) {
     // Còn bản nhớ tạm cũ thì dùng tiếp, hơn là tụt về danh mục tĩnh.
     if (cache) return { ...cache.value, error: res.error };
     return fallbackCatalog(res.error);
   }
 
+  // Bảng giá đọc mới mỗi lượt: đổi giá là hiện ngay, không có lượt nào thấy giá cũ.
   const rules = await readRules();
   const platforms = mapServicesToPlatforms(res.data, {
     usdToVnd: thatimConfig.usdToVnd,
@@ -100,17 +113,4 @@ async function loadFromApi(): Promise<LiveCatalog> {
   };
   cache = { at: Date.now(), value };
   return value;
-}
-
-const loadCached = unstable_cache(loadFromApi, [CATALOG_TAG], {
-  revalidate: thatimConfig.cacheSeconds,
-  tags: [CATALOG_TAG],
-});
-
-export async function getLiveCatalog(force = false): Promise<LiveCatalog> {
-  if (force) {
-    clearCatalogCache();
-    return loadFromApi();
-  }
-  return loadCached();
 }

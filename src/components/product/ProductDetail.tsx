@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   IconAlertTriangle,
   IconCheck,
@@ -18,8 +19,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
-import { account } from "@/lib/demo/data";
-import { commerceAdapter } from "@/lib/demo/config";
+import { useCustomerAuth } from "@/lib/customer/auth";
+import { EditorBar, useAdminEditor } from "./PageEditor";
 import { cn, formatMoney, formatNumber } from "@/lib/utils";
 import type { ProductVariant } from "@/types";
 
@@ -29,6 +30,7 @@ import type { ProductVariant } from "@/types";
  */
 export function ProductDetail({ product }: { product: ProductVariant }) {
   const toast = useToast();
+  const router = useRouter();
   // Khối trưng bày mở rộng bật theo DỮ LIỆU của biến thể, không theo slug.
   const hasShowcase = Boolean(product.keyFeatures?.length);
   const firstAvailable = product.packages.find((p) => p.inStock) ?? product.packages[0];
@@ -38,42 +40,86 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
   const [tab, setTab] = React.useState("benefits");
   const [submitting, setSubmitting] = React.useState(false);
 
-  const pkg = product.packages.find((p) => p.id === packageId) ?? firstAvailable;
-  const notEnoughBalance = pkg.price > account.balance;
+  const basePkg = product.packages.find((p) => p.id === packageId) ?? firstAvailable;
   const darkHero = product.heroTone === "dark";
 
-  async function buy() {
-    if (!pkg.inStock) return;
-    if (notEnoughBalance) {
-      toast.push({
-        tone: "error",
-        title: "Số dư không đủ",
-        description: `Cần thêm ${formatMoney(pkg.price - account.balance)} để mua gói này.`,
-      });
-      return;
-    }
-    setSubmitting(true);
-    const res = await commerceAdapter.submitOrder({
-      serverId: pkg.id,
-      quantity: 1,
-      target: `${product.name} · ${pkg.name}`,
+  const { session, ready } = useCustomerAuth();
+  const [balance, setBalance] = React.useState<number | null>(null);
+
+  /** Nội dung và giá thật từ máy chủ; catalog tĩnh chỉ là bản mặc định. */
+  const { isAdmin, content, setContent } = useAdminEditor(product.slug);
+
+  // Số dư lấy từ máy chủ, không lấy con số trưng bày trong catalog.
+  React.useEffect(() => {
+    if (!session) return;
+    fetch("/api/products/orders")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok) setBalance(d.balance ?? 0);
+      })
+      .catch(() => undefined);
+  }, [session]);
+
+  /** Gói đã trộn phần quản trị sửa — tên, giá, nhãn, gói phổ biến, còn hàng hay không. */
+  const packages = React.useMemo(() => {
+    if (!content) return product.packages;
+    return product.packages.map((p) => {
+      const c = content.packages.find((x) => x.id === p.id);
+      if (!c) return p;
+      return {
+        ...p,
+        name: c.name,
+        duration: c.duration,
+        price: c.price,
+        bullets: c.bullets,
+        highlight: c.highlight,
+        badge: c.badge ?? undefined,
+        inStock: c.inStock,
+      };
     });
-    setSubmitting(false);
-    if (!res.ok) {
-      toast.push({ tone: "error", title: "Không đặt được đơn", description: res.error });
+  }, [product.packages, content]);
+
+  const pkg = packages.find((p) => p.id === basePkg.id) ?? basePkg;
+  const info = content?.packages.find((x) => x.id === pkg.id);
+  const price = info?.price ?? pkg.price;
+  const canBuy = info ? info.inStock : pkg.inStock;
+  const notEnoughBalance = balance !== null && price > balance;
+
+  async function buy() {
+    if (!canBuy) return;
+    if (ready && !session) {
+      router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
       return;
     }
+
+    setSubmitting(true);
+    const res = await fetch("/api/products/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ slug: product.slug, packageId: pkg.id }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setSubmitting(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không đặt được đơn", description: String(res.error) });
+      return;
+    }
+    setBalance(res.balance ?? null);
     toast.push({
       tone: "success",
-      title: `Đã tạo đơn ${res.orderCode}`,
-      description: "Bộ phận xử lý sẽ kích hoạt gói cho bạn.",
+      title: "Đã thanh toán, đơn đang chờ giao",
+      description: "Thông tin tài khoản sẽ hiện ở trang Sản phẩm đã mua ngay khi bên mình giao.",
     });
+    router.push("/purchased");
   }
 
   return (
     <div className="space-y-5">
+      {isAdmin ? <EditorBar content={content} onSaved={setContent} /> : null}
       <PageHeader
-        title={product.name}
+        title={content?.name ?? product.name}
         breadcrumb={[
           { label: "Trang chủ", href: "/" },
           { label: "Sản phẩm Premium", href: "/products" },
@@ -112,15 +158,15 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                       {product.name}
                     </h2>
                     <p className={cn("mt-0.5 text-body", darkHero ? "text-white/70" : "text-lv-muted")}>
-                      {product.tagline}
+                      {content?.tagline ?? product.tagline}
                     </p>
                   </div>
                 </div>
                 <p className={cn("mt-3 line-clamp-3 text-body", darkHero ? "text-white/80" : "text-lv-navy-700")}>
-                  {product.description}
+                  {content?.description ?? product.description}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {product.badges.map((b) => (
+                  {(content?.badges ?? product.badges).map((b) => (
                     <Badge key={b} tone={darkHero ? "navy" : "gold"} className={darkHero ? "border-white/20" : ""}>
                       {b}
                     </Badge>
@@ -156,12 +202,12 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
           {/* Gói sản phẩm */}
           <SectionCard title="Chọn gói phù hợp" description="Chọn thời hạn phù hợp với nhu cầu của bạn.">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Chọn gói">
-              {product.packages.map((p) => (
+              {packages.map((p) => (
                 <PackageCard key={p.id} pkg={p} selected={p.id === pkg.id} onSelect={() => setPackageId(p.id)} />
               ))}
             </div>
 
-            {product.packages.some((p) => !p.inStock) ? (
+            {packages.some((p) => !p.inStock) ? (
               <p className="mt-3 flex items-center gap-1.5 text-small text-lv-warning">
                 <IconAlertTriangle size={15} />
                 Một số gói đang tạm hết hàng, sẽ mở bán lại khi có nguồn.
@@ -314,12 +360,14 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 <span className="flex items-center gap-1.5 text-small text-lv-gold-700">
                   <IconWallet size={15} /> Số dư khả dụng
                 </span>
-                <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(account.balance)}</span>
+                <span className="lv-price text-body-strong text-lv-gold-700">
+                  {balance === null ? "—" : formatMoney(balance)}
+                </span>
               </div>
 
               {notEnoughBalance ? (
                 <p className="mt-2 text-small text-lv-danger" role="alert">
-                  Số dư không đủ, cần thêm {formatMoney(pkg.price - account.balance)}.
+                  Số dư không đủ, cần thêm {formatMoney(price - (balance ?? 0))}.
                 </p>
               ) : null}
 
@@ -329,10 +377,10 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 className="mt-4"
                 onClick={buy}
                 loading={submitting}
-                disabled={!pkg.inStock}
+                disabled={!canBuy}
                 icon={<IconShoppingCartPlus size={18} />}
               >
-                {pkg.inStock ? "Mua ngay" : "Tạm hết hàng"}
+                {!canBuy ? "Tạm hết hàng" : ready && !session ? "Đăng nhập để mua" : "Mua ngay"}
               </Button>
 
               {product.showConsultCta ? (

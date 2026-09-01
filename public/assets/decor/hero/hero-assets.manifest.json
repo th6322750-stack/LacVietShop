@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "area": "homepage.hero.right",
+  "layoutAuthority": "Keep current homepage/system structure; only replace/polish the right-side hero visual.",
+  "assets": {
+    "hero.right.bird": {
+      "src": "/assets/decor/hero/hero-bird-main.webp",
+      "role": "main-subject",
+      "required": true,
+      "zIndex": 30,
+      "desktop": { "right": "10%", "top": "16%", "width": "52%" },
+      "notes": "Main golden Lac bird. Preserve aspect ratio. This is the focal point. Do not redraw or substitute."
+    },
+    "hero.right.dongson": {
+      "src": "/assets/decor/hero/hero-dongson-bg.webp",
+      "role": "background-pattern",
+      "required": true,
+      "zIndex": 10,
+      "desktop": { "right": "4%", "top": "8%", "width": "88%", "opacity": 0.22 },
+      "notes": "Faded Dong Son drum background behind the bird. Keep subtle."
+    },
+    "hero.right.wave": {
+      "src": "/assets/decor/hero/hero-wave-gold.webp",
+      "role": "foreground-decor",
+      "required": true,
+      "zIndex": 40,
+      "desktop": { "right": "-6%", "bottom": "-4%", "width": "105%" },
+      "notes": "Golden ribbon/wave anchored to the bottom-right. Never cover hero text or CTA."
+    },
+    "hero.right.sparkles": {
+      "src": "/assets/decor/hero/hero-sparkles.webp",
+      "role": "light-overlay",
+      "required": true,
+      "zIndex": 50,
+      "desktop": { "right": "-2%", "top": "6%", "width": "100%", "opacity": 0.42 },
+      "notes": "Soft sparkle/glow overlay. Decorative only; keep restrained."
+    }
+  },
+  "layerOrderBackToFront": [
+    "CSS hero background",
+    "CSS soft texture/gradient",
+    "hero.right.dongson",
+    "hero.right.bird",
+    "hero.right.wave",
+    "hero.right.sparkles"
+  ],
+  "rules": [
+    "Badge, H1, description, CTA and USP remain real HTML/UI, never baked into image assets.",
+    "Do not change sidebar/topbar/hero content order or the surrounding dashboard information architecture.",
+    "Do not redraw, generate, search for or substitute any of these four assets.",
+    "Right visual area should be about 38-42% of hero width on wide desktop.",
+    "On mobile reduce decorative opacity/scale before sacrificing text readability.",
+    "Decorative images must use empty alt text and aria-hidden because they convey no unique content."
+  ]
+}

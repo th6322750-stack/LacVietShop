@@ -47,6 +47,8 @@ export interface PublicAccount {
   email: string;
   phone: string;
   balance: number;
+  /** Ngày mở tài khoản — trang Tài khoản hiện "Tham gia", không được bịa. */
+  createdAt: string;
 }
 
 const toPublic = (a: Account): PublicAccount => ({
@@ -56,6 +58,7 @@ const toPublic = (a: Account): PublicAccount => ({
   email: a.email,
   phone: a.phone,
   balance: a.balance,
+  createdAt: a.createdAt,
 });
 
 type Fail = { ok: false; error: string; field?: string };
@@ -68,10 +71,8 @@ export function newToken() {
 // Đăng ký / đăng nhập
 // ---------------------------------------------------------------------------
 export async function registerAccount(input: {
-  name: string;
   username: string;
   email: string;
-  phone: string;
   password: string;
 }): Promise<{ ok: true; account: PublicAccount; token: string } | Fail> {
   const username = input.username.trim().toLowerCase();
@@ -86,10 +87,13 @@ export async function registerAccount(input: {
 
   const account: Account = {
     id: `kh-${crypto.randomBytes(8).toString("hex")}`,
-    name: input.name.trim(),
+    // Chưa hỏi họ tên lúc đăng ký nên tạm lấy tên đăng nhập làm tên hiển thị;
+    // khách đổi được ở trang Tài khoản.
+    name: username,
     username,
     email,
-    phone: input.phone.trim(),
+    // Số điện thoại để trống, khách bổ sung ở trang Tài khoản nếu muốn.
+    phone: "",
     passwordHash: await bcrypt.hash(input.password, BCRYPT_ROUNDS),
     balance: 0,
     createdAt: new Date().toISOString(),
@@ -131,6 +135,40 @@ export async function loginAccount(
   });
 
   return { ok: true, account: toPublic(account), token };
+}
+
+/**
+ * Đổi mật khẩu khi đang đăng nhập.
+ *
+ * Bắt nhập lại mật khẩu hiện tại: máy ai đó quên đăng xuất thì người lạ cũng
+ * không chiếm được tài khoản. Đổi xong huỷ mọi phiên rồi dựng lại đúng phiên
+ * đang thao tác — mật khẩu đã lộ thì kẻ kia phải bị đá ra.
+ */
+export async function changePassword(
+  accountId: string,
+  current: string,
+  next: string,
+  keepToken: string,
+): Promise<{ ok: true } | Fail> {
+  const account = await findAccount({ id: accountId });
+  if (!account) return { ok: false, error: "Không tìm thấy tài khoản." };
+
+  const matched = await bcrypt.compare(current, account.passwordHash);
+  if (!matched) return { ok: false, error: "Mật khẩu hiện tại không đúng.", field: "current" };
+
+  if (await bcrypt.compare(next, account.passwordHash)) {
+    return { ok: false, error: "Mật khẩu mới trùng mật khẩu cũ.", field: "next" };
+  }
+
+  await setAccountPassword(accountId, await bcrypt.hash(next, BCRYPT_ROUNDS));
+  await deleteSessionsOfAccount(accountId);
+  await insertSession({
+    token: keepToken,
+    accountId,
+    kind: "customer",
+    expiresAt: Date.now() + SESSION_DAYS * 86_400_000,
+  });
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------

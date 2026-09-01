@@ -25,9 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label, Select, Textarea } from "@/components/ui/Field";
 import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
-import { serviceTiers } from "@/lib/demo/catalog";
-import { account } from "@/lib/demo/data";
-import { commerceAdapter } from "@/lib/demo/config";
+import { useCustomerAuth } from "@/lib/customer/auth";
 import { cn, formatMoney, formatNumber, formatUnitPrice } from "@/lib/utils";
 import type { Platform, ServiceServer } from "@/types";
 
@@ -50,11 +48,8 @@ const schema = z.object({
 
 type FormValues = z.input<typeof schema>;
 
-/** Bậc giá áp cho tài khoản đang đăng nhập; rơi về bậc đầu nếu không khớp. */
-const tierIndex = Math.max(
-  0,
-  serviceTiers.findIndex((t) => t.id === account.tier),
-);
+/** Chưa có cơ chế xếp bậc khách hàng nên mọi tài khoản dùng bậc đầu. */
+const tierIndex = 0;
 
 function priceFor(server: ServiceServer) {
   return server.pricesByTier[tierIndex] ?? server.pricePerUnit;
@@ -80,6 +75,9 @@ export function ServicesView({
   catalogError?: string;
 }) {
   const toast = useToast();
+  // Số dư thật của phiên; chưa đăng nhập thì coi như 0 để không mời chào ảo.
+  const { session, refresh } = useCustomerAuth();
+  const balance = session?.balance ?? 0;
   const [region, setRegion] = React.useState<"vn" | "global">(
     platforms.find((p) => p.id === initialPlatform)?.region ?? "vn",
   );
@@ -147,7 +145,7 @@ export function ServicesView({
   const subtotal = quantity * unitPrice;
   const discount = coupon === "LACVIET10" ? Math.round(subtotal * 0.1) : 0;
   const total = Math.max(0, Math.round(subtotal - discount));
-  const notEnoughBalance = total > account.balance;
+  const notEnoughBalance = total > balance;
   const quantityOutOfRange = quantity > 0 && (quantity < server.min || quantity > server.max);
 
   async function onSubmit(values: FormValues) {
@@ -157,6 +155,16 @@ export function ServicesView({
         tone: "warning",
         title: "Số lượng ngoài giới hạn",
         description: `Máy chủ này nhận từ ${formatNumber(server.min)} đến ${formatNumber(server.max)}.`,
+      });
+      return;
+    }
+    // Chưa đăng nhập thì báo đúng việc cần làm, chứ báo "số dư không đủ" cho
+    // người chưa có tài khoản thì khó hiểu.
+    if (!session) {
+      toast.push({
+        tone: "warning",
+        title: "Đăng nhập để tạo đơn",
+        description: "Đơn gắn với tài khoản để bạn theo dõi tiến độ và được hỗ trợ.",
       });
       return;
     }
@@ -171,54 +179,34 @@ export function ServicesView({
 
     setSubmitting(true);
 
-    // Máy chủ có mã dịch vụ thật thì thử đẩy sang nhà cung cấp trước.
-    if (server.apiServiceId) {
-      const live = await fetch("/api/thatim/order", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          service: server.apiServiceId,
-          link: values.target,
-          quantity: Number(values.quantity),
-        }),
-      })
-        .then((r) => r.json())
-        .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
-
-      if (live.ok) {
-        setSubmitting(false);
-        setResult({ code: String(live.order) });
-        toast.push({
-          tone: "success",
-          title: `Đã đẩy đơn #${live.order} sang nhà cung cấp`,
-          description: "Theo dõi tiến độ tại trang Tiến độ đơn hàng.",
-        });
-        return;
-      }
-      // Chưa bật đẩy đơn thật (hoặc lỗi) → chạy tiếp luồng mô phỏng, báo rõ lý do.
-      toast.push({
-        tone: "warning",
-        title: "Chưa đẩy đơn thật",
-        description: String(live.error ?? "Nhà cung cấp từ chối đơn."),
-      });
-    }
-
-    const res = await commerceAdapter.submitOrder({
-      serverId: server.id,
-      quantity: Number(values.quantity),
-      target: values.target,
-    });
+    // Máy chủ tự tính lại giá và trừ số dư; trình duyệt chỉ gửi mã máy chủ,
+    // liên kết và số lượng. Không gửi giá — gửi giá là mở cửa cho người sửa.
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        serverId: server.id,
+        link: values.target,
+        quantity: Number(values.quantity),
+      }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
     setSubmitting(false);
 
     if (!res.ok) {
-      toast.push({ tone: "error", title: "Không tạo được đơn", description: res.error });
+      toast.push({ tone: "error", title: "Chưa tạo được đơn", description: String(res.error) });
       return;
     }
-    setResult({ code: res.orderCode });
+
+    await refresh();
+    setResult({ code: String(res.order.id) });
     toast.push({
       tone: "success",
-      title: `Đã tạo đơn ${res.orderCode}`,
-      description: "Đây là đơn mô phỏng, chưa gửi tới hệ thống xử lý thật.",
+      title: `Đã tạo đơn ${res.order.id}`,
+      description: res.queued
+        ? "Đơn đã nhận và đang xếp hàng chờ xử lý. Theo dõi ở trang Tiến độ đơn hàng."
+        : "Đơn đang chạy. Theo dõi ở trang Tiến độ đơn hàng.",
     });
   }
 
@@ -339,7 +327,7 @@ export function ServicesView({
               </div>
               <p className="mt-1.5 text-small text-lv-muted">
                 {catalogSource === "api"
-                  ? "Mã máy chủ chính là mã dịch vụ bên nhà cung cấp, dùng thẳng khi đẩy đơn."
+                  ? "Mỗi máy chủ là một nguồn chạy khác nhau; chọn theo tốc độ và mức giá phù hợp."
                   : "Máy chủ gắn nhãn DEMO chưa có số liệu từ nhà cung cấp, sẽ cập nhật khi đấu API."}
               </p>
             </div>
@@ -477,7 +465,7 @@ export function ServicesView({
               </div>
 
               <div className="mt-3 divide-y divide-lv-border">
-                <OrderSummaryRow label="Máy chủ" value={`#${server.index} · ${server.code}`} />
+                <OrderSummaryRow label="Máy chủ" value={`Máy chủ #${server.index}`} />
                 <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
                 <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
                 <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
@@ -491,7 +479,7 @@ export function ServicesView({
                 <span className="flex items-center gap-1.5 text-small text-lv-gold-700">
                   <IconWallet size={15} /> Số dư khả dụng
                 </span>
-                <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(account.balance)}</span>
+                <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(balance)}</span>
               </div>
 
               {notEnoughBalance ? (
@@ -512,11 +500,6 @@ export function ServicesView({
                 {submitting ? "Đang tạo đơn…" : "Đặt hàng ngay"}
               </Button>
 
-              <p className="mt-2 text-center text-small text-lv-muted">
-                {server.apiServiceId
-                  ? `Mã dịch vụ nhà cung cấp: ${server.apiServiceId}`
-                  : "Máy chủ này chưa có mã dịch vụ thật, đơn sẽ chạy ở chế độ mô phỏng."}
-              </p>
 
               {result ? (
                 <div className="mt-3 rounded-card border border-lv-success/30 bg-lv-success/[0.07] p-3 text-small text-lv-navy-700">
@@ -581,7 +564,7 @@ function ServerOption({
       <span className="min-w-0 flex-1">
         <span className="block break-words text-body-strong text-lv-text">{server.name}</span>
         <span className="mt-0.5 block text-small text-lv-muted">
-          Mã {server.code} · MIN {formatNumber(server.min)} · MAX {formatNumber(server.max)}
+          MIN {formatNumber(server.min)} · MAX {formatNumber(server.max)}
         </span>
         {server.tags.length > 0 || server.speed ? (
           <span className="mt-1 flex flex-wrap gap-1">
