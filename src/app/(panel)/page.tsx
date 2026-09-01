@@ -9,6 +9,7 @@ import {
   IconClipboardCheck,
 } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
+import { HeroVisual } from "@/components/blocks/HeroVisual";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { PlatformTile, ProductCard } from "@/components/blocks/Commerce";
 import { LinkButton } from "@/components/ui/Button";
@@ -108,13 +109,10 @@ export default function HomePage() {
               ))}
             </dl>
           </div>
-          <div className="lg:col-span-5">
-            <AssetImage
-              assetKey="home.hero.brandVisual"
-              className="h-48 w-full sm:h-60 lg:h-64"
-              rounded="panel"
-              showLabel
-            />
+          {/* Khối hình bên phải: 5/12 cột ≈ 41% chiều ngang hero, đúng khoảng
+              38–42% mà manifest yêu cầu. */}
+          <div className="min-w-0 lg:col-span-5">
+            <HeroVisual />
           </div>
         </div>
       </section>
