@@ -286,14 +286,19 @@ export function AdminAnnouncementView() {
             </div>
           </SectionCard>
 
-          <SectionCard title="Ảnh minh hoạ" description="Không bắt buộc. Ảnh được thu nhỏ trước khi lưu.">
+          <ContactCard editable={editable} />
+
+          <SectionCard
+            title="Ảnh minh hoạ"
+            description="Không bắt buộc. Ảnh thu về tối đa 1280px, đủ để khách đọc chữ trên banner."
+          >
             <div className="flex flex-wrap items-center gap-3">
               {draft.imageSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={draft.imageSrc}
                   alt="Ảnh thông báo"
-                  className="h-24 w-24 rounded-card border border-lv-border object-contain"
+                  className="h-28 w-48 rounded-card border border-lv-border bg-lv-bg object-contain"
                 />
               ) : (
                 <span className="flex h-24 w-24 items-center justify-center rounded-card border border-dashed border-lv-border text-lv-muted">
@@ -389,5 +394,101 @@ export function AdminAnnouncementView() {
         </aside>
       </div>
     </div>
+  );
+}
+
+/**
+ * Kênh liên hệ hiện ở thanh bên cho khách.
+ *
+ * Để trống ô nào thì kênh đó không hiện. Trước đây thanh bên ghi cứng câu "kênh
+ * liên hệ chưa được cấu hình" — khách đọc xong chẳng biết gọi ai.
+ */
+function ContactCard({ editable }: { editable: boolean }) {
+  const toast = useToast();
+  const [form, setForm] = React.useState<{
+    hours: string;
+    zalo: string;
+    facebook: string;
+    telegram: string;
+  } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    const res = await fetch("/api/admin/ops")
+      .then((r) => r.json())
+      .catch(() => null);
+    const c = res?.ops?.contact ?? {};
+    setForm({ hours: c.hours ?? "", zalo: c.zalo ?? "", facebook: c.facebook ?? "", telegram: c.telegram ?? "" });
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function luu() {
+    if (!form) return;
+    setBusy(true);
+    const res = await fetch("/api/admin/ops", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ contact: form }),
+    })
+      .then((r) => r.json())
+      .catch(() => ({ ok: false, error: "Không gọi được máy chủ." }));
+    setBusy(false);
+
+    if (!res.ok) {
+      toast.push({ tone: "error", title: "Không lưu được", description: String(res.error) });
+      return;
+    }
+    toast.push({ tone: "success", title: "Đã lưu kênh liên hệ", description: "Khách thấy ngay ở thanh bên." });
+  }
+
+  if (!form) {
+    return (
+      <SectionCard title="Kênh liên hệ">
+        <p className="text-small text-lv-muted">Đang đọc cấu hình…</p>
+      </SectionCard>
+    );
+  }
+
+  const o = (
+    khoa: "hours" | "zalo" | "facebook" | "telegram",
+    nhan: string,
+    goiY: string,
+    hint?: string,
+  ) => (
+    <div>
+      <Label htmlFor={`lh-${khoa}`} hint={hint}>
+        {nhan}
+      </Label>
+      <Input
+        id={`lh-${khoa}`}
+        value={form[khoa]}
+        placeholder={goiY}
+        maxLength={300}
+        disabled={!editable}
+        onChange={(e) => setForm({ ...form, [khoa]: e.target.value })}
+      />
+    </div>
+  );
+
+  return (
+    <SectionCard
+      title="Kênh liên hệ"
+      description="Hiện thành nút ở thanh bên của khách. Ô nào để trống thì kênh đó không hiện."
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        {o("hours", "Giờ hỗ trợ", "08:00 – 22:00 hằng ngày")}
+        {o("zalo", "Zalo", "https://zalo.me/...", "link đầy đủ")}
+        {o("facebook", "Facebook", "https://facebook.com/...", "link đầy đủ")}
+        {o("telegram", "Telegram", "https://t.me/...", "link đầy đủ")}
+      </div>
+      {editable ? (
+        <Button className="mt-4" loading={busy} icon={<IconDeviceFloppy size={17} />} onClick={luu}>
+          Lưu kênh liên hệ
+        </Button>
+      ) : null}
+    </SectionCard>
   );
 }

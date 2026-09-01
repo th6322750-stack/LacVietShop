@@ -206,6 +206,18 @@ export interface ServiceOrder {
 export interface OpsSettings {
   /** Bật: đơn dịch vụ tự đẩy sang nhà cung cấp. Tắt: đơn về hàng đợi chạy tay. */
   autoPushOrders: boolean;
+  /**
+   * Kênh liên hệ hiện ở thanh bên cho khách.
+   *
+   * Để trống thì KHÔNG hiện — thà không có nút còn hơn có nút bấm vào chẳng đi
+   * đâu. Giờ hỗ trợ cũng để trống được nếu không muốn cam kết khung giờ.
+   */
+  contact?: {
+    hours?: string;
+    zalo?: string;
+    facebook?: string;
+    telegram?: string;
+  };
   updatedAt: string;
   updatedBy?: string;
 }

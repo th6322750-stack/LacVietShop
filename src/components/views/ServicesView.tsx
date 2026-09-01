@@ -327,7 +327,7 @@ export function ServicesView({
               </div>
               <p className="mt-1.5 text-small text-lv-muted">
                 {catalogSource === "api"
-                  ? "Mã máy chủ chính là mã dịch vụ bên nhà cung cấp, dùng thẳng khi đẩy đơn."
+                  ? "Mỗi máy chủ là một nguồn chạy khác nhau; chọn theo tốc độ và mức giá phù hợp."
                   : "Máy chủ gắn nhãn DEMO chưa có số liệu từ nhà cung cấp, sẽ cập nhật khi đấu API."}
               </p>
             </div>
@@ -465,7 +465,7 @@ export function ServicesView({
               </div>
 
               <div className="mt-3 divide-y divide-lv-border">
-                <OrderSummaryRow label="Máy chủ" value={`#${server.index} · ${server.code}`} />
+                <OrderSummaryRow label="Máy chủ" value={`Máy chủ #${server.index}`} />
                 <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
                 <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
                 <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
@@ -500,11 +500,6 @@ export function ServicesView({
                 {submitting ? "Đang tạo đơn…" : "Đặt hàng ngay"}
               </Button>
 
-              <p className="mt-2 text-center text-small text-lv-muted">
-                {server.apiServiceId
-                  ? `Mã dịch vụ nhà cung cấp: ${server.apiServiceId}`
-                  : "Máy chủ này chưa có mã dịch vụ thật, đơn sẽ chạy ở chế độ mô phỏng."}
-              </p>
 
               {result ? (
                 <div className="mt-3 rounded-card border border-lv-success/30 bg-lv-success/[0.07] p-3 text-small text-lv-navy-700">
@@ -569,7 +564,7 @@ function ServerOption({
       <span className="min-w-0 flex-1">
         <span className="block break-words text-body-strong text-lv-text">{server.name}</span>
         <span className="mt-0.5 block text-small text-lv-muted">
-          Mã {server.code} · MIN {formatNumber(server.min)} · MAX {formatNumber(server.max)}
+          MIN {formatNumber(server.min)} · MAX {formatNumber(server.max)}
         </span>
         {server.tags.length > 0 || server.speed ? (
           <span className="mt-1 flex flex-wrap gap-1">

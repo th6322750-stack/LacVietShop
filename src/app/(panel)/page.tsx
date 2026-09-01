@@ -9,7 +9,6 @@ import {
   IconClipboardCheck,
 } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
-import { HeroVisual } from "@/components/blocks/HeroVisual";
 import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { PlatformTile, ProductCard } from "@/components/blocks/Commerce";
 import { LinkButton } from "@/components/ui/Button";
@@ -82,8 +81,8 @@ export default function HomePage() {
           rounded="none"
           className="pointer-events-none absolute inset-0 h-full w-full border-0 bg-transparent !object-cover opacity-[0.06]"
         />
-        <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-12 lg:items-center xl:p-10">
-          <div className="lg:col-span-7">
+        <div className="relative p-6 sm:p-8 xl:p-10">
+          <div className="max-w-3xl">
             <Badge tone="gold" icon={<IconSparkles size={14} />}>
               {demoBrand.name}
             </Badge>
@@ -108,11 +107,6 @@ export default function HomePage() {
                 </div>
               ))}
             </dl>
-          </div>
-          {/* Khối hình bên phải: 5/12 cột ≈ 41% chiều ngang hero, đúng khoảng
-              38–42% mà manifest yêu cầu. */}
-          <div className="min-w-0 lg:col-span-5">
-            <HeroVisual />
           </div>
         </div>
       </section>
@@ -175,34 +169,6 @@ export default function HomePage() {
         </div>
       </SectionCard>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* Giới thiệu */}
-        <SectionCard
-          title={`Về ${demoBrand.name}`}
-          className="lg:col-span-12"
-          description="Đối tác truyền thông số đồng hành cùng thương hiệu Việt."
-        >
-          <p className="text-body text-lv-navy-700">
-            Lạc Việt Media Agency cung cấp giải pháp tăng trưởng cho doanh nghiệp và nhà sáng tạo nội dung:
-            từ tăng tương tác mạng xã hội, kho tài khoản premium chính hãng, tới theo dõi đơn hàng và
-            dòng tiền theo thời gian thực.
-          </p>
-          <ul className="mt-4 space-y-3">
-            {commitments.map((c) => (
-              <li key={c.title} className="flex gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-card border border-lv-border-gold bg-lv-gold-50 text-lv-gold-700">
-                  <c.icon size={18} />
-                </span>
-                <span>
-                  <span className="block text-body-strong text-lv-text">{c.title}</span>
-                  <span className="block text-small text-lv-muted">{c.detail}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
-
-      </div>
     </div>
   );
 }

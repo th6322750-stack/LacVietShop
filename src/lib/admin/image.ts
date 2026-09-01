@@ -1,15 +1,20 @@
 /**
- * Đọc ảnh người dùng chọn và thu nhỏ về khổ vuông trước khi lưu.
+ * Đọc ảnh người dùng chọn, thu nhỏ vừa phải rồi trả về dạng data URL.
  *
- * Bản dựng DEMO lưu dữ liệu trong localStorage (~5MB cho cả tên miền), nên ảnh
- * gốc vài MB sẽ làm tràn và mất dữ liệu. Thu nhỏ về tối đa 256px, xuất WebP
- * chất lượng 0.82 → mỗi ảnh thường 8–25KB.
+ * Ảnh này là banner thông báo cho khách nên phải còn đọc được chữ trên đó. Mức
+ * cũ 256px là di sản thời kho dữ liệu nằm trong localStorage (~5MB cho cả tên
+ * miền); một tấm banner khuyến mãi co về 256px thì chữ nhoè hết, dán lên chẳng
+ * ai đọc nổi. Nay thông báo nằm ở máy chủ nên nới lên 1280px.
  *
- * Khi có backend thật, thay hàm này bằng lệnh tải tệp lên và trả về URL.
+ * Vẫn phải có trần: cột dữ liệu chỉ nhận 400.000 ký tự. Nếu ảnh sau khi nén vẫn
+ * quá dài thì hạ dần chất lượng rồi hạ kích thước, chứ không đẩy lên để máy chủ
+ * từ chối và người dùng chẳng hiểu vì sao.
  */
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_EDGE = 256;
+const MAX_EDGE = 1280;
+/** Trần của cột imageSrc ở /api/announcement, chừa một ít cho an toàn. */
+const MAX_DATAURL_CHARS = 380_000;
 
 export interface ImageResult {
   ok: true;
@@ -45,7 +50,29 @@ export async function readProductImage(file: File): Promise<ImageResult | ImageE
     bitmap.close?.();
 
     // WebP gọn hơn PNG nhiều; trình duyệt nào không hỗ trợ sẽ tự trả về PNG.
-    const dataUrl = canvas.toDataURL("image/webp", 0.82);
+    let dataUrl = canvas.toDataURL("image/webp", 0.82);
+
+    // Còn dài quá thì hạ chất lượng trước (mắt ít nhận ra), hết cách mới thu nhỏ.
+    for (const q of [0.7, 0.6, 0.5]) {
+      if (dataUrl.length <= MAX_DATAURL_CHARS) break;
+      dataUrl = canvas.toDataURL("image/webp", q);
+    }
+    let canh = Math.max(width, height);
+    while (dataUrl.length > MAX_DATAURL_CHARS && canh > 320) {
+      canh = Math.round(canh * 0.8);
+      const ti = canh / Math.max(width, height);
+      const nho = document.createElement("canvas");
+      nho.width = Math.max(1, Math.round(width * ti));
+      nho.height = Math.max(1, Math.round(height * ti));
+      const c2 = nho.getContext("2d");
+      if (!c2) break;
+      c2.drawImage(canvas, 0, 0, nho.width, nho.height);
+      dataUrl = nho.toDataURL("image/webp", 0.7);
+    }
+    if (dataUrl.length > MAX_DATAURL_CHARS) {
+      return { ok: false, error: "Ảnh quá nặng, thử ảnh đơn giản hoặc nhỏ hơn." };
+    }
+
     return { ok: true, dataUrl, bytes: Math.round((dataUrl.length * 3) / 4) };
   } catch {
     return { ok: false, error: "Không đọc được tệp ảnh này." };

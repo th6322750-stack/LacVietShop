@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   IconBell,
-  IconHeadset,
   IconLogout,
   IconMenu2,
   IconPlus,
@@ -20,6 +19,7 @@ import { Drawer } from "@/components/ui/Overlay";
 import { Tooltip } from "@/components/ui/Popover";
 import { useCustomerAuth } from "@/lib/customer/auth";
 import { isActivePath, navGroups, navItems } from "./nav-items";
+import { SupportChannels } from "./SupportChannels";
 
 /**
  * Khung ứng dụng dùng chung (PROJECT_HANDOFF §7).
@@ -135,17 +135,7 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
       </nav>
 
       <div className={cn("shrink-0 border-t border-lv-border p-3", compact ? "hidden xl:block" : "block")}>
-        <div className="space-y-3">
-          <div className="rounded-card border border-lv-border-gold bg-lv-surface-soft p-3">
-            <p className="flex items-center gap-1.5 text-small-strong text-lv-gold-700">
-              <IconHeadset size={15} />
-              Hỗ trợ {demoBrand.supportHours}
-            </p>
-            <p className="mt-1 text-small text-lv-muted">
-              Kênh liên hệ chính thức chưa được cấu hình trong bản dựng này.
-            </p>
-          </div>
-        </div>
+        <SupportChannels compact={compact} />
       </div>
     </div>
   );

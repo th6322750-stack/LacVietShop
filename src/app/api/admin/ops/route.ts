@@ -16,7 +16,23 @@ import { isThatimConfigured } from "@/lib/thatim/config";
 
 export const dynamic = "force-dynamic";
 
-const schema = z.object({ autoPushOrders: z.boolean() });
+/** Link phải là http(s) để bấm vào đi được đúng chỗ, không nhận chuỗi bừa. */
+const link = z
+  .string()
+  .trim()
+  .max(300)
+  .refine(
+    (v) => v === "" || v.toLowerCase().startsWith("http://") || v.toLowerCase().startsWith("https://"),
+    "Đường dẫn phải bắt đầu bằng http:// hoặc https://",
+  )
+  .optional();
+
+const schema = z.object({
+  autoPushOrders: z.boolean().optional(),
+  contact: z
+    .object({ hours: z.string().trim().max(80).optional(), zalo: link, facebook: link, telegram: link })
+    .optional(),
+});
 
 async function admin() {
   const jar = await cookies();

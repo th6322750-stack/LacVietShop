@@ -144,11 +144,13 @@ export function AnnouncementCard({
       </div>
 
       {announcement.imageSrc ? (
+        /* Banner khuyến mãi thường cao và có chữ; ép xuống 224px là không đọc
+           được. Cho cao tối đa 60% màn hình rồi để object-contain giữ tỷ lệ. */
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={announcement.imageSrc}
           alt=""
-          className="max-h-56 w-full rounded-card border border-lv-border object-contain"
+          className="max-h-[60vh] w-full rounded-card border border-lv-border object-contain"
         />
       ) : null}
 

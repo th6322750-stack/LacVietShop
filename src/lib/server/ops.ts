@@ -26,6 +26,7 @@ export async function readOps(): Promise<OpsSettings> {
   if (stored) return stored;
   return {
     autoPushOrders: thatimConfig.allowOrders,
+    contact: {},
     updatedAt: new Date().toISOString(),
   };
 }
@@ -35,9 +36,12 @@ export async function autoPushEnabled() {
   return (await readOps()).autoPushOrders;
 }
 
-export async function writeOps(patch: { autoPushOrders: boolean }, by: string) {
+export async function writeOps(patch: Partial<Pick<OpsSettings, "autoPushOrders" | "contact">>, by: string) {
+  // Ghi từng phần: đổi kênh liên hệ thì không được vô tình bật lại đẩy đơn.
+  const cur = await readOps();
   const next: OpsSettings = {
-    autoPushOrders: patch.autoPushOrders,
+    autoPushOrders: patch.autoPushOrders ?? cur.autoPushOrders,
+    contact: patch.contact ?? cur.contact ?? {},
     updatedAt: new Date().toISOString(),
     updatedBy: by,
   };
