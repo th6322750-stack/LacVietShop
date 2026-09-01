@@ -35,9 +35,8 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
 export interface AdminAccount {
   id: number;
+  /** Khớp với tên đăng nhập trong ADMIN_ACCOUNTS; dùng để tra danh sách quyền. */
   username: string;
-  /** Mật khẩu trình diễn — bản dựng tĩnh không có backend xác thực (gap auth.provider). */
-  password: string;
   name: string;
   role: string;
   email: string;
@@ -47,8 +46,7 @@ export interface AdminAccount {
 export const adminAccounts: AdminAccount[] = [
   {
     id: 1,
-    username: "admin",
-    password: "admin123",
+    username: "lacvietadmin2704",
     name: "Quản trị viên",
     role: "Quản trị viên",
     email: "admin@lacviet.demo",
@@ -57,7 +55,6 @@ export const adminAccounts: AdminAccount[] = [
   {
     id: 2,
     username: "hotro",
-    password: "hotro123",
     name: "Nhân viên hỗ trợ",
     role: "Hỗ trợ",
     email: "hotro@lacviet.demo",
@@ -66,7 +63,6 @@ export const adminAccounts: AdminAccount[] = [
   {
     id: 3,
     username: "ketoan",
-    password: "ketoan123",
     name: "Kế toán",
     role: "Kế toán",
     email: "ketoan@lacviet.demo",

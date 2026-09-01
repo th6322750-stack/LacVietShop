@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { ADMIN_COOKIE, adminForToken, adminMaxAge, loginAdmin, logoutAdmin } from "@/lib/server/admin";
+import { ADMIN_COOKIE, adminForToken, adminMaxAge, adminProfile, loginAdmin, logoutAdmin } from "@/lib/server/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,9 @@ const schema = z.object({ username: z.string().min(1).max(64), password: z.strin
 
 export async function GET() {
   const jar = await cookies();
-  return NextResponse.json({ ok: true, admin: await adminForToken(jar.get(ADMIN_COOKIE)?.value) });
+  const who = await adminForToken(jar.get(ADMIN_COOKIE)?.value);
+  // Trả kèm bộ quyền để trình duyệt không phải tự tra một danh sách cắm cứng.
+  return NextResponse.json({ ok: true, admin: who, profile: who ? adminProfile(who) : null });
 }
 
 export async function POST(request: Request) {
@@ -24,7 +26,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Tài khoản hoặc mật khẩu không đúng." }, { status: 401 });
   }
 
-  const out = NextResponse.json({ ok: true, admin: session.username });
+  const out = NextResponse.json({
+    ok: true,
+    admin: session.username,
+    profile: adminProfile(session.username),
+  });
   out.cookies.set(ADMIN_COOKIE, session.token, {
     httpOnly: true,
     sameSite: "lax",

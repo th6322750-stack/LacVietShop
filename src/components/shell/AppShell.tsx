@@ -13,7 +13,6 @@ import {
   IconWallet,
 } from "@tabler/icons-react";
 import { cn, formatMoney } from "@/lib/utils";
-import { account } from "@/lib/demo/data";
 import { demoBrand } from "@/lib/demo/config";
 import { AssetImage } from "@/components/blocks/AssetImage";
 import { Button, LinkButton } from "@/components/ui/Button";
@@ -145,9 +144,6 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
             <p className="mt-1 text-small text-lv-muted">
               Kênh liên hệ chính thức chưa được cấu hình trong bản dựng này.
             </p>
-            <LinkButton href="/api-docs" variant="secondary" size="sm" block className="mt-2">
-              Xem tài liệu API
-            </LinkButton>
           </div>
         </div>
       </div>
@@ -207,7 +203,7 @@ function WalletCorner() {
       <div className="hidden items-center gap-2 rounded-control border border-lv-border-gold bg-lv-gold-50 px-3 py-1.5 sm:flex">
         <IconWallet size={17} className="text-lv-gold-700" aria-hidden />
         <span className="text-small text-lv-muted">Số dư</span>
-        <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(account.balance)}</span>
+        <span className="lv-price text-body-strong text-lv-gold-700">{formatMoney(session.balance)}</span>
       </div>
 
       <LinkButton href="/deposit" size="sm" icon={<IconPlus size={16} />} className="hidden sm:inline-flex">

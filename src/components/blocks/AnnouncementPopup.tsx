@@ -5,15 +5,14 @@ import { IconBellRinging, IconClockPause, IconX } from "@tabler/icons-react";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Overlay";
 import { cn } from "@/lib/utils";
-import { ADMIN_DB_KEY } from "@/lib/admin/store";
-import { defaultAnnouncement, type AdminAnnouncement } from "@/lib/admin/data";
+import { type AdminAnnouncement } from "@/lib/admin/data";
 
 /**
  * Popup thông báo cho khách, nội dung do quản trị viên đặt ở /admin/announcement.
  *
- * Bản DEMO đọc thẳng kho quản trị trong localStorage (cùng tên miền). Khi có
- * backend thật, thay hàm readAnnouncement bằng một lời gọi API là xong; phần
- * hiển thị và luật tần suất giữ nguyên.
+ * Nội dung lấy từ máy chủ (/api/announcement) nên quản trị soạn ở đâu thì khách
+ * ở máy nào cũng thấy. Riêng chuyện "đã xem chưa" là việc của từng máy khách nên
+ * vẫn nằm ở localStorage.
  */
 
 const SEEN_KEY = "lacviet_notice_seen_v1";
@@ -29,15 +28,11 @@ interface SeenRecord {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-function readAnnouncement(): AdminAnnouncement {
-  try {
-    const raw = window.localStorage.getItem(ADMIN_DB_KEY);
-    if (!raw) return defaultAnnouncement;
-    const db = JSON.parse(raw) as { announcement?: AdminAnnouncement };
-    return db.announcement ?? defaultAnnouncement;
-  } catch {
-    return defaultAnnouncement;
-  }
+async function fetchAnnouncement(): Promise<AdminAnnouncement | null> {
+  const res = await fetch("/api/announcement")
+    .then((r) => r.json())
+    .catch(() => null);
+  return res?.ok ? (res.announcement as AdminAnnouncement) : null;
 }
 
 function readSeen(): SeenRecord | null {
@@ -81,8 +76,13 @@ export function AnnouncementPopup() {
 
   React.useEffect(() => {
     // Chỉ chạy sau khi mount: máy chủ không biết trạng thái đã-xem của từng khách.
-    const a = readAnnouncement();
-    if (shouldShow(a, readSeen())) setAnnouncement(a);
+    let alive = true;
+    void fetchAnnouncement().then((a) => {
+      if (alive && a && shouldShow(a, readSeen())) setAnnouncement(a);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   /** snoozeHours > 0 nghĩa là khách chọn tạm ẩn, không phải chỉ đóng. */

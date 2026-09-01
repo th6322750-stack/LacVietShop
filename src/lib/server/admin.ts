@@ -10,6 +10,7 @@
  * Chưa đặt thì dùng tài khoản trình diễn — chỉ hợp giai đoạn kiểm thử.
  */
 import crypto from "node:crypto";
+import { adminAccounts as adminRoleProfiles } from "@/lib/admin/data";
 import { deleteSession, findSession, insertSession } from "./db";
 
 if (typeof window !== "undefined") {
@@ -25,6 +26,36 @@ const DEMO_ADMINS: Record<string, string> = {
   hotro: "hotro123",
   ketoan: "ketoan123",
 };
+
+/** Tên đăng nhập theo đúng thứ tự khai trong ADMIN_ACCOUNTS. */
+function adminOrder(): string[] {
+  const raw = process.env.ADMIN_ACCOUNTS?.trim();
+  const src = raw ? raw.split(",") : Object.keys(DEMO_ADMINS).map((u) => `${u}:x`);
+  return src.map((pair) => pair.split(":")[0]?.trim().toLowerCase()).filter(Boolean) as string[];
+}
+
+/**
+ * Bộ quyền của một tài khoản quản trị.
+ *
+ * Trước đây trình duyệt tự tra tên đăng nhập trong một danh sách cắm cứng. Đổi
+ * tên tài khoản trong ADMIN_ACCOUNTS là đăng nhập đúng mật khẩu vẫn bị chặn ở
+ * bước tra quyền — một cái bẫy chỉ nổ trên bản chạy thật. Nay máy chủ tự trả về
+ * bộ quyền: khớp tên thì lấy đúng vai trò, còn tài khoản ĐẦU TIÊN trong cấu hình
+ * luôn là chủ hệ thống dù đặt tên gì. Tên lạ không nằm trong hai diện đó thì
+ * không được quyền nào — thà không vào được còn hơn vào với quyền không rõ.
+ */
+export function adminProfile(username: string) {
+  const key = username.trim().toLowerCase();
+  const known = ROLE_PROFILES.find((a) => a.username === key);
+  if (known) return { ...known, username: key };
+
+  const first = adminOrder()[0];
+  if (first && key === first) {
+    const owner = ROLE_PROFILES[0];
+    return { ...owner, username: key, name: owner?.name ?? "Quản trị viên" };
+  }
+  return { username: key, id: 0, name: key, role: "Không rõ vai trò", email: "", permissions: [] };
+}
 
 function adminAccounts(): Record<string, string> {
   const raw = process.env.ADMIN_ACCOUNTS?.trim();
@@ -44,6 +75,16 @@ function sameSecret(a: string, b: string) {
   if (x.length !== y.length) return false;
   return crypto.timingSafeEqual(x, y);
 }
+
+/** Danh sách vai trò; nhập trễ để tệp dữ liệu không kéo theo lúc khởi động. */
+const ROLE_PROFILES: {
+  id: number;
+  username: string;
+  name: string;
+  role: string;
+  email: string;
+  permissions: readonly string[];
+}[] = adminRoleProfiles;
 
 export async function loginAdmin(username: string, password: string) {
   const accounts = adminAccounts();
