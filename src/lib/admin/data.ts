@@ -61,6 +61,16 @@ export const adminAccounts: AdminAccount[] = [
     email: "admin@lacviet.demo",
     permissions: [...ADMIN_PERMISSIONS],
   },
+  {
+    // Đồng quản trị thứ hai, đủ mọi quyền như chủ. Muốn thu hẹp quyền của người
+    // này thì bớt bớt trong mảng permissions.
+    id: 2,
+    username: "kwang",
+    name: "Kwang",
+    role: "Quản trị viên",
+    email: "kwang@lacviet.demo",
+    permissions: [...ADMIN_PERMISSIONS],
+  },
 ];
 
 // ---------------------------------------------------------------------------
