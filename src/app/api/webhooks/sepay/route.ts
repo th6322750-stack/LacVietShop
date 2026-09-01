@@ -13,7 +13,7 @@
  *   - Cộng đúng số tiền THỰC SỰ nhận được, không phải số khách bấm lúc tạo lệnh.
  */
 import { NextResponse } from "next/server";
-import { addBalance, depositBySepayId, findPendingDepositByCode, markDepositPaid } from "@/lib/server/db";
+import { depositBySepayId, findPendingDepositByCode, markPaidAndCredit } from "@/lib/server/db";
 import { extractCode, sepayWebhookReady, verifyWebhook, type SepayWebhook } from "@/lib/server/sepay";
 
 export const dynamic = "force-dynamic";
@@ -70,13 +70,11 @@ export async function POST(request: Request) {
       ? `${body.gateway ?? "bank"} · ${body.referenceCode ?? ""}`.trim()
       : `Khách chuyển ${received}đ thay vì ${deposit.amount}đ · ${body.gateway ?? "bank"} ${body.referenceCode ?? ""}`.trim();
 
-  const paid = await markDepositPaid(deposit.id, sepayId, note);
-  if (!paid) {
-    // Một luồng khác vừa xử lý xong lệnh này.
+  // Đánh dấu đã nhận VÀ cộng tiền trong một thao tác: không còn khe hở nào để
+  // lệnh bị đánh dấu xong mà tiền chưa vào.
+  const res = await markPaidAndCredit(deposit.id, sepayId, note, received);
+  if (!res.credited) {
     return NextResponse.json({ success: true, message: "Lệnh nạp đã được xử lý." });
   }
-
-  if (paid.accountId) await addBalance(paid.accountId, received);
-
   return NextResponse.json({ success: true, message: `Đã cộng ${received}đ cho lệnh ${code}.` });
 }

@@ -194,6 +194,8 @@ export interface ServiceOrder {
   /** Số tiền đã hoàn lại cho khách, nếu có. */
   refunded: number;
   note?: string | null;
+  /** Yêu cầu riêng khách nhập lúc đặt. */
+  customerNote?: string | null;
 }
 
 /**
@@ -414,8 +416,10 @@ function ensureSchema() {
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now(),
       refunded bigint not null default 0,
-      note text
+      note text,
+      customer_note text
     )`;
+    await sql`alter table service_orders add column if not exists customer_note text`;
     await sql`create index if not exists service_orders_account on service_orders (account_id, created_at desc)`;
     await sql`create table if not exists ops_settings (
       id int primary key,
@@ -542,6 +546,75 @@ export async function updateAccountProfile(id: string, patch: { name: string; ph
     a.phone = patch.phone;
   }
   writeFile(db);
+}
+
+/**
+ * Trừ tiền chỉ khi đủ, trong MỘT câu lệnh. Trả số dư mới, hoặc null nếu không đủ.
+ *
+ * Không tách "kiểm rồi trừ": hai yêu cầu song song đều thấy đủ tiền rồi cùng trừ
+ * là số dư âm. "where balance >= amount" khoá đúng chỗ đó — chỉ một yêu cầu qua.
+ */
+export async function deductIfEnough(accountId: string, amount: number): Promise<number | null> {
+  if (sql) {
+    await ensureSchema();
+    const rows = await sql`update accounts set balance = balance - ${amount}
+      where id = ${accountId} and balance >= ${amount} returning balance`;
+    return rows[0] ? Number(rows[0].balance) : null;
+  }
+  // Tệp JSON chạy một luồng nên không có đua; vẫn giữ đúng luật đủ-mới-trừ.
+  const db = readFile();
+  const a = db.accounts.find((x) => x.id === accountId);
+  if (!a || a.balance < amount) return null;
+  a.balance -= amount;
+  writeFile(db);
+  return a.balance;
+}
+
+/**
+ * Đánh dấu lệnh nạp đã nhận VÀ cộng tiền trong MỘT thao tác.
+ *
+ * Trước đây đánh dấu và cộng tiền là hai bước: cộng tiền lỗi sau khi đã đánh dấu
+ * thì lần webhook sau coi như đã xử lý, khách mất tiền. Gộp vào một câu lệnh
+ * (CTE) nên hoặc cả hai cùng xong, hoặc cả hai cùng không.
+ *
+ * Trả { credited, balance } — credited=false nghĩa là lệnh không còn ở trạng thái
+ * chờ (đã xử lý rồi), không cộng lần hai.
+ */
+export async function markPaidAndCredit(
+  depositId: string,
+  sepayId: string,
+  note: string,
+  received: number,
+): Promise<{ credited: boolean; accountId: string | null }> {
+  if (sql) {
+    await ensureSchema();
+    const rows = await sql`
+      with d as (
+        update deposits set status = 'success', paid_at = now(), sepay_id = ${sepayId}, note = ${note}
+        where id = ${depositId} and status = 'pending'
+        returning account_id
+      ),
+      c as (
+        update accounts set balance = balance + ${received}
+        where id = (select account_id from d) returning id
+      )
+      select (select account_id from d) as account_id, (select count(*) from d) as changed`;
+    const r = rows[0];
+    return { credited: Number(r?.changed) > 0, accountId: r?.account_id ? String(r.account_id) : null };
+  }
+  const db = readFile();
+  const d = db.deposits.find((x) => x.id === depositId && x.status === "pending");
+  if (!d) return { credited: false, accountId: null };
+  d.status = "success";
+  d.paidAt = new Date().toISOString();
+  d.sepayId = sepayId;
+  d.note = note;
+  if (d.accountId) {
+    const a = db.accounts.find((x) => x.id === d.accountId);
+    if (a) a.balance += received;
+  }
+  writeFile(db);
+  return { credited: true, accountId: d.accountId };
 }
 
 /** Cộng (hoặc trừ) số dư, trả về số dư mới. */
@@ -846,6 +919,21 @@ export async function decrementStock(key: string) {
   return true;
 }
 
+/** Trả lại một suất tồn kho đã trừ hụt (khi trừ tiền không thành). */
+export async function incrementStock(key: string) {
+  if (sql) {
+    await ensureSchema();
+    await sql`update product_settings set stock = stock + 1 where key = ${key} and stock is not null`;
+    return;
+  }
+  const db = readFile();
+  const s = db.productSettings.find((x) => x.key === key);
+  if (s && s.stock !== null) {
+    s.stock += 1;
+    writeFile(db);
+  }
+}
+
 export async function insertProductOrder(o: ProductOrder) {
   if (sql) {
     await ensureSchema();
@@ -1044,6 +1132,7 @@ const rowToServiceOrder = (r: Record<string, unknown>): ServiceOrder => ({
   updatedAt: new Date(r.updated_at as string).toISOString(),
   refunded: Number(r.refunded),
   note: r.note ? String(r.note) : null,
+  customerNote: r.customer_note ? String(r.customer_note) : null,
 });
 
 export async function insertServiceOrder(o: ServiceOrder) {
@@ -1051,11 +1140,11 @@ export async function insertServiceOrder(o: ServiceOrder) {
     await ensureSchema();
     await sql`insert into service_orders (id, account_id, platform_name, service_name, server_name, api_service_id,
       link, quantity, unit_price, unit_cost, amount, cost, status, provider_order_id, start_count, remains,
-      created_at, updated_at, refunded, note)
+      created_at, updated_at, refunded, note, customer_note)
       values (${o.id}, ${o.accountId}, ${o.platformName}, ${o.serviceName}, ${o.serverName}, ${o.apiServiceId},
       ${o.link}, ${o.quantity}, ${o.unitPrice}, ${o.unitCost}, ${o.amount}, ${o.cost}, ${o.status},
       ${o.providerOrderId}, ${o.startCount}, ${o.remains}, ${o.createdAt}, ${o.updatedAt}, ${o.refunded},
-      ${o.note ?? null})`;
+      ${o.note ?? null}, ${o.customerNote ?? null})`;
     return;
   }
   const db = readFile();

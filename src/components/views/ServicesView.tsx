@@ -42,7 +42,6 @@ const schema = z.object({
   target: z.string().min(6, "Nhập liên kết hoặc ID hợp lệ."),
   quantity: z.coerce.number().int("Số lượng phải là số nguyên.").positive("Số lượng phải lớn hơn 0."),
   note: z.string().max(300, "Ghi chú tối đa 300 ký tự.").optional(),
-  coupon: z.string().max(32).optional(),
   reaction: z.string().optional(),
 });
 
@@ -112,7 +111,7 @@ export function ServicesView({
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { target: "", quantity: server.min, note: "", coupon: "", reaction: "like" },
+    defaultValues: { target: "", quantity: server.min, note: "", reaction: "like" },
     mode: "onBlur",
   });
 
@@ -141,10 +140,8 @@ export function ServicesView({
 
   const unitPrice = priceFor(server);
   const quantity = Number(watch("quantity") || 0);
-  const coupon = (watch("coupon") ?? "").trim().toUpperCase();
   const subtotal = quantity * unitPrice;
-  const discount = coupon === "LACVIET10" ? Math.round(subtotal * 0.1) : 0;
-  const total = Math.max(0, Math.round(subtotal - discount));
+  const total = Math.max(0, Math.round(subtotal));
   const notEnoughBalance = total > balance;
   const quantityOutOfRange = quantity > 0 && (quantity < server.min || quantity > server.max);
 
@@ -188,6 +185,7 @@ export function ServicesView({
         serverId: server.id,
         link: values.target,
         quantity: Number(values.quantity),
+        note: values.note,
       }),
     })
       .then((r) => r.json())
@@ -430,17 +428,6 @@ export function ServicesView({
                         : undefined)}
                   </FieldMessage>
                 </div>
-                <div>
-                  <Label htmlFor="coupon" hint="thử LACVIET10">
-                    Mã giảm giá
-                  </Label>
-                  <Input id="coupon" placeholder="Nhập mã nếu có" {...register("coupon")} />
-                  {discount > 0 ? (
-                    <FieldMessage tone="success">Đã áp dụng giảm 10%.</FieldMessage>
-                  ) : coupon && coupon !== "LACVIET10" ? (
-                    <FieldMessage tone="warning">Mã không hợp lệ hoặc đã hết hạn.</FieldMessage>
-                  ) : null}
-                </div>
               </div>
 
               <div>
@@ -469,9 +456,6 @@ export function ServicesView({
                 <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
                 <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
                 <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
-                {discount > 0 ? (
-                  <OrderSummaryRow label="Giảm giá" value={`- ${formatMoney(discount)}`} tone="gold" />
-                ) : null}
                 <OrderSummaryRow label="Tổng thanh toán" value={formatMoney(total)} strong tone="gold" />
               </div>
 

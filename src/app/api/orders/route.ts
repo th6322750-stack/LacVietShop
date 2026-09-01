@@ -21,6 +21,7 @@ const schema = z.object({
   serverId: z.string().min(1).max(80),
   link: z.string().trim().min(4, "Thiếu liên kết mục tiêu.").max(500),
   quantity: z.coerce.number().int().positive(),
+  note: z.string().trim().max(300).optional(),
 });
 
 async function me() {
@@ -109,6 +110,7 @@ export async function POST(request: Request) {
     updatedAt: now,
     refunded: 0,
     note: server.apiServiceId ? null : "Máy chủ chưa gắn mã nhà cung cấp — chạy tay.",
+    customerNote: parsed.data.note?.trim() || null,
   };
   await insertServiceOrder(order);
 
