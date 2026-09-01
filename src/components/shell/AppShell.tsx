@@ -20,6 +20,7 @@ import { Tooltip } from "@/components/ui/Popover";
 import { useCustomerAuth } from "@/lib/customer/auth";
 import { isActivePath, navGroups, navItems } from "./nav-items";
 import { SupportChannels } from "./SupportChannels";
+import { FloatingContact } from "./FloatingContact";
 
 /**
  * Khung ứng dụng dùng chung (PROJECT_HANDOFF §7).
@@ -57,6 +58,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
         <Footer />
       </div>
+
+      {/* Cụm nút liên hệ nổi: nằm ngoài phần cuộn nên theo khách suốt mọi trang. */}
+      <FloatingContact />
     </div>
   );
 }

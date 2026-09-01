@@ -216,6 +216,7 @@ export interface OpsSettings {
     hours?: string;
     zalo?: string;
     facebook?: string;
+    messenger?: string;
     telegram?: string;
   };
   updatedAt: string;

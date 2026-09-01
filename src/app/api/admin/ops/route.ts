@@ -30,7 +30,13 @@ const link = z
 const schema = z.object({
   autoPushOrders: z.boolean().optional(),
   contact: z
-    .object({ hours: z.string().trim().max(80).optional(), zalo: link, facebook: link, telegram: link })
+    .object({
+      hours: z.string().trim().max(80).optional(),
+      zalo: link,
+      facebook: link,
+      messenger: link,
+      telegram: link,
+    })
     .optional(),
 });
 

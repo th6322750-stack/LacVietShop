@@ -409,6 +409,7 @@ function ContactCard({ editable }: { editable: boolean }) {
     hours: string;
     zalo: string;
     facebook: string;
+    messenger: string;
     telegram: string;
   } | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -418,7 +419,13 @@ function ContactCard({ editable }: { editable: boolean }) {
       .then((r) => r.json())
       .catch(() => null);
     const c = res?.ops?.contact ?? {};
-    setForm({ hours: c.hours ?? "", zalo: c.zalo ?? "", facebook: c.facebook ?? "", telegram: c.telegram ?? "" });
+    setForm({
+      hours: c.hours ?? "",
+      zalo: c.zalo ?? "",
+      facebook: c.facebook ?? "",
+      messenger: c.messenger ?? "",
+      telegram: c.telegram ?? "",
+    });
   }, []);
 
   React.useEffect(() => {
@@ -453,7 +460,7 @@ function ContactCard({ editable }: { editable: boolean }) {
   }
 
   const o = (
-    khoa: "hours" | "zalo" | "facebook" | "telegram",
+    khoa: "hours" | "zalo" | "facebook" | "messenger" | "telegram",
     nhan: string,
     goiY: string,
     hint?: string,
@@ -476,13 +483,14 @@ function ContactCard({ editable }: { editable: boolean }) {
   return (
     <SectionCard
       title="Kênh liên hệ"
-      description="Hiện thành nút ở thanh bên của khách. Ô nào để trống thì kênh đó không hiện."
+      description="Hiện thành cụm nút nổi ở góc màn hình khách. Ô nào để trống thì kênh đó không hiện."
     >
       <div className="grid gap-3 sm:grid-cols-2">
         {o("hours", "Giờ hỗ trợ", "08:00 – 22:00 hằng ngày")}
         {o("zalo", "Zalo", "https://zalo.me/...", "link đầy đủ")}
-        {o("facebook", "Facebook", "https://facebook.com/...", "link đầy đủ")}
+        {o("messenger", "Messenger", "https://m.me/...", "link đầy đủ")}
         {o("telegram", "Telegram", "https://t.me/...", "link đầy đủ")}
+        {o("facebook", "Facebook", "https://facebook.com/...", "link đầy đủ")}
       </div>
       {editable ? (
         <Button className="mt-4" loading={busy} icon={<IconDeviceFloppy size={17} />} onClick={luu}>
