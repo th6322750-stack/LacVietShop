@@ -106,7 +106,7 @@ export default function HomePage() {
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
               {commitments.map((c) => (
                 <div key={c.title} className="flex items-center gap-2">
-                  <Image src={c.icon} alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
+                  <Image src={c.icon} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
                   <dt className="text-body-strong text-lv-navy-700">{c.title}</dt>
                 </div>
               ))}

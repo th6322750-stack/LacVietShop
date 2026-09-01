@@ -6,7 +6,7 @@
  * cho việc ẩn/hiện nút), nhưng MỌI đường ghi đều phải qua chốt chặn ở đây.
  *
  * Mật khẩu quản trị đọc từ ADMIN_ACCOUNTS trong biến môi trường, dạng
- *   ADMIN_ACCOUNTS=admin:matkhau1,hotro:matkhau2
+ *   ADMIN_ACCOUNTS=tendangnhap:matkhau
  * Chưa đặt thì dùng tài khoản trình diễn — chỉ hợp giai đoạn kiểm thử.
  */
 import crypto from "node:crypto";
@@ -23,8 +23,6 @@ const ADMIN_DAYS = 7;
 /** Tài khoản trình diễn dùng khi chưa cấu hình ADMIN_ACCOUNTS. */
 const DEMO_ADMINS: Record<string, string> = {
   admin: "admin123",
-  hotro: "hotro123",
-  ketoan: "ketoan123",
 };
 
 /** Tên đăng nhập theo đúng thứ tự khai trong ADMIN_ACCOUNTS. */
