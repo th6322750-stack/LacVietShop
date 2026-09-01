@@ -69,7 +69,7 @@ export function StatCard({
   }[tone];
 
   return (
-    <div className="lv-card p-5 transition-shadow duration-card hover:shadow-card-hover">
+    <div className="lv-card group p-4 transition-shadow duration-card hover:shadow-card-hover sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-small text-lv-muted">{label}</p>
@@ -83,7 +83,7 @@ export function StatCard({
           <span
             className={cn(
               "flex shrink-0 items-center justify-center",
-              iconBare ? "h-14 w-14" : cn("h-11 w-11 rounded-card border", toneClass),
+              iconBare ? "h-10 w-10 sm:h-14 sm:w-14" : cn("h-11 w-11 rounded-card border", toneClass),
             )}
           >
             {icon}

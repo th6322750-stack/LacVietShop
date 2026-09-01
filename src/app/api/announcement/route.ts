@@ -45,7 +45,12 @@ const TAT: Announcement = {
 
 export async function GET() {
   const a = await getAnnouncement();
-  return NextResponse.json({ ok: true, announcement: a ?? TAT });
+  return NextResponse.json(
+    { ok: true, announcement: a ?? TAT },
+    // Như /api/contact: giữ 60 giây ở CDN. Bấm "Phát lại cho tất cả" thì chậm
+    // nhất một phút là khách thấy.
+    { headers: { "cache-control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300" } },
+  );
 }
 
 export async function POST(request: Request) {

@@ -31,17 +31,35 @@ export const KENH = [
   { key: "facebook" as const, nhan: "Facebook", icon: "/assets/brands/brand-facebook.svg" },
 ];
 
+/**
+ * Một lời hứa dùng chung cho cả trang.
+ *
+ * Thanh bên và cụm nút nổi đều cần kênh liên hệ; để mỗi bên tự gọi thì trang
+ * nào cũng gọi /api/contact hai lần. Trên Vercel mỗi lời gọi là một hàm nguội,
+ * mất gần một giây — gọi thừa là mất trắng một giây.
+ */
+let dangLay: Promise<Contact> | null = null;
+
+function layContact(): Promise<Contact> {
+  dangLay ??= fetch("/api/contact")
+    .then((r) => r.json())
+    .then((d) => (d?.ok ? ((d.contact ?? {}) as Contact) : {}))
+    .catch(() => {
+      // Hỏng thì quên đi để lần sau còn thử lại, không nhớ mãi kết quả rỗng.
+      dangLay = null;
+      return {} as Contact;
+    });
+  return dangLay;
+}
+
 export function useContact() {
   const [contact, setContact] = React.useState<Contact | null>(null);
 
   React.useEffect(() => {
     let alive = true;
-    fetch("/api/contact")
-      .then((r) => r.json())
-      .then((d) => {
-        if (alive && d?.ok) setContact(d.contact ?? {});
-      })
-      .catch(() => undefined);
+    void layContact().then((c) => {
+      if (alive) setContact(c);
+    });
     return () => {
       alive = false;
     };
