@@ -67,6 +67,54 @@
     @apply whitespace-nowrap tabular-nums;
   }
 
+  /*
+   * Logo: đứng yên lúc bình thường, rê chuột mới sáng lên kèm một vệt sáng
+   * lướt qua. Máy nào bật "giảm chuyển động" thì bỏ hẳn phần lướt, chỉ còn
+   * sáng lên — người nhạy cảm tiền đình hoặc động kinh cần điều đó.
+   */
+  .lv-logo {
+    @apply relative inline-block overflow-hidden;
+  }
+
+  .lv-logo img {
+    @apply transition-[filter,transform] duration-300 ease-out;
+  }
+
+  .lv-logo:hover img {
+    filter: brightness(1.1) saturate(1.15) drop-shadow(0 0 6px rgb(217 154 22 / 0.45));
+    transform: scale(1.02);
+  }
+
+  /* Vệt sáng: một dải trắng nghiêng chạy từ trái sang phải đúng một lượt. */
+  .lv-logo::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.55) 50%, transparent 65%);
+    transform: translateX(-120%);
+  }
+
+  .lv-logo:hover::after {
+    animation: lv-quet 0.7s ease-out;
+  }
+
+  @keyframes lv-quet {
+    to {
+      transform: translateX(120%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lv-logo img {
+      @apply transition-none;
+    }
+    .lv-logo:hover img {
+      transform: none;
+    }
+    .lv-logo:hover::after {
+      animation: none;
+    }
+  }
+
   .lv-scroll-x {
     @apply overflow-x-auto;
     scrollbar-width: thin;

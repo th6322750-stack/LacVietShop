@@ -65,7 +65,7 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-topbar shrink-0 items-center border-b border-lv-border px-4">
-        <Link href="/" className="flex min-w-0 items-center" aria-label={demoBrand.name}>
+        <Link href="/" className="lv-logo flex min-w-0 items-center rounded-control" aria-label={demoBrand.name}>
           {/* Thanh bên hẹp thì logo tự co lại cho vừa, không tràn ra ngoài. */}
           <AssetImage
             assetKey="brand.logoHorizontal"
@@ -262,7 +262,9 @@ function Footer() {
     <footer className="mt-8 border-t border-lv-border bg-lv-surface">
       <div className="mx-auto flex max-w-shell flex-wrap items-center justify-between gap-3 px-gutter-m py-5 xl:px-gutter">
         <div className="flex items-center gap-3">
-          <AssetImage assetKey="brand.logoHorizontal" className="h-7 w-[132px]" rounded="none" showLabel />
+          <span className="lv-logo rounded-control">
+            <AssetImage assetKey="brand.logoHorizontal" className="h-7 w-[132px]" rounded="none" showLabel />
+          </span>
         </div>
         <p className="text-small text-lv-muted">
           © {new Date().getUTCFullYear()} {demoBrand.name}.

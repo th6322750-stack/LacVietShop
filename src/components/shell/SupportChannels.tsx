@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { IconBrandFacebook, IconBrandTelegram, IconHeadset, IconMessageCircle } from "@tabler/icons-react";
+import Image from "next/image";
+import { IconHeadset } from "@tabler/icons-react";
 
 /**
  * Kênh liên hệ ở thanh bên.
@@ -10,8 +11,8 @@ import { IconBrandFacebook, IconBrandTelegram, IconHeadset, IconMessageCircle } 
  * lần là mọi khách thấy ngay. Kênh nào chưa điền thì KHÔNG hiện — thà thiếu nút
  * còn hơn có nút bấm vào chẳng đi đâu.
  *
- * Zalo chưa có sẵn trong bộ biểu tượng đang dùng nên tạm dùng biểu tượng tin
- * nhắn kèm chữ "Zalo"; không tự vẽ lại logo của họ.
+ * Biểu tượng là logo chính thức của từng nền tảng, lấy từ kho asset của dự án
+ * WebLacViet. Không tự vẽ lại logo của họ.
  */
 
 interface Contact {
@@ -22,9 +23,9 @@ interface Contact {
 }
 
 const KENH = [
-  { key: "zalo" as const, nhan: "Zalo", Icon: IconMessageCircle },
-  { key: "facebook" as const, nhan: "Facebook", Icon: IconBrandFacebook },
-  { key: "telegram" as const, nhan: "Telegram", Icon: IconBrandTelegram },
+  { key: "zalo" as const, nhan: "Zalo", icon: "/assets/brands/brand-zalo.svg" },
+  { key: "facebook" as const, nhan: "Facebook", icon: "/assets/brands/brand-facebook.svg" },
+  { key: "telegram" as const, nhan: "Telegram", icon: "/assets/brands/brand-telegram.svg" },
 ];
 
 export function SupportChannels({ compact }: { compact: boolean }) {
@@ -57,8 +58,8 @@ export function SupportChannels({ compact }: { compact: boolean }) {
       ) : null}
 
       {co.length > 0 ? (
-        <div className={`flex flex-wrap gap-2 ${contact.hours?.trim() ? "mt-2" : ""}`}>
-          {co.map(({ key, nhan, Icon }) => (
+        <div className={`flex flex-wrap gap-2 ${contact.hours?.trim() ? "mt-2.5" : ""}`}>
+          {co.map(({ key, nhan, icon }) => (
             <a
               key={key}
               href={contact[key]}
@@ -66,9 +67,9 @@ export function SupportChannels({ compact }: { compact: boolean }) {
               rel="noopener noreferrer"
               aria-label={`Liên hệ qua ${nhan}`}
               title={nhan}
-              className="flex h-9 w-9 items-center justify-center rounded-control border border-lv-border bg-lv-surface text-lv-navy-700 transition-colors duration-button hover:border-lv-border-gold hover:text-lv-gold-700"
+              className="flex h-9 w-9 items-center justify-center rounded-control border border-lv-border bg-lv-surface transition-all duration-button hover:-translate-y-0.5 hover:border-lv-border-gold hover:shadow-sm"
             >
-              <Icon size={18} />
+              <Image src={icon} alt="" width={20} height={20} className="h-5 w-5" />
             </a>
           ))}
         </div>
