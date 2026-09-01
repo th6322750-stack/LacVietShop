@@ -7,7 +7,6 @@ import {
   IconArrowDownRight,
   IconCheck,
   IconCopy,
-  IconHeadset,
   IconReceipt,
   IconRefresh,
   IconWallet,
@@ -383,11 +382,6 @@ export function DepositView() {
             title="Hỗ trợ nạp tiền"
             description={`Khung giờ trực: ${demoBrand.supportHours}.`}
             channels={demoBrand.supportChannels.map((c) => ({ label: c.label, value: c.value }))}
-            action={
-              <Button variant="secondary" block icon={<IconHeadset size={16} />}>
-                Gửi yêu cầu đối soát
-              </Button>
-            }
           />
 
           <div className="rounded-card border border-lv-border bg-lv-surface p-4 text-small text-lv-muted">

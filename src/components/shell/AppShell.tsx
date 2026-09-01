@@ -10,7 +10,6 @@ import {
   IconLayoutSidebarLeftExpand,
   IconMenu2,
   IconPlus,
-  IconSearch,
   IconWallet,
 } from "@tabler/icons-react";
 import { cn, formatMoney } from "@/lib/utils";
@@ -220,19 +219,6 @@ function Topbar({
           {anThanhBen ? <IconLayoutSidebarLeftExpand size={19} /> : <IconLayoutSidebarLeftCollapse size={19} />}
         </button>
 
-        <form
-          role="search"
-          className="hidden min-w-0 flex-1 items-center gap-2 rounded-control border border-lv-border bg-lv-bg px-3 py-2 focus-within:border-lv-gold-500 md:flex"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <IconSearch size={17} className="shrink-0 text-lv-muted" aria-hidden />
-          <input
-            type="search"
-            placeholder="Tìm dịch vụ, sản phẩm, mã đơn…"
-            aria-label="Tìm kiếm"
-            className="w-full bg-transparent text-body text-lv-text outline-none placeholder:text-lv-muted"
-          />
-        </form>
 
         <div className="ml-auto flex items-center gap-2">
           {/* Số dư, nạp tiền và chuông chỉ có nghĩa với người đã đăng nhập. */}

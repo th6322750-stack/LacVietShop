@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconClipboardList, IconClockHour4, IconHeadset, IconRefresh } from "@tabler/icons-react";
+import { IconClipboardList, IconClockHour4, IconRefresh } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard, SupportCard } from "@/components/blocks/Cards";
 import { SignInGate } from "@/components/blocks/SignInGate";
@@ -387,11 +387,6 @@ export function ProgressView() {
 
           <SupportCard
             channels={demoBrand.supportChannels.map((c) => ({ label: c.label, value: c.value }))}
-            action={
-              <Button variant="secondary" block icon={<IconHeadset size={16} />}>
-                Mở yêu cầu hỗ trợ
-              </Button>
-            }
           />
 
           <div className="rounded-card border border-lv-border bg-lv-surface p-4">

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { IconCircleCheck, IconClock, IconHeadset, IconPackageExport, IconRefresh, IconX } from "@tabler/icons-react";
+import { IconCircleCheck, IconClock, IconPackageExport, IconRefresh, IconX } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { SectionCard, StatCard, SupportCard, InfoCard } from "@/components/blocks/Cards";
 import { AssetImage } from "@/components/blocks/AssetImage";
@@ -160,11 +160,6 @@ export function PurchasedView() {
         title="Cần hỗ trợ đơn premium?"
         description={`Khung giờ trực: ${demoBrand.supportHours}.`}
         channels={demoBrand.supportChannels.map((c) => ({ label: c.label, value: c.value }))}
-        action={
-          <Button variant="secondary" block icon={<IconHeadset size={16} />}>
-            Gửi yêu cầu bảo hành
-          </Button>
-        }
       />
     </div>
   );
