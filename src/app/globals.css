@@ -115,6 +115,29 @@
     }
   }
 
+  /*
+   * Icon minh hoạ: nằm yên, rê chuột vào thẻ mới nảy nhẹ và sáng lên. Không cho
+   * chạy liên tục vì trang chủ có sáu cái, nhấp nháy cùng lúc là rối mắt.
+   */
+  .lv-icon {
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .group:hover .lv-icon,
+  .lv-icon:hover {
+    transform: scale(1.08) rotate(-3deg);
+    filter: drop-shadow(0 4px 10px rgb(201 121 0 / 0.22));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lv-icon,
+    .group:hover .lv-icon,
+    .lv-icon:hover {
+      @apply transition-none;
+      transform: none;
+    }
+  }
+
   .lv-scroll-x {
     @apply overflow-x-auto;
     scrollbar-width: thin;

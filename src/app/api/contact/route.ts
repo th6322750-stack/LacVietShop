@@ -13,5 +13,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ops = await readOps();
   // Chỉ trả phần liên hệ; công tắc vận hành không phải việc của khách.
-  return NextResponse.json({ ok: true, contact: ops.contact ?? {} });
+  return NextResponse.json(
+    { ok: true, contact: ops.contact ?? {} },
+    {
+      // Kênh liên hệ hoạ hoằn mới đổi. Cho CDN giữ 60 giây để khách sau không
+      // phải đánh thức hàm nguội — đổi link thì chậm nhất một phút là hiện.
+      headers: { "cache-control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300" },
+    },
+  );
 }

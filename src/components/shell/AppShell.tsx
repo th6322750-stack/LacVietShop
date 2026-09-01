@@ -188,7 +188,7 @@ function Topbar({
 }) {
   return (
     <header className="sticky top-0 z-20 h-topbar border-b border-lv-border bg-lv-surface/95 backdrop-blur">
-      <div className="mx-auto flex h-full max-w-shell items-center gap-3 px-gutter-m xl:px-gutter">
+      <div className="relative mx-auto flex h-full max-w-shell items-center gap-3 px-gutter-m xl:px-gutter">
         <button
           type="button"
           onClick={onOpenMenu}
@@ -197,6 +197,16 @@ function Topbar({
         >
           <IconMenu2 size={19} />
         </button>
+
+        {/* Điện thoại: thanh bên nằm trong ngăn kéo nên không thấy logo ở đâu.
+            Đặt logo giữa thanh trên cho khách biết đang ở web nào. */}
+        <Link
+          href="/"
+          aria-label={demoBrand.name}
+          className="absolute left-1/2 -translate-x-1/2 lg:hidden"
+        >
+          <AssetImage assetKey="brand.logoHorizontal" className="h-9 w-[132px]" rounded="none" showLabel />
+        </Link>
 
         {/* Màn rộng: gập thanh bên lại để bảng giá có thêm chỗ. */}
         <button

@@ -105,8 +105,8 @@ export default function HomePage() {
             </div>
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
               {commitments.map((c) => (
-                <div key={c.title} className="flex items-center gap-2">
-                  <Image src={c.icon} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
+                <div key={c.title} className="group flex items-center gap-2">
+                  <Image src={c.icon} alt="" width={40} height={40} className="lv-icon h-10 w-10 shrink-0" />
                   <dt className="text-body-strong text-lv-navy-700">{c.title}</dt>
                 </div>
               ))}
@@ -124,7 +124,15 @@ export default function HomePage() {
             value={formatNumber(m.value)}
             suffix={m.suffix}
             iconBare
-            icon={<Image src={metricIcons[i]} alt="" width={56} height={56} className="h-14 w-14" />}
+            icon={
+              <Image
+                src={metricIcons[i]}
+                alt=""
+                width={56}
+                height={56}
+                className="lv-icon h-10 w-10 sm:h-14 sm:w-14"
+              />
+            }
           />
         ))}
       </section>
