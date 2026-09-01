@@ -83,7 +83,7 @@ export function StatCard({
           <span
             className={cn(
               "flex shrink-0 items-center justify-center",
-              iconBare ? "h-12 w-12" : cn("h-11 w-11 rounded-card border", toneClass),
+              iconBare ? "h-14 w-14" : cn("h-11 w-11 rounded-card border", toneClass),
             )}
           >
             {icon}
