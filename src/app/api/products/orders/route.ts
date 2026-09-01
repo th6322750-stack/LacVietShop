@@ -14,6 +14,8 @@ import {
   cancelProductOrder,
   claimStockItem,
   decrementStock,
+  deductIfEnough,
+  incrementStock,
   deliverProductOrder,
   insertProductOrder,
   listProductOrders,
@@ -61,18 +63,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Gói này đã hết hàng." }, { status: 409 });
   }
 
-  if (account.balance < pkg.price) {
-    return NextResponse.json({ ok: false, error: "Số dư không đủ. Vui lòng nạp thêm." }, { status: 402 });
-  }
-
-  // Gói giao tay thì vẫn theo giới hạn bán thủ công.
+  // Gói giao tay thì vẫn theo giới hạn bán thủ công. Trừ kho trước khi trừ tiền
+  // để nếu hết thì chưa động vào ví.
   if (!pileBased && !(await decrementStock(settingKey(pkg.slug, pkg.packageId)))) {
     return NextResponse.json({ ok: false, error: "Gói này vừa hết hàng." }, { status: 409 });
   }
 
-  const balance = await addBalance(account.id, -pkg.price);
+  // Trừ tiền nguyên tử: hai yêu cầu song song không cùng vượt qua được, số dư
+  // không bao giờ âm.
+  const balance = await deductIfEnough(account.id, pkg.price);
   if (balance === null) {
-    return NextResponse.json({ ok: false, error: "Không trừ được số dư." }, { status: 500 });
+    // Không đủ tiền: trả lại kho đã trừ ở trên (nếu có).
+    if (!pileBased) await incrementStock(settingKey(pkg.slug, pkg.packageId));
+    return NextResponse.json({ ok: false, error: "Số dư không đủ. Vui lòng nạp thêm." }, { status: 402 });
   }
 
   const order = {

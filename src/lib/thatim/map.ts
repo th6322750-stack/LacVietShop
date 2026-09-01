@@ -8,6 +8,7 @@
  *   đồng/tương tác = rate × usdToVnd ÷ 1000 × markup
  * Công thức này đã đối chiếu khớp từng đồng với bảng giá công bố của họ.
  */
+import crypto from "node:crypto";
 import type { Platform, PlatformService, ServiceServer } from "@/types";
 import type { ThatimService } from "./client";
 import { getAsset } from "@/lib/assets";
@@ -130,7 +131,9 @@ export function mapServicesToPlatforms(services: ThatimService[], o: MapOptions)
         const cost = costInVnd(row.rate, o.usdToVnd);
         const sold = o.price(cost, apiServiceId);
         return {
-          id: `api-${row.service}`,
+          // Ma an thay cho api-<ma nguon>: bam 10 ky tu, on dinh nen tra cuu phia
+          // may chu van khop, khach khong doc ra ma ben kia.
+          id: `sv-${crypto.createHash("sha1").update(apiServiceId).digest("hex").slice(0, 10)}`,
           code: apiServiceId,
           apiServiceId,
           index: i + 1,

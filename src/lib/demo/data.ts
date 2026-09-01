@@ -156,10 +156,12 @@ export const paymentMethods: PaymentMethod[] = [
     name: "MoMo",
     kind: "ewallet",
     assetKey: "payment.momo",
-    detail: "Ví điện tử",
-    processingTime: "Tức thì",
-    feeNote: "Miễn phí",
-    available: true,
+    detail: "Sắp hỗ trợ",
+    processingTime: "Đang tích hợp",
+    feeNote: "",
+    // Chưa nối cổng MoMo thật; để true thì chọn nó vẫn ra QR VietinBank, khách
+    // chuyển sai kênh. Tắt cho tới khi có tích hợp thật.
+    available: false,
   },
 ];
 

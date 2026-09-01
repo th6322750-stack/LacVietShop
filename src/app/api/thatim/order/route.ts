@@ -9,6 +9,8 @@ import { z } from "zod";
 import { addOrder, getOrderStatus } from "@/lib/thatim/client";
 import { isThatimConfigured } from "@/lib/thatim/config";
 import { autoPushEnabled } from "@/lib/server/ops";
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE, adminForToken } from "@/lib/server/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,11 @@ const createSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  // Đường tiêu tiền ví nguồn: chỉ quản trị. Khách đặt qua /api/orders.
+  const jar = await cookies();
+  if (!(await adminForToken(jar.get(ADMIN_COOKIE)?.value))) {
+    return NextResponse.json({ ok: false, error: "Chưa đăng nhập quản trị." }, { status: 401 });
+  }
   if (!isThatimConfigured()) {
     return NextResponse.json({ ok: false, error: "Chưa cấu hình khoá API." }, { status: 503 });
   }
@@ -43,6 +50,10 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  const jar = await cookies();
+  if (!(await adminForToken(jar.get(ADMIN_COOKIE)?.value))) {
+    return NextResponse.json({ ok: false, error: "Chưa đăng nhập quản trị." }, { status: 401 });
+  }
   const order = new URL(request.url).searchParams.get("order");
   if (!order) return NextResponse.json({ ok: false, error: "Thiếu mã đơn." }, { status: 400 });
 

@@ -7,10 +7,18 @@ import { getBalance } from "@/lib/thatim/client";
 import { getLiveCatalog } from "@/lib/thatim/catalog";
 import { isThatimConfigured, maskKey, thatimConfig } from "@/lib/thatim/config";
 import { autoPushEnabled } from "@/lib/server/ops";
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE, adminForToken } from "@/lib/server/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  // Chỉ quản trị: đây là số dư ví nguồn, hệ số giá, endpoint — không phải việc
+  // của khách.
+  const jar = await cookies();
+  if (!(await adminForToken(jar.get(ADMIN_COOKIE)?.value))) {
+    return NextResponse.json({ ok: false, error: "Chưa đăng nhập quản trị." }, { status: 401 });
+  }
   const force = new URL(request.url).searchParams.get("refresh") === "1";
 
   const base = {
