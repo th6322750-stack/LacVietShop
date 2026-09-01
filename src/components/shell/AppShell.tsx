@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import {
   IconBell,
   IconLogout,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
   IconMenu2,
   IconPlus,
   IconSearch,
@@ -26,13 +28,38 @@ import { FloatingContact } from "./FloatingContact";
  * Khung ứng dụng dùng chung (PROJECT_HANDOFF §7).
  * >=1200: sidebar cố định 224px · 992–1199: rail 80px có tooltip · <992: off-canvas.
  */
+const KHOA_THANH_BEN = "lacviet_thanh_ben_an";
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  // Ẩn thanh bên để lấy chỗ cho bảng giá rộng. Nhớ lựa chọn của từng máy, mở
+  // trang khác không phải bấm lại.
+  const [anThanhBen, setAnThanhBen] = React.useState(false);
   const pathname = usePathname();
 
   React.useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
+
+  React.useEffect(() => {
+    try {
+      setAnThanhBen(window.localStorage.getItem(KHOA_THANH_BEN) === "1");
+    } catch {
+      /* trình duyệt chặn lưu trữ — cứ hiện thanh bên như thường */
+    }
+  }, []);
+
+  function doiThanhBen() {
+    setAnThanhBen((truoc) => {
+      const sau = !truoc;
+      try {
+        window.localStorage.setItem(KHOA_THANH_BEN, sau ? "1" : "0");
+      } catch {
+        /* bỏ qua */
+      }
+      return sau;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-lv-bg">
@@ -43,7 +70,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         Bỏ qua điều hướng
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-rail border-r border-lv-border bg-lv-surface lg:block xl:w-sidebar">
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden w-rail border-r border-lv-border bg-lv-surface xl:w-sidebar",
+          anThanhBen ? "lg:hidden" : "lg:block",
+        )}
+      >
         <SidebarContent pathname={pathname} compact />
       </aside>
 
@@ -51,8 +83,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarContent pathname={pathname} compact={false} />
       </Drawer>
 
-      <div className="lg:pl-rail xl:pl-sidebar">
-        <Topbar onOpenMenu={() => setDrawerOpen(true)} />
+      <div className={cn(anThanhBen ? "" : "lg:pl-rail xl:pl-sidebar")}>
+        <Topbar onOpenMenu={() => setDrawerOpen(true)} anThanhBen={anThanhBen} onDoiThanhBen={doiThanhBen} />
         <main id="main-content" className="mx-auto w-full max-w-shell px-gutter-m py-5 sm:py-6 xl:px-gutter">
           {children}
         </main>
@@ -145,7 +177,15 @@ function SidebarContent({ pathname, compact }: { pathname: string; compact: bool
   );
 }
 
-function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
+function Topbar({
+  onOpenMenu,
+  anThanhBen,
+  onDoiThanhBen,
+}: {
+  onOpenMenu: () => void;
+  anThanhBen: boolean;
+  onDoiThanhBen: () => void;
+}) {
   return (
     <header className="sticky top-0 z-20 h-topbar border-b border-lv-border bg-lv-surface/95 backdrop-blur">
       <div className="mx-auto flex h-full max-w-shell items-center gap-3 px-gutter-m xl:px-gutter">
@@ -156,6 +196,18 @@ function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control border border-lv-border text-lv-navy-700 transition-colors duration-button hover:bg-lv-bg lg:hidden"
         >
           <IconMenu2 size={19} />
+        </button>
+
+        {/* Màn rộng: gập thanh bên lại để bảng giá có thêm chỗ. */}
+        <button
+          type="button"
+          onClick={onDoiThanhBen}
+          aria-label={anThanhBen ? "Hiện thanh điều hướng" : "Ẩn thanh điều hướng"}
+          aria-pressed={anThanhBen}
+          title={anThanhBen ? "Hiện thanh điều hướng" : "Ẩn thanh điều hướng"}
+          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-control border border-lv-border text-lv-navy-700 transition-colors duration-button hover:bg-lv-bg lg:flex"
+        >
+          {anThanhBen ? <IconLayoutSidebarLeftExpand size={19} /> : <IconLayoutSidebarLeftCollapse size={19} />}
         </button>
 
         <form
