@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const key = `login:${ipFromRequest(request)}:${parsed.data.identifier.toLowerCase()}`;
-  const wait = loginBlocked(key);
+  const wait = await loginBlocked(key);
   if (wait > 0) {
     return NextResponse.json(
       { ok: false, error: `Sai quá nhiều lần. Thử lại sau ${Math.ceil(wait / 60)} phút.` },
@@ -22,10 +22,10 @@ export async function POST(request: Request) {
 
   const res = await loginAccount(parsed.data.identifier, parsed.data.password);
   if (!res.ok) {
-    noteLoginFail(key);
+    await noteLoginFail(key);
     return NextResponse.json(res, { status: 401 });
   }
-  clearLoginFails(key);
+  await clearLoginFails(key);
 
   const out = NextResponse.json({ ok: true, account: res.account });
   out.cookies.set(SESSION_COOKIE, res.token, cookieFlags(sessionMaxAge));

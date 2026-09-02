@@ -246,6 +246,13 @@ export interface Deposit {
 const DIR = path.join(process.cwd(), "data");
 const FILE = path.join(DIR, "lacviet-db.json");
 
+interface LoginAttempt {
+  key: string;
+  fails: number;
+  resetAt: number;
+  blockedUntil: number;
+}
+
 interface FileDb {
   accounts: Account[];
   sessions: Session[];
@@ -259,6 +266,7 @@ interface FileDb {
   serviceOrders: ServiceOrder[];
   announcement: Announcement | null;
   ops: OpsSettings | null;
+  loginAttempts: LoginAttempt[];
 }
 
 const emptyFile = (): FileDb => ({
@@ -274,6 +282,7 @@ const emptyFile = (): FileDb => ({
   productSettings: [],
   stockItems: [],
   productContent: [],
+  loginAttempts: [],
 });
 
 function readFile(): FileDb {
@@ -430,6 +439,12 @@ function ensureSchema() {
       id int primary key,
       data jsonb not null,
       updated_at timestamptz not null default now()
+    )`;
+    await sql`create table if not exists login_attempts (
+      key text primary key,
+      fails int not null default 0,
+      reset_at bigint not null default 0,
+      blocked_until bigint not null default 0
     )`;
     // Dọn phiên và mã hết hạn mỗi lần khởi động.
     await sql`delete from sessions where expires_at < now()`;
@@ -920,6 +935,70 @@ export async function decrementStock(key: string) {
 }
 
 /** Trả lại một suất tồn kho đã trừ hụt (khi trừ tiền không thành). */
+/**
+ * Chặn dò mật khẩu — đếm trong DB nên hiệu lực trên Vercel (nhiều máy chủ chung
+ * một bộ đếm). Trả về mốc bị khoá đến (ms), 0 nếu chưa bị khoá.
+ */
+export async function loginBlockedUntil(key: string): Promise<number> {
+  if (sql) {
+    await ensureSchema();
+    const rows = await sql`select blocked_until from login_attempts where key = ${key}`;
+    return rows[0] ? Number(rows[0].blocked_until) : 0;
+  }
+  const db = readFile();
+  return db.loginAttempts.find((x) => x.key === key)?.blockedUntil ?? 0;
+}
+
+/** Ghi một lần đăng nhập sai; đủ ngưỡng thì bật khoá. Trả mốc bị khoá đến (ms). */
+export async function recordLoginFail(
+  key: string,
+  windowMs: number,
+  maxFails: number,
+  blockMs: number,
+): Promise<number> {
+  const now = Date.now();
+  if (sql) {
+    await ensureSchema();
+    const rows = await sql`insert into login_attempts as la (key, fails, reset_at, blocked_until)
+      values (${key}, 1, ${now + windowMs}, 0)
+      on conflict (key) do update set
+        fails = case when la.reset_at <= ${now} then 1 else la.fails + 1 end,
+        reset_at = case when la.reset_at <= ${now} then ${now + windowMs} else la.reset_at end,
+        blocked_until = case
+          when (case when la.reset_at <= ${now} then 1 else la.fails + 1 end) >= ${maxFails}
+            then ${now + blockMs}
+          else la.blocked_until end
+      returning blocked_until`;
+    return rows[0] ? Number(rows[0].blocked_until) : 0;
+  }
+  const db = readFile();
+  let a = db.loginAttempts.find((x) => x.key === key);
+  if (!a || a.resetAt <= now) {
+    a = { key, fails: 0, resetAt: now + windowMs, blockedUntil: a?.blockedUntil ?? 0 };
+    db.loginAttempts = db.loginAttempts.filter((x) => x.key !== key).concat(a);
+  }
+  a.fails += 1;
+  if (a.fails >= maxFails) {
+    a.blockedUntil = now + blockMs;
+    a.fails = 0;
+    a.resetAt = now + blockMs;
+  }
+  writeFile(db);
+  return a.blockedUntil;
+}
+
+/** Đăng nhập đúng: xoá bộ đếm cho khoá này. */
+export async function clearLoginAttempts(key: string): Promise<void> {
+  if (sql) {
+    await ensureSchema();
+    await sql`delete from login_attempts where key = ${key}`;
+    return;
+  }
+  const db = readFile();
+  db.loginAttempts = db.loginAttempts.filter((x) => x.key !== key);
+  writeFile(db);
+}
+
 export async function incrementStock(key: string) {
   if (sql) {
     await ensureSchema();
