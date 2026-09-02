@@ -10,22 +10,9 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getLiveCatalog } from "@/lib/thatim/catalog";
 import { ADMIN_COOKIE, adminForToken } from "@/lib/server/admin";
-import type { Platform } from "@/types";
+import { stripCatalog } from "@/lib/thatim/strip";
 
 export const dynamic = "force-dynamic";
-
-/** Bỏ mọi trường lộ thông tin nhà cung cấp khỏi từng máy chủ. */
-function stripCatalog(platforms: Platform[]) {
-  return platforms.map((p) => ({
-    ...p,
-    services: p.services.map((s) => ({
-      ...s,
-      // Bỏ apiServiceId, code, costPerUnit, belowCost — chỉ giữ cái khách cần.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      servers: s.servers.map(({ apiServiceId, code, costPerUnit, belowCost, ...an }) => an),
-    })),
-  }));
-}
 
 export async function GET(request: Request) {
   // Quản trị thấy danh mục đầy đủ (giá vốn, mã nguồn) để đặt giá; khách thấy
