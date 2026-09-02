@@ -81,3 +81,13 @@ export function initialsOf(name: string) {
     .join("")
     .toUpperCase();
 }
+
+/**
+ * Chỉ nhận đường dẫn NỘI BỘ để chuyển hướng sau đăng nhập, chống open redirect.
+ * Phải bắt đầu bằng đúng một "/" — chặn "//evil.com", "/\evil.com" và
+ * "https://evil.com". Không hợp lệ thì về đường mặc định.
+ */
+export function safeInternalPath(raw: string | null | undefined, fallback: string): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//") && !raw.startsWith("/\\")) return raw;
+  return fallback;
+}
