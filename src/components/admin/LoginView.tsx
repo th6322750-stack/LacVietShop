@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeInternalPath } from "@/lib/utils";
 import Link from "next/link";
 import { IconLock } from "@tabler/icons-react";
 import { AssetImage } from "@/components/blocks/AssetImage";
@@ -17,7 +18,7 @@ export function LoginView() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
-  const next = params.get("next") || "/admin";
+  const next = safeInternalPath(params.get("next"), "/admin");
 
   React.useEffect(() => {
     if (ready && session) router.replace(next);

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeInternalPath } from "@/lib/utils";
 import { IconLogin2 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { FieldMessage, Input, Label } from "@/components/ui/Field";
@@ -21,7 +22,7 @@ export function CustomerLoginView() {
   const [error, setError] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
-  const next = params.get("next") || "/";
+  const next = safeInternalPath(params.get("next"), "/");
 
   React.useEffect(() => {
     if (ready && session) router.replace(next);
