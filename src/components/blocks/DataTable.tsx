@@ -56,7 +56,8 @@ export function DataTable<T>({
 
   return (
     <div className="lv-scroll-x">
-      <table className="w-full min-w-[720px] border-collapse text-body">
+      {/* min-w giữ bảng đọc được trên mobile (cuộn ngang); desktop bỏ để vừa khít, không tràn. */}
+      <table className="w-full min-w-[720px] border-collapse text-body lg:min-w-0">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-lv-border text-left">
