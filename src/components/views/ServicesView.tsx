@@ -27,7 +27,11 @@ import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useCustomerAuth } from "@/lib/customer/auth";
 import { cn, formatMoney, formatNumber, formatUnitPrice } from "@/lib/utils";
-import type { Platform, ServiceServer } from "@/types";
+import type { Platform, PlatformService, ServiceServer } from "@/types";
+
+/** Bản nhẹ gửi xuống trình duyệt: dịch vụ giữ SỐ máy chủ, không kèm mảng máy chủ. */
+type LightService = Omit<PlatformService, "servers"> & { serverCount: number };
+type LightPlatform = Omit<Platform, "services"> & { services: LightService[] };
 
 const reactions = [
   { id: "like", label: "Thích" },
@@ -64,12 +68,15 @@ function normalize(value: string) {
 export function ServicesView({
   initialPlatform,
   platforms,
+  totalServerCount,
   catalogSource,
   catalogError,
 }: {
   initialPlatform?: string;
-  /** Danh mục lấy phía server: API nhà cung cấp, hoặc bản tĩnh dự phòng. */
-  platforms: Platform[];
+  /** Danh mục NHẸ lấy phía server: có nền tảng + dịch vụ, máy chủ tải riêng. */
+  platforms: LightPlatform[];
+  /** Tổng số máy chủ toàn danh mục (để hiện, khỏi phải kèm mảng máy chủ). */
+  totalServerCount: number;
   catalogSource: "api" | "fallback";
   catalogError?: string;
 }) {
@@ -91,8 +98,14 @@ export function ServicesView({
   const [serviceId, setServiceId] = React.useState(platform.services[0].id);
   const service = platform.services.find((s) => s.id === serviceId) ?? platform.services[0];
 
-  const [serverId, setServerId] = React.useState(service.servers[0].id);
-  const server = service.servers.find((s) => s.id === serverId) ?? service.servers[0];
+  // Máy chủ tải theo (nền tảng, dịch vụ) khi khách chọn; nhớ lại để đổi qua đổi
+  // lại khỏi gọi mạng nhiều lần. servers === null nghĩa là đang tải.
+  const [serversByKey, setServersByKey] = React.useState<Record<string, ServiceServer[]>>({});
+  const [serverId, setServerId] = React.useState<string | null>(null);
+  const svKey = `${platformId}/${serviceId}`;
+  const servers = serversByKey[svKey] ?? null;
+  const server = servers?.find((s) => s.id === serverId) ?? servers?.[0] ?? null;
+  const serversLoading = servers === null;
 
   const [submitting, setSubmitting] = React.useState(false);
   const [result, setResult] = React.useState<{ code: string } | null>(null);
@@ -111,9 +124,36 @@ export function ServicesView({
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { target: "", quantity: server.min, note: "", reaction: "like" },
+    defaultValues: { target: "", quantity: 0, note: "", reaction: "like" },
     mode: "onBlur",
   });
+
+  // Tải máy chủ cho dịch vụ đang chọn — mỗi dịch vụ chỉ gọi một lần.
+  React.useEffect(() => {
+    if (serversByKey[svKey]) return;
+    let alive = true;
+    fetch(`/api/thatim/servers?platform=${encodeURIComponent(platformId)}&service=${encodeURIComponent(serviceId)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive) setServersByKey((prev) => ({ ...prev, [svKey]: d.ok ? (d.servers ?? []) : [] }));
+      })
+      .catch(() => {
+        if (alive) setServersByKey((prev) => ({ ...prev, [svKey]: [] }));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [svKey, platformId, serviceId, serversByKey]);
+
+  // Máy chủ vừa tải xong / vừa đổi dịch vụ: chọn máy chủ đầu và đặt số lượng mặc định.
+  React.useEffect(() => {
+    if (!servers || servers.length === 0) return;
+    if (!servers.some((s) => s.id === serverId)) {
+      setServerId(servers[0].id);
+      setValue("quantity", servers[0].min);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [servers, serverId]);
 
   // Đổi nền tảng/dịch vụ thì đưa lựa chọn con về mặc định hợp lệ.
   function selectPlatform(id: string) {
@@ -121,16 +161,12 @@ export function ServicesView({
     if (!next) return;
     setPlatformId(id);
     setServiceId(next.services[0].id);
-    setServerId(next.services[0].servers[0].id);
-    setValue("quantity", next.services[0].servers[0].min);
+    setServerId(null);
   }
 
   function selectService(id: string) {
-    const next = platform.services.find((s) => s.id === id);
-    if (!next) return;
     setServiceId(id);
-    setServerId(next.servers[0].id);
-    setValue("quantity", next.servers[0].min);
+    setServerId(null);
   }
 
   function selectServer(next: ServiceServer) {
@@ -138,15 +174,15 @@ export function ServicesView({
     setValue("quantity", next.min);
   }
 
-  const unitPrice = priceFor(server);
+  const unitPrice = server ? priceFor(server) : 0;
   const quantity = Number(watch("quantity") || 0);
   const subtotal = quantity * unitPrice;
   const total = Math.max(0, Math.round(subtotal));
   const notEnoughBalance = total > balance;
-  const quantityOutOfRange = quantity > 0 && (quantity < server.min || quantity > server.max);
+  const quantityOutOfRange = !!server && quantity > 0 && (quantity < server.min || quantity > server.max);
 
   async function onSubmit(values: FormValues) {
-    if (!server.available) return;
+    if (!server || !server.available) return;
     if (quantityOutOfRange) {
       toast.push({
         tone: "warning",
@@ -209,7 +245,7 @@ export function ServicesView({
   }
 
   const serviceCount = platform.services.length;
-  const serverCount = platform.services.reduce((s, x) => s + x.servers.length, 0);
+  const serverCount = platform.services.reduce((s, x) => s + x.serverCount, 0);
 
   return (
     <div className="space-y-5">
@@ -224,7 +260,7 @@ export function ServicesView({
           <Badge tone="success">Bảng giá trực tiếp</Badge>
           Danh mục và đơn giá lấy thẳng từ nhà cung cấp · {platforms.length} nền tảng ·{" "}
           {platforms.reduce((s, p) => s + p.services.length, 0)} nhóm dịch vụ ·{" "}
-          {platforms.reduce((s, p) => s + p.services.reduce((n, x) => n + x.servers.length, 0), 0)} máy chủ
+          {totalServerCount} máy chủ
         </p>
       ) : (
         <div>
@@ -303,6 +339,14 @@ export function ServicesView({
               </Select>
             </div>
 
+            {serversLoading ? (
+              <div className="mt-6 flex items-center justify-center gap-2 py-12 text-small text-lv-muted">
+                <IconRefresh size={16} className="animate-spin" /> Đang tải máy chủ…
+              </div>
+            ) : !server ? (
+              <p className="mt-6 py-10 text-center text-small text-lv-muted">Dịch vụ này chưa có máy chủ nào.</p>
+            ) : (
+              <>
             {/* Bộ chọn máy chủ dựng theo bảng máy chủ bên nhà cung cấp:
                 số thứ tự, tên đầy đủ, MIN/MAX và giá theo bậc thành viên. */}
             <div className="mt-4">
@@ -314,7 +358,7 @@ export function ServicesView({
                 aria-label="Danh sách máy chủ"
                 className="max-h-[26rem] space-y-2 overflow-y-auto rounded-card border border-lv-border bg-lv-bg p-2"
               >
-                {service.servers.map((s) => (
+                {(servers ?? []).map((s) => (
                   <ServerOption
                     key={s.id}
                     server={s}
@@ -436,6 +480,8 @@ export function ServicesView({
                 <FieldMessage>{errors.note?.message}</FieldMessage>
               </div>
             </div>
+              </>
+            )}
           </SectionCard>
         </div>
 
@@ -451,13 +497,17 @@ export function ServicesView({
                 </div>
               </div>
 
-              <div className="mt-3 divide-y divide-lv-border">
-                <OrderSummaryRow label="Máy chủ" value={`Máy chủ #${server.index}`} />
-                <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
-                <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
-                <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
-                <OrderSummaryRow label="Tổng thanh toán" value={formatMoney(total)} strong tone="gold" />
-              </div>
+              {server ? (
+                <div className="mt-3 divide-y divide-lv-border">
+                  <OrderSummaryRow label="Máy chủ" value={`Máy chủ #${server.index}`} />
+                  <OrderSummaryRow label="Đơn giá" value={formatUnitPrice(unitPrice)} />
+                  <OrderSummaryRow label="Số lượng" value={formatNumber(quantity)} />
+                  <OrderSummaryRow label="Tạm tính" value={formatMoney(subtotal)} />
+                  <OrderSummaryRow label="Tổng thanh toán" value={formatMoney(total)} strong tone="gold" />
+                </div>
+              ) : (
+                <p className="mt-3 py-4 text-center text-small text-lv-muted">Đang tải máy chủ…</p>
+              )}
 
               <div className="mt-3 flex items-center justify-between rounded-card border border-lv-border-gold bg-lv-gold-50 px-3 py-2">
                 <span className="flex items-center gap-1.5 text-small text-lv-gold-700">
@@ -478,7 +528,7 @@ export function ServicesView({
                 size="lg"
                 className="mt-4"
                 loading={submitting}
-                disabled={!server.available || total <= 0}
+                disabled={!server || !server.available || total <= 0}
                 icon={<IconCheck size={18} />}
               >
                 {submitting ? "Đang tạo đơn…" : "Đặt hàng ngay"}
