@@ -32,6 +32,20 @@ if (typeof window !== "undefined") {
 }
 
 export const SESSION_COOKIE = "lv_session";
+
+/**
+ * Cờ chung cho mọi cookie phiên. Secure chỉ bật ở production để dev qua HTTP
+ * (localhost) vẫn đăng nhập được; trên Vercel luôn là HTTPS nên cookie có Secure.
+ */
+export function cookieFlags(maxAge: number) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge,
+  };
+}
 const SESSION_DAYS = 30;
 const BCRYPT_ROUNDS = 10;
 
