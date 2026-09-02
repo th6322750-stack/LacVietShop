@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   }
 
   const key = `admin:${ipFromRequest(request)}:${parsed.data.username.toLowerCase()}`;
-  const wait = loginBlocked(key);
+  const wait = await loginBlocked(key);
   if (wait > 0) {
     return NextResponse.json(
       { ok: false, error: `Sai quá nhiều lần. Thử lại sau ${Math.ceil(wait / 60)} phút.` },
@@ -34,10 +34,10 @@ export async function POST(request: Request) {
 
   const session = await loginAdmin(parsed.data.username, parsed.data.password);
   if (!session) {
-    noteLoginFail(key);
+    await noteLoginFail(key);
     return NextResponse.json({ ok: false, error: "Tài khoản hoặc mật khẩu không đúng." }, { status: 401 });
   }
-  clearLoginFails(key);
+  await clearLoginFails(key);
 
   const out = NextResponse.json({
     ok: true,
