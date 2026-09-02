@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { registerAccount, SESSION_COOKIE, sessionMaxAge } from "@/lib/server/auth";
+import { registerAccount, SESSION_COOKIE, sessionMaxAge, cookieFlags } from "@/lib/server/auth";
 import { registerSchema } from "../_schema";
 
 export const dynamic = "force-dynamic";
@@ -14,11 +14,6 @@ export async function POST(request: Request) {
   if (!res.ok) return NextResponse.json(res, { status: 409 });
 
   const out = NextResponse.json({ ok: true, account: res.account });
-  out.cookies.set(SESSION_COOKIE, res.token, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: sessionMaxAge,
-  });
+  out.cookies.set(SESSION_COOKIE, res.token, cookieFlags(sessionMaxAge));
   return out;
 }

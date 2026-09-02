@@ -9,7 +9,8 @@ import { SectionCard, StatCard } from "@/components/blocks/Cards";
 import { PlatformTile, ProductCard } from "@/components/blocks/Commerce";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { platforms, products } from "@/lib/demo/catalog";
+import { products } from "@/lib/demo/catalog";
+import { getLiveCatalog } from "@/lib/thatim/catalog";
 import { demoBrand } from "@/lib/demo/config";
 import { formatNumber } from "@/lib/utils";
 
@@ -46,34 +47,24 @@ const commitments = [
   },
 ];
 
-/**
- * Nền tảng đưa lên trang chủ: ưu tiên dịch vụ trong nước, xếp theo số nhóm dịch
- * vụ nhiều nhất. Đổ hết 23 nền tảng ra đây thì rối và tên bị cắt cụt.
- */
-const featuredPlatforms = [...platforms]
-  .sort((a, b) => {
-    if (a.region !== b.region) return a.region === "vn" ? -1 : 1;
-    return b.services.length - a.services.length;
-  })
-  .slice(0, 8);
-
-/**
- * Ba con số trên trang chủ. Đếm thẳng từ danh mục đang bán nên luôn đúng —
- * trước đây là số lượt/đơn/khách nghĩ ra, mà bịa số với khách thì không được.
- */
-const catalogMetrics = [
-  { key: "platforms", label: "Nền tảng phục vụ", value: platforms.length, suffix: "nền tảng" },
-  {
-    key: "services",
-    label: "Dịch vụ đang bán",
-    value: platforms.reduce((n, x) => n + x.services.length, 0),
-    suffix: "dịch vụ",
-  },
-  { key: "products", label: "Sản phẩm premium", value: products.length, suffix: "sản phẩm" },
-];
-
-export default function HomePage() {
+export default async function HomePage() {
   const featured = products.slice(0, 4);
+
+  // Số nền tảng, số dịch vụ đọc từ danh mục SỐNG — khớp đúng trang Dịch vụ,
+  // không phải con số demo tĩnh (trước đây báo 23/124 trong khi thật là 26/104).
+  const catalog = await getLiveCatalog();
+  const platforms = catalog.platforms;
+  const featuredPlatforms = [...platforms]
+    .sort((a, b) => {
+      if (a.region !== b.region) return a.region === "vn" ? -1 : 1;
+      return b.services.length - a.services.length;
+    })
+    .slice(0, 8);
+  const catalogMetrics = [
+    { key: "platforms", label: "Nền tảng phục vụ", value: catalog.platformCount, suffix: "nền tảng" },
+    { key: "services", label: "Dịch vụ đang bán", value: catalog.serviceCount, suffix: "dịch vụ" },
+    { key: "products", label: "Sản phẩm premium", value: products.length, suffix: "sản phẩm" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -141,7 +132,7 @@ export default function HomePage() {
           nhất; xem đủ 23 nền tảng ở trang Dịch vụ. */}
       <SectionCard
         title="Dịch vụ nổi bật"
-        description={`${featuredPlatforms.length} nền tảng được đặt nhiều nhất · xem đủ ${platforms.length} nền tảng ở trang Dịch vụ.`}
+        description={`${featuredPlatforms.length} nền tảng được đặt nhiều nhất · xem đủ ${catalog.platformCount} nền tảng ở trang Dịch vụ.`}
         action={
           <LinkButton href="/services" variant="secondary" size="sm">
             Tất cả dịch vụ

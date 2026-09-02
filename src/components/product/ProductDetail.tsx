@@ -8,7 +8,6 @@ import {
   IconHeadset,
   IconShieldCheck,
   IconShoppingCartPlus,
-  IconStarFilled,
   IconWallet,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
@@ -21,7 +20,7 @@ import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useCustomerAuth } from "@/lib/customer/auth";
 import { EditorBar, useAdminEditor } from "./PageEditor";
-import { cn, formatMoney, formatNumber } from "@/lib/utils";
+import { cn, formatMoney } from "@/lib/utils";
 import type { ProductVariant } from "@/types";
 
 /**
@@ -182,18 +181,6 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 >
                   <p className={cn("text-small", darkHero ? "text-white/60" : "text-lv-muted")}>Chỉ từ</p>
                   <p className="lv-price text-h2 text-lv-gold-500">{formatMoney(product.fromPrice)}</p>
-                  <p
-                    className={cn(
-                      "mt-2 flex items-center gap-2 text-small",
-                      darkHero ? "text-white/70" : "text-lv-muted",
-                    )}
-                  >
-                    <span className="flex items-center gap-1 text-lv-warning">
-                      <IconStarFilled size={13} />
-                      {product.rating.toFixed(1).replace(".", ",")}
-                    </span>
-                    · Đã bán {formatNumber(product.sold)}
-                  </p>
                 </div>
               </div>
             </div>
@@ -253,23 +240,6 @@ export function ProductDetail({ product }: { product: ProductVariant }) {
                 </SectionCard>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-12">
-                <SectionCard title="Đánh giá khách hàng" className="lg:col-span-4">
-                  <div className="flex items-end gap-2">
-                    <span className="text-[34px] font-bold leading-none text-lv-gold-700">
-                      {(product.reviewSummary?.rating ?? product.rating).toFixed(1).replace(".", ",")}
-                    </span>
-                    <span className="pb-1 text-body text-lv-muted">/5</span>
-                  </div>
-                  <div className="mt-3 flex gap-1 text-lv-warning" aria-label="5 trên 5 sao">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <IconStarFilled key={index} size={18} />
-                    ))}
-                  </div>
-                  <p className="mt-3 text-small text-lv-muted">{product.reviewSummary?.note}</p>
-                </SectionCard>
-
-              </div>
             </>
           ) : (
             <>

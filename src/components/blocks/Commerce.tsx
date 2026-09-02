@@ -1,6 +1,5 @@
 import * as React from "react";
 import Link from "next/link";
-import { IconStarFilled } from "@tabler/icons-react";
 import { cn, formatMoney, formatNumber } from "@/lib/utils";
 import { AssetImage } from "./AssetImage";
 import { Badge } from "@/components/ui/Badge";
@@ -82,13 +81,6 @@ export function ProductCard({ product }: { product: ProductVariant }) {
           <div>
             <p className="text-small text-lv-muted">Chỉ từ</p>
             <p className="lv-price text-h3 text-lv-gold-700">{formatMoney(product.fromPrice)}</p>
-          </div>
-          <div className="text-right text-small text-lv-muted">
-            <p className="flex items-center justify-end gap-1 text-lv-warning">
-              <IconStarFilled size={13} />
-              {product.rating.toFixed(1).replace(".", ",")}
-            </p>
-            <p>Đã bán {formatNumber(product.sold)}</p>
           </div>
         </div>
         <span className="mt-3 block rounded-control border border-lv-border-gold bg-lv-gold-50 py-2 text-center text-button text-lv-gold-700 transition-colors duration-button group-hover:bg-lv-gold-600 group-hover:text-white">

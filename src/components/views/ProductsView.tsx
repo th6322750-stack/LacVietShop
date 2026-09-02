@@ -14,19 +14,18 @@ import { Select } from "@/components/ui/Field";
 import { products, productCategories } from "@/lib/demo/catalog";
 import { cn, formatMoney } from "@/lib/utils";
 
-type SortKey = "popular" | "price-asc" | "price-desc" | "rating";
+type SortKey = "featured" | "price-asc" | "price-desc";
 
 const sortLabels: Record<SortKey, string> = {
-  popular: "Bán chạy nhất",
+  featured: "Nổi bật",
   "price-asc": "Giá thấp → cao",
   "price-desc": "Giá cao → thấp",
-  rating: "Đánh giá cao nhất",
 };
 
 export function ProductsView() {
   const [category, setCategory] = React.useState("Tất cả");
   const [search, setSearch] = React.useState("");
-  const [sort, setSort] = React.useState<SortKey>("popular");
+  const [sort, setSort] = React.useState<SortKey>("featured");
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -38,8 +37,7 @@ export function ProductsView() {
     const sorted = [...list];
     if (sort === "price-asc") sorted.sort((a, b) => a.fromPrice - b.fromPrice);
     else if (sort === "price-desc") sorted.sort((a, b) => b.fromPrice - a.fromPrice);
-    else if (sort === "rating") sorted.sort((a, b) => b.rating - a.rating);
-    else sorted.sort((a, b) => b.sold - a.sold);
+    // "featured": giữ nguyên thứ tự trong danh mục, không xếp theo số bịa.
     return sorted;
   }, [category, search, sort]);
 
