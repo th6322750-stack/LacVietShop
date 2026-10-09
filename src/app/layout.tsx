@@ -20,7 +20,8 @@ export const metadata: Metadata = {
     "Nền tảng dịch vụ tăng trưởng số và tài khoản premium của Lạc Việt Media Agency.",
   // Dùng lại compact mark làm favicon theo .webby/ASSET_PATCH.md §A
   icons: { icon: [{ url: "/assets/brand/lac-viet-mark.svg", type: "image/svg+xml" }] },
-  robots: { index: false, follow: false },
+  // Cho Google ghi nhận website (giống lacviet.media); trang /admin vẫn tự đặt noindex trong admin/layout.tsx
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
